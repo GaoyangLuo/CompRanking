@@ -1,2 +1,2 @@
 # CompRanking
-Metagenomic resistome risk ranking pip2line
+Metagenomic resistome risk ranking pipeline, also known as m3Rs.
