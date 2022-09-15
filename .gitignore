@@ -133,7 +133,6 @@ dmypy.json
 databases
 localDB
 test
-submodels
 rules
 *done
 query_listway.csv
@@ -143,10 +142,10 @@ query_mod.csv
 databases/
 localDB/
 test/
-
+submodels/classification-env
+submodels/PlasClass
 #.done
 *.done
 
-submodels/
 rules/
 >>>>>>> e0471b8a0629eb383567993a5ff204416fc3bacb
