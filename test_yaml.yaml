@@ -1,0 +1,3 @@
+CompRanking:
+  abs_path_to_conda_bin: /lomi_home/gaoyang/miniconda/bin #don't use "~" or "./", please use absolute path
+  
