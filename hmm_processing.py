@@ -10,9 +10,6 @@
 #==============================================================================
 
 #acquire abs path of sample
-
-
-
 def file_abs_path_list_generation(input_dir):
     input=input_dir+"/*fa"
     file_abs_path_list=glob.glob(input)
