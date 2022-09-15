@@ -10,7 +10,7 @@
 #==============================================================================
 
 #acquire abs path of sample
-from sys import prefix
+
 
 
 def file_abs_path_list_generation(input_dir):
