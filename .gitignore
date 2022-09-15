@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#databases
+databases
+localDB
+test
+submodels
+rules
+*done
+query_listway.csv
+query_mod.csv
