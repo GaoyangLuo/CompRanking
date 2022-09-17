@@ -131,6 +131,10 @@ dmypy.json
 <<<<<<< HEAD
 #databases
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+databases
+>>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 =======
 databases
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
@@ -143,6 +147,10 @@ query_mod.csv
 =======
 #database
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+databases/
+>>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 =======
 databases/
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
@@ -155,11 +163,14 @@ submodels/PlasClass
 
 rules/
 <<<<<<< HEAD
+<<<<<<< HEAD
 databases/
 
 finalized_model_3f.sav
 negative_domains.tsv
 shared_domains.tsv
+=======
+>>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 =======
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 >>>>>>> e0471b8a0629eb383567993a5ff204416fc3bacb
