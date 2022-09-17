@@ -31,7 +31,6 @@ import cpr_run as cpr
 #         base_list.append(fileBase_2)
 #     return base_list
 
-
 def change_tab_hmmscan(input_hmmscan, output_hmm_csv):
     #input_hmmscan is the output file of hmm
     #读入hmmscan原始文件
@@ -68,8 +67,6 @@ def VF_predition(input_hmmcsv, positive_domains,name_VF_output):
     return output_VF_prediction
 
 if __name__ == '__main__':
-    
-    
     #获取输入样本的文件名base
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     file_abs_path=cpr.file_abs_path_list_generation(input_dir)
