@@ -22,6 +22,7 @@ import datetime
 import multiprocessing
 import threading
 import yaml
+import hmm_processing
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
@@ -47,7 +48,6 @@ output_dir=options.output_dir
 threads=options.threads
 config_path=options.config_file
 
-
 #scrip path
 PREPROCESSING="./scripts/preprocessing_run.sh"
 AMR_PREDICTION="./scripts/AMR_run.sh"
@@ -59,6 +59,8 @@ if (options.project_prefix is None):
     project_prefix="CompRanking" #default project name
 if (options.threads is None):
     threads = "12" #default threads
+if (options.config_file is None):
+    config_path = "./test_yaml.yaml"#default config_file path
 
 #===============================================================================
 ####################################Function####################################
@@ -96,7 +98,7 @@ def read_conda_path(name,path,yaml_path):
                 sys.exit('Something happened')
 
 #acquire abs path of sample
-def file_abs_path_list_generation(input):
+def file_abs_path_list_generation(input_dir):
     input=input_dir+"/*fa"
     file_abs_path_list=glob.glob(input)
     return file_abs_path_list
@@ -135,11 +137,13 @@ def VIR_prediction():
 #===============================================================================
 ####################################Get Started#################################
 if __name__ == '__main__': 
+    
     #### Step 0 Presetting ####
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
     rgi_input=os.path.join(input_dir,project_prefix,"preprocessing/5M_contigs")
     VF_input=os.path.join(input_dir,project_prefix,"preprocessing/5M_contigs")
     print(yaml_path)
+
     #multiprocessing
     AMR_PRED = multiprocessing.Process(target=ARG_prediction)
     MGE_PRED = multiprocessing.Process(target=MGE_prediction)
@@ -147,14 +151,12 @@ if __name__ == '__main__':
     VIR_PRED = multiprocessing.Process(target=VIR_prediction)
     
     #Write in abs conda path
-    name="CompRanking"
     path="abs_path_to_conda_bin"
-    conda_path_str="".join(read_conda_path(name,path,yaml_path)) #record abs path of conda bin
+    conda_path_str="".join(read_conda_path(project_prefix,path,yaml_path)) #record abs path of conda bin
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
     # subprocess.call(["bash", VIRULENCE_PREDICTION, 
     #                  "-i", VF_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 
-    
     
     #### Step 1 Preprocessing ####
     # start = datetime.datetime.now() #time start
@@ -163,11 +165,10 @@ if __name__ == '__main__':
     # print(end-start)
     
     
-    
     # AMR_PRED.start()
-    VIR_PRED.start()
+    # VIR_PRED.start()
     # AMR_PRED.join()
-    VIR_PRED.join()
+    # VIR_PRED.join()
     # MGE_PRED.start()
     # MGE2_PRED.start()
     # MGE_PRED.join()
@@ -205,6 +206,32 @@ if __name__ == '__main__':
     # print(file_list)
     # print(base_list)
     # yt.check_file_completness()
+    
+    #hmm processing
+    ##获取输入样本的文件名base
+    # input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    file_abs_path=file_abs_path_list_generation(input_dir)
+    file_name_base = file_base_acquire(file_abs_path)
+    
+    ##generate hmm.csv
+    # input="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/Virulence/111.hmm.txt"
+    suffix="_5M_contigs"
+    for i in file_name_base:
+        hmm_file=os.path.join(input_dir,project_prefix,"Virulence",i+suffix+"_tmp_hmm.txt")
+        output_file=os.path.join(input_dir,project_prefix,"Virulence","hmm_result",i+suffix+"_hmm.csv")
+        hmm_processing.change_tab_hmmscan(input_hmmscan=hmm_file,output_hmm_csv=output_file)
+    
+    ##hmmcsv2predcsv
+    positive_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/models_and_domains/positive_domains.tsv") 
+    for i in file_name_base:
+        input=os.path.join(input_dir,project_prefix,"Virulence","hmm_result",i+suffix+"_hmm.csv")
+        output=os.path.join(input_dir,project_prefix,"Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
+        hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
+        
+        
+    
+    
+
 
 
 
