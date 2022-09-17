@@ -146,10 +146,7 @@ submodels/PlasClass
 *.done
 
 rules/
-DEG/
-MobileOG-db/
-PATRIC/
-VFDB/
+databases/
 
 finalized_model_3f.sav
 negative_domains.tsv
