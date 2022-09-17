@@ -22,7 +22,7 @@ import datetime
 import multiprocessing
 import threading
 import yaml
-import hmm_processing
+from multi_result import hmm_processing
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
