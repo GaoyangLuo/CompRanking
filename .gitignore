@@ -130,7 +130,6 @@ dmypy.json
 
 <<<<<<< HEAD
 #databases
-databases
 localDB
 test
 rules
@@ -139,7 +138,6 @@ query_listway.csv
 query_mod.csv
 =======
 #database
-databases/
 localDB/
 test/
 submodels/classification-env
@@ -148,4 +146,12 @@ submodels/PlasClass
 *.done
 
 rules/
+DEG/
+MobileOG-db/
+PATRIC/
+VFDB/
+
+finalized_model_3f.sav
+negative_domains.tsv
+shared_domains.tsv
 >>>>>>> e0471b8a0629eb383567993a5ff204416fc3bacb
