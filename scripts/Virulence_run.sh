@@ -50,31 +50,31 @@ else
 	touch ${PREFIX}.hmm.done
 fi
 
-# mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
+mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
 
 #VFDB
-source ${CONDA_BIN_PATH}/activate argranker
+# source ${CONDA_BIN_PATH}/activate argranker
 
-if [ -e ${PREFIX}.VFDB.done ]; then
-	echo "Virulence predition file existed..."
-else
-	echo "Running VFDB prediction..."
-	#time start
-	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running VFDB prediction..."	
-	#Running Virulence Factor prediction
-	for i in ${INPUT_DIR}/*faa
-	do
-	base=${i%%.f*}
-	diamond blastp --query ${i} --db ${WORK_DIR}/databases/VFDB/VFDB_setB_pro.fas.dmnd --out ${base}_VFDB.out --evalue 1e-10 --outfmt 6 --threads ${THREADS} 
-	done
-	#finish Running VF prediction
-	echo "[TIMESTAMP] $(date) Running VFDB prediction... Done"
-	ENDTIME=$(date +%s)
-	echo "[TIMER] Running VFDB prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.VFDB.done
-fi
-conda deactivate
+# if [ -e ${PREFIX}.VFDB.done ]; then
+# 	echo "Virulence predition file existed..."
+# else
+# 	echo "Running VFDB prediction..."
+# 	#time start
+# 	STARTTIME=$(date +%s)
+# 	echo "[TIMESTAMP] $(date) Running VFDB prediction..."	
+# 	#Running Virulence Factor prediction
+# 	for i in ${INPUT_DIR}/*faa
+# 	do
+# 	base=${i%%.f*}
+# 	diamond blastp --query ${i} --db ${WORK_DIR}/databases/VFDB/VFDB_setB_pro.fas.dmnd --out ${base}_VFDB.out --evalue 1e-10 --outfmt 6 --threads ${THREADS} 
+# 	done
+# 	#finish Running VF prediction
+# 	echo "[TIMESTAMP] $(date) Running VFDB prediction... Done"
+# 	ENDTIME=$(date +%s)
+# 	echo "[TIMER] Running VFDB prediction took $(($ENDTIME - $STARTTIME)) sec."
+# 	touch ${PREFIX}.VFDB.done
+# fi
+# conda deactivate
 # mv ${INPUT_DIR}/*out ${VIR_DIR}
 
 #PATRIC
