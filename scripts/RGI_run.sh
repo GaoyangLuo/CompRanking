@@ -22,7 +22,7 @@ done
 
 #######################################Preset####################################
 AMR_DIR_tmp=$(dirname ${INPUT_DIR})
-AMR_DIR=$(dirname ${AMR_DIR_tmp})/AMR
+RGI_DIR=$(dirname ${AMR_DIR_tmp})/AMR/RGI
 
 #run RGI
 source ${CONDA_BIN_PATH}/activate rgi
@@ -45,6 +45,6 @@ else
 	touch ${PREFIX}.RGI.done
 fi
 
-mv ${INPUT_DIR}/*RGI.out* ${AMR_DIR}
+mv ${INPUT_DIR}/*RGI.out* ${RGI_DIR}
 
 conda deactivate

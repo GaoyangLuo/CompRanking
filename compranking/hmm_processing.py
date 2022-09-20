@@ -13,7 +13,8 @@ import pandas as pd
 import re
 import glob
 import os
-import cpr_run as cpr
+import path
+# import cpr_run as cpr
 
 #acquire abs path of sample
 # def file_abs_path_list_generation(input_dir):
@@ -67,12 +68,15 @@ class hmm_processing():
         
         return output_VF_prediction
 
+
+
+
 if __name__ == '__main__':
     hmm_processing=hmm_processing()
     #获取输入样本的文件名base
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    file_abs_path=cpr.file_abs_path_list_generation(input_dir)
-    file_name_base = cpr.file_base_acquire(file_abs_path)
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    file_name_base = path.file_base_acquire(file_abs_path)
     prefix="CompRanking"
     
     #generate hmm.csv

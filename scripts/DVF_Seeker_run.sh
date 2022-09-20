@@ -6,13 +6,13 @@ PREFIX="CompRanking"
 THREADS=16
 CONDA_BIN_PATH=~/miniconda/bin
 
-while getopts "p:i:m:t:o" option; do
+while getopts "p:i:o:t:c" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
 		i) INPUT_DIR=${OPTARG};;
-		m) CONDA_BIN_PATH=${OPTARG};;
-		t) THREADS=${OPTARG};; 
         o) OUTPUT_DIR=${OPTARG};;
+		t) THREADS=${OPTARG};; 
+        c) CONDA_BIN_PATH=${OPTARG};;
 		*) exit 1;;
 	esac
 done
@@ -42,25 +42,25 @@ done
 # mv ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/MGE/Plasflow
 
 #run DVF
-source ~/miniconda/bin/activate dvf
-if [ -e ${PREFIX}.DVF.done ]; then
-	echo "The first round phage prediction file existed..."
-else
-    #time start
-	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running the first round phage prediction..."	
-	#Running DVF 
-	for i in ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*.fa
-    do
-    python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/CompRanking/MGE/DVF -c 16 -l 500
-    done
-	#finish Running DVF
-	echo "[TIMESTAMP] $(date) Running the first round phage prediction... Done"
-	ENDTIME=$(date +%s)
-	echo "[TIMER] Running the first round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.DVF.done
-fi
-conda deactivate
+# source ~/miniconda/bin/activate dvf
+# if [ -e ${PREFIX}.DVF.done ]; then
+# 	echo "The first round phage prediction file existed..."
+# else
+#     #time start
+# 	STARTTIME=$(date +%s)
+# 	echo "[TIMESTAMP] $(date) Running the first round phage prediction..."	
+# 	#Running DVF 
+# 	for i in ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*.fa
+#     do
+#     python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/CompRanking/MGE/DVF -c 16 -l 500
+#     done
+# 	#finish Running DVF
+# 	echo "[TIMESTAMP] $(date) Running the first round phage prediction... Done"
+# 	ENDTIME=$(date +%s)
+# 	echo "[TIMER] Running the first round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
+# 	touch ${PREFIX}.DVF.done
+# fi
+# conda deactivate
 
 #run Seeker
 source ${CONDA_BIN_PATH}/activate seeker
@@ -71,7 +71,7 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running the second round phage prediction..."	
 	#Running Seeker
-	for i in ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*.fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*.fa
     do
     predict-metagenome ${i}
     done
@@ -81,5 +81,5 @@ else
 	echo "[TIMER] Running the second round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.SEEKER.done
 fi
-mv ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/MGE/Seeker
+mv ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Seeker
 

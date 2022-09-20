@@ -24,11 +24,12 @@ done
 #### STEP1 Ativate preprocessing env ####
 source $CONDA_BIN_PATH/activate preprocessing_test
 mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs
-mkdir -p ${INPUT_DIR}/${PREFIX}/AMR
-mkdir -p ${INPUT_DIR}/${PREFIX}/MGE/Plasflow
-mkdir -p ${INPUT_DIR}/${PREFIX}/MGE/DVF
-mkdir -p ${INPUT_DIR}/${PREFIX}/MGE/Seeker
-mkdir -p ${INPUT_DIR}/${PREFIX}/Virulence
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/RGI
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/DeepARG
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Plasflow
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/DVF
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Seeker
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence
 #mkdir -p ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
 #### Step2 Filtering contigs ####
@@ -51,7 +52,7 @@ else
 	echo "[TIMER] Filtering 5M contigs took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.5Mfilter.done
 fi
-
+mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs
 #filter 5M-1K
 # if [ -e ${PREFIX}.5M-1Kfilter.done ]; then
 # 	echo "5M-1K_filetered file existed..."
@@ -72,35 +73,34 @@ fi
 # 	touch ${PREFIX}.5M-1Kfilter.done
 # fi
 #mv filtered files
-# mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs
 #mv ${INPUT_DIR}/*5M-1K_contigs.fa ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
 #### Step3 Run prodigal ####
-# if [ -e ${PREFIX}.ORF_prediction.done ]; then
-# 	echo "faa file existed..."
-# else
-# 	#time start
-# 	STARTTIME=$(date +%s)
-# 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal..."
-# 	#predict ORFs with prodigal
-# 	for i in ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*fa
-# 	do
-# 	base=${i%%.f*}
-# 	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta
-# 	done
-# 	#finish ORFs prediction
-# 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
-# 	ENDTIME=$(date +%s)
-# 	echo "[TIMER] Predicting ORFs with prodigal took $(($ENDTIME - $STARTTIME)) sec."
-# 	touch ${PREFIX}.ORF_prediction.done
-# fi
-# conda deactivate
+if [ -e ${PREFIX}.ORF_prediction.done ]; then
+	echo "faa file existed..."
+else
+	#time start
+	STARTTIME=$(date +%s)
+	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal..."
+	#predict ORFs with prodigal
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa
+	do
+	base=${i%%.f*}
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta
+	done
+	#finish ORFs prediction
+	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
+	ENDTIME=$(date +%s)
+	echo "[TIMER] Predicting ORFs with prodigal took $(($ENDTIME - $STARTTIME)) sec."
+	touch ${PREFIX}.ORF_prediction.done
+fi
+conda deactivate
 
-#modify faa file
-sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*faa
+#### Step4 Modify faa file ####
+sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa
 
-#Building index
-for i in ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs/*gff
+#### Step5 Building index ####
+for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*gff
 do
 base=${i%%.gf*}
 sed -i '/^#/d' ${i}
