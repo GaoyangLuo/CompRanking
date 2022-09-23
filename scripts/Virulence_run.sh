@@ -50,7 +50,7 @@ else
 	touch ${PREFIX}.hmm.done
 fi
 
-mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
+# mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
 
 #VFDB
 # source ${CONDA_BIN_PATH}/activate argranker
