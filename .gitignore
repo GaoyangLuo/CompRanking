@@ -133,10 +133,10 @@ dmypy.json
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
-databases
+
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 =======
-databases
+
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 localDB
 test
@@ -149,10 +149,10 @@ query_mod.csv
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
-databases/
+
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 =======
-databases/
+
 >>>>>>> 7f4b24889bd1929d8a0cf0a2ba714fc7a03f393f
 localDB/
 test/
@@ -164,7 +164,6 @@ submodels/PlasClass
 rules/
 <<<<<<< HEAD
 <<<<<<< HEAD
-databases/
 
 finalized_model_3f.sav
 negative_domains.tsv
@@ -176,5 +175,15 @@ shared_domains.tsv
 >>>>>>> e0471b8a0629eb383567993a5ff204416fc3bacb
 
 #tmp .txt
-*txt
+*tmp*txt
+RGI_deeparg.txt
 ipython_scripts
+benchmarking
+
+#databases
+DEG
+MobileOG-db
+PATRIC
+VFDB
+virulence
+deepargdata1.0.2
