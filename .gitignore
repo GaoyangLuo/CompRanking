@@ -175,7 +175,7 @@ shared_domains.tsv
 >>>>>>> e0471b8a0629eb383567993a5ff204416fc3bacb
 
 #tmp .txt
-*tmp*txt
+*tmp*
 RGI_deeparg.txt
 ipython_scripts
 benchmarking
