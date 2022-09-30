@@ -48,7 +48,7 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running hmm prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.hmm.done
-fi
+fi 
 
 # mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
 
