@@ -1,8 +1,8 @@
-# CompRanking: Comprehensively ranking the resistome risk of environmental metagenome samples
+# CompRanking: Comprehensively ranking the environmental metagenome samples according to resistome assessment
 
 version 1.0
 
-Metagenomic resistome risk ranking pipeline, also known as m3Rs. It's a pipeline for comprehensive ranking the resistome risk of environmental metagenome samples.
+Metagenomic samples resistome assessment and risk ranking pipeline, also known as m3Rs. It's a pipeline for comprehensively ranking the environmental metagenome samples by virtue of assessing their resistome profiles. Generally giving results derived from three features as the co-occurrance of ARGs and MGEs on one contigs and the globle statement of the enrichment of virulence factors.
 
 # How to use
 ## First step
