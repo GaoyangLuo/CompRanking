@@ -15,7 +15,7 @@ import glob
 import os
 import path
 
-def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output):
+def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,filebase):
     #load index
     df_contig=pd.read_csv(input_contig,sep="\t",header=None)
     #load VFDB output
@@ -50,6 +50,8 @@ if __name__ == "__main__":
     input_ERR_VFDB_output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/ERR1191817.contigs_5M_contigs_VFDB_setA1e-5.out"
     input_cpr_VF_sum="/lomi_home/gaoyang/software/CompRanking/databases/CompRanking_VirulenceDB/CompRanking_HMM_Virulence_Summary.csv"
     output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result"
+    
+    
     
     VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output)
     
