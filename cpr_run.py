@@ -156,6 +156,7 @@ if __name__ == '__main__':
     VF_input=faaFile_input
     deeparg_input=faaFile_input
     sarg_input=faaFile_input
+    output_prefix=os.path.join(input_dir,project_prefix,"CompRanking_result")
     print(yaml_path)
 
     #multiprocessing
@@ -182,7 +183,7 @@ if __name__ == '__main__':
     
     
     # AMR_PRED1.start()
-    AMR_PRED2.start()
+    # AMR_PRED2.start()
     # VIR_PRED.start()
     # AMR_PRED.join()
     # VIR_PRED.join()
@@ -232,18 +233,18 @@ if __name__ == '__main__':
     
     ##generate hmm.csv
     # input="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_itermediate/Virulence/111.hmm.txt"
-    suffix="_5M_contigs"
-    for i in file_name_base:
-        hmm_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence",i+suffix+"_tmp_hmm.txt")
-        output_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
-        hmm_processing.change_tab_hmmscan(input_hmmscan=hmm_file,output_hmm_csv=output_file)
+    # suffix="_5M_contigs"
+    # for i in file_name_base:
+    #     hmm_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence",i+suffix+"_tmp_hmm.txt")
+    #     output_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
+    #     hmm_processing.change_tab_hmmscan(input_hmmscan=hmm_file,output_hmm_csv=output_file)
     
-    ##hmmcsv2predcsv
-    positive_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/models_and_domains/positive_domains.tsv") 
-    for i in file_name_base:
-        input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
-        output=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
-        hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
+    # ##hmmcsv2predcsv
+    # positive_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/models_and_domains/positive_domains.tsv") 
+    # for i in file_name_base:
+    #     input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
+    #     output=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
+    #     hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
         
         
     
