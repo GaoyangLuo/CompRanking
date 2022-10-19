@@ -25,6 +25,7 @@ import threading
 import yaml
 from compranking.hmm_processing import hmm_processing
 from compranking import path
+from compranking.AMR_processing import AMRCombined
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
