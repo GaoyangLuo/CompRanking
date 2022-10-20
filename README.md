@@ -13,4 +13,3 @@ Please firstly set up all the environment by the following commands. These comma
 ```sh
 $ bash setup.sh
 ```
-
