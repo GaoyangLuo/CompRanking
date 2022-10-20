@@ -38,7 +38,7 @@ def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,fi
     
     #save
     
-    VFfile=df_VFDB_output_annote.to_csv(output + "/CompRanking_Virulence_VFDB_output.csv",sep="\t",index=None)
+    VFfile=df_VFDB_output_annote.to_csv(output + "/CompRanking_"+filebase+"_Virulence_VFDB_output.tsv",sep="\t",index=None)
     
     return VFfile
     
@@ -50,9 +50,13 @@ if __name__ == "__main__":
     input_ERR_VFDB_output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/ERR1191817.contigs_5M_contigs_VFDB_setA1e-5.out"
     input_cpr_VF_sum="/lomi_home/gaoyang/software/CompRanking/databases/CompRanking_VirulenceDB/CompRanking_HMM_Virulence_Summary.csv"
     output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result"
-    
-    
-    
-    VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output)
+    project_prefix="CompRanking"
+ 
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    file_name_base = path.file_base_acquire(file_abs_path)
+    # print(file_abs_path)
+    for i in file_name_base:
+        VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,i)
     
     

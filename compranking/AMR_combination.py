@@ -13,17 +13,20 @@ import pandas as pd
 import re
 import glob
 import os
-import cpr_run as cpr
+import path
+
 
 class AMRCombined():
     #preset feature
-    def __init__(self, rgiInputDir, dvfInputDir,plasflowInputDir,seekerInputDir, VFInputDir, contigIndex):
-        self.rgi_input_dir=rgiInputDir
-        self.dvf_input_dir=dvfInputDir
-        self.plasflow_input_dir=plasflowInputDir
-        self.seeker_input_dir=seekerInputDir
-        self.virulence_dir=VFInputDir
-        self.contigIndex=contigIndex
+    # def __init__(self, rgiInputDir, dvfInputDir,plasflowInputDir,seekerInputDir, VFInputDir, contigIndex):
+    #     self.rgi_input_dir=rgiInputDir
+    #     self.dvf_input_dir=dvfInputDir
+    #     self.plasflow_input_dir=plasflowInputDir
+    #     self.seeker_input_dir=seekerInputDir
+    #     self.virulence_dir=VFInputDir
+    #     self.contigIndex=contigIndex
+
+    
     
     def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,filebase):
         #open RGI results
@@ -220,12 +223,13 @@ class AMRCombined():
         df_AMR_contig.columns=["Contig","ORF_ID","ARG_prediction","ARG_class","SNPs","Database","ARG_rank","CompRanking_MGE_prediction"]
         
         ####save####
-        AMRfile=df_AMR_contig.to_csv("CompRanking_" + filebase + "_MGE_prediction.txt", sep="\t")
+        AMRfile=df_AMR_contig.to_csv(output + "/CompRanking_" + filebase + "_AMR_prediction.tsv", sep="\t")
         
         return AMRfile
 
 
 if __name__ == "__main__":
+    #AMR combine
     input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
     input_deeparg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
     input_SARG="../test_SARGrank_Protein_Result_tmp.txt"
@@ -233,6 +237,18 @@ if __name__ == "__main__":
     input_dvf="../test/CompRanking/CompRanking_intermediate/MGE/DVF/ERR1191817.contigs_5M_contigs.fa_gt500bp_dvfpred.txt"
     input_plasflow="../test/CompRanking/CompRanking_intermediate/MGE/Plasflow/ERR1191817.contigs_5M_contigs_plasflow_predictions.tsv"
     seeker_table="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/Seeker/seeker_ERR1191817.contigs_5M_contigs_output.txt"
+    output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result"
+    project_prefix="CompRanking"
+    
+    a=AMRCombined()
+    
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    file_name_base = path.file_base_acquire(file_abs_path)
+    for i in file_name_base:
+        a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,i)
+    
+    
     
     
     
