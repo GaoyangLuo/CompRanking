@@ -237,12 +237,12 @@ if __name__ == "__main__":
     input_dvf="../test/CompRanking/CompRanking_intermediate/MGE/DVF/ERR1191817.contigs_5M_contigs.fa_gt500bp_dvfpred.txt"
     input_plasflow="../test/CompRanking/CompRanking_intermediate/MGE/Plasflow/ERR1191817.contigs_5M_contigs_plasflow_predictions.tsv"
     seeker_table="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/Seeker/seeker_ERR1191817.contigs_5M_contigs_output.txt"
-    output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result"
-    project_prefix="CompRanking"
+    
+    #gloab settings
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
     
     a=AMRCombined()
-    
-    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     for i in file_name_base:
