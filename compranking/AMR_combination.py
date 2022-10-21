@@ -13,7 +13,7 @@ import pandas as pd
 import re
 import glob
 import os
-import path
+from compranking import path
 
 
 class AMRCombined():
@@ -223,29 +223,40 @@ class AMRCombined():
         df_AMR_contig.columns=["Contig","ORF_ID","ARG_prediction","ARG_class","SNPs","Database","ARG_rank","CompRanking_MGE_prediction"]
         
         ####save####
-        AMRfile=df_AMR_contig.to_csv(output + "/CompRanking_" + filebase + "_AMR_prediction.tsv", sep="\t")
+        AMRfile=df_AMR_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction.tsv", sep="\t")
         
         return AMRfile
 
 
 if __name__ == "__main__":
+    import pandas as pd
+    import re
+    import glob
+    import os
+    import path
+    #gloab settings
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    
     #AMR combine
     input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
     input_deeparg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
-    input_SARG="../test_SARGrank_Protein_Result_tmp.txt"
+    
+    # input_SARG="../test_SARGrank_Protein_Result_tmp.txt"
     input_contig_ID="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
     input_dvf="../test/CompRanking/CompRanking_intermediate/MGE/DVF/ERR1191817.contigs_5M_contigs.fa_gt500bp_dvfpred.txt"
     input_plasflow="../test/CompRanking/CompRanking_intermediate/MGE/Plasflow/ERR1191817.contigs_5M_contigs_plasflow_predictions.tsv"
     seeker_table="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/Seeker/seeker_ERR1191817.contigs_5M_contigs_output.txt"
     
-    #gloab settings
-    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    
     
     a=AMRCombined()
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     for i in file_name_base:
+        input_rgi=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
+        input_SARG=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/ARGranking")+"/CompRanking_"+i+"_SARGrank_Protei80_Result.tsv"
+        
         a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,i)
     
     

@@ -46,15 +46,22 @@ def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,fi
     
 
 if __name__ == "__main__":
+    import pandas as pd
+    import re
+    import glob
+    import os
+    import path
+    
     input_contig="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
     input_ERR_VFDB_output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/ERR1191817.contigs_5M_contigs_VFDB_setA1e-5.out"
-    input_cpr_VF_sum="/lomi_home/gaoyang/software/CompRanking/databases/CompRanking_VirulenceDB/CompRanking_HMM_Virulence_Summary.csv"
-    output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result"
-    project_prefix="CompRanking"
+    input_cpr_VF_sum="/lomi_home/gaoyang/software/CompRanking/databases/CompRanking_VirulenceDB/CompRanking_HMM_Virulence_Summary.csv" 
  
+    #gloab settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
+    
     # print(file_abs_path)
     for i in file_name_base:
         VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,i)
