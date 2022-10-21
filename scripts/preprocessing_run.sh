@@ -26,10 +26,12 @@ source $CONDA_BIN_PATH/activate preprocessing_test
 mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/RGI
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/DeepARG
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/SARG
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Plasflow
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/DVF
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Seeker
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence
+
 #mkdir -p ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
 #### Step2 Filtering contigs ####

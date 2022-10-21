@@ -59,6 +59,10 @@ source ${CONDA_BIN_PATH}/activate argranker
 # 	echo "[TIMER] Running ARG_ranking prediction took $(($ENDTIME - $STARTTIME)) sec."
 # 	touch ${PREFIX}.ARG_ranking.done
 # fi
+
+AMR_DIR_tmp=$(dirname ${INPUT_DIR})
+SARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/ARGranking
+
 #blastp
 if [ -e ${PREFIX}.ARG_ranking.done ]; then
 	echo "ARG_ranking predition file existed..."
@@ -78,4 +82,6 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG_ranking prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.ARG_ranking.done
+	mv ${INPUT_DIR}/*_SARG_Protein_diamond.txt ${SARG_DIR}
 fi
+

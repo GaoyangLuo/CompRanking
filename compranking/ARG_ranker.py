@@ -63,21 +63,25 @@ def arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,f
     df_argrank2.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
     
     #save
-    df_argrank2.to_csv(output + "/CompRanking_" + filebase +"SARGrank_Protein80_Result.tsv", sep="\t")
+    df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein80_Result.tsv", sep="\t")
     
 
-if __name__=="__main__":       
+if __name__=="__main__":   
+    import pandas as pd
+    import os
+    import path    
     #arg rank processing
     input_sarg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_5M_contigs_SARG_Protein_diamond.txt"
     input_sarg_structure="/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.structure.txt"
     input_argrank="/lomi_home/gaoyang/software/CompRanking/databases/SARG/ARG_rank.txt"
     input_sarg_length="../databases/SARG/SARG.db.fasta.length"
     
+    #globle settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
-    
+    output=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/ARGranking")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
+    
     for i in file_name_base:
         arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, output)
     

@@ -23,9 +23,8 @@ import datetime
 import multiprocessing
 import threading
 import yaml
-from compranking.hmm_processing import hmm_processing
 from compranking import path
-from compranking.AMR_processing import AMRCombined
+from compranking.AMR_combination import AMRCombined
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
@@ -145,13 +144,14 @@ def VIR_prediction():
     subprocess.call(["bash", VIRULENCE_PREDICTION, 
                      "-i", VF_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 
+
 #===============================================================================
 ####################################Get Started#################################
 if __name__ == '__main__': 
     
     #### Step 0 Presetting ####
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
-    faaFile_input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate/preprocessing/5M_contigs")
+    faaFile_input=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")
     rgi_input=faaFile_input
     VF_input=faaFile_input
     deeparg_input=faaFile_input
@@ -165,7 +165,8 @@ if __name__ == '__main__':
     AMR_PRED3 = multiprocessing.Process(target=ARG3_prediction) #sarg
     MGE_PRED = multiprocessing.Process(target=MGE_prediction) #plasflow
     MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf&seeker
-    VIR_PRED = multiprocessing.Process(target=VIR_prediction) #hmm
+    VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB
+
     
     #Write in abs conda path
     path_bin="abs_path_to_conda_bin"
@@ -184,6 +185,7 @@ if __name__ == '__main__':
     
     # AMR_PRED1.start()
     # AMR_PRED2.start()
+    AMR_PRED3.start()
     # VIR_PRED.start()
     # AMR_PRED.join()
     # VIR_PRED.join()
@@ -228,8 +230,8 @@ if __name__ == '__main__':
     #hmm processing
     #acquire base
     #input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    file_abs_path=path.file_abs_path_list_generation(input_dir)
-    file_name_base = path.file_base_acquire(file_abs_path)
+    # file_abs_path=path.file_abs_path_list_generation(input_dir)
+    # file_name_base = path.file_base_acquire(file_abs_path)
     
     ##generate hmm.csv
     # input="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_itermediate/Virulence/111.hmm.txt"
