@@ -141,7 +141,7 @@ def MGE2_prediction(): #seeker&dvf
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])  
 def MGE3_prediction(): #mobileOG
     subprocess.call(["bash", MGE3_PREDICTION, 
-                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
+                     "-i", mobileog_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
 ##Virlence prediction
 def VIR_prediction(): #VF&Pathogen
     subprocess.call(["bash", VIRULENCE_PREDICTION, 
@@ -158,6 +158,7 @@ if __name__ == '__main__':
     faaFile_input=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")
     rgi_input=faaFile_input
     VF_input=faaFile_input
+    mobileog_input=faaFile_input
     deeparg_input=faaFile_input
     sarg_input=faaFile_input
     output_prefix=os.path.join(input_dir,project_prefix,"CompRanking_result")
@@ -192,7 +193,7 @@ if __name__ == '__main__':
     # AMR_PRED1.start()
     # AMR_PRED2.start()
     # AMR_PRED3.start()
-    VIR_PRED.start()
+    # VIR_PRED.start()
     MGE3_PRED.start()
     # AMR_PRED.join()
     # VIR_PRED.join()

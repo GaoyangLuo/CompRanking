@@ -65,13 +65,13 @@ SARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/ARGranking
 MobileOG_DIR=$(dirname ${AMR_DIR_tmp})/MGE/MobileOG
 
 #blastp mobileOG
-if [ -e ${PREFIX}.ARG_ranking.done ]; then
-	echo "ARG_ranking predition file existed..."
+if [ -e ${PREFIX}.MobileOG.done ]; then
+	echo "MobileOG predition file existed..."
 else
-	echo "Running ARG_ranking prediction..."
+	echo "Running MobileOG prediction..."
 	#time start
 	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running ARG_ranking prediction..."	
+	echo "[TIMESTAMP] $(date) Running MobileOG prediction..."	
 	#Running Virulence Factor prediction
 	for i in ${INPUT_DIR}/*faa
 	do
@@ -79,10 +79,10 @@ else
 	diamond blastp --query ${i} --db ${WORK_DIR}/databases/MobileOG-db/mobileOG-db_aa.dmnd --out ${base}_mobileOG_diamond.txt --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1
 	done
 	#finish Running VF prediction
-	echo "[TIMESTAMP] $(date) Running ARG_ranking prediction... Done"
+	echo "[TIMESTAMP] $(date) Running MobileOG prediction... Done"
 	ENDTIME=$(date +%s)
-	echo "[TIMER] Running ARG_ranking prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.ARG_ranking.done
+	echo "[TIMER] Running MobileOG prediction took $(($ENDTIME - $STARTTIME)) sec."
+	touch ${PREFIX}.MobileOG.done
 	mv ${INPUT_DIR}/*mobileOG_diamond.txt ${MobileOG_DIR}
 fi
 
