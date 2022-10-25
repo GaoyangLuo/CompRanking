@@ -57,6 +57,7 @@ AMR2_PREDICTION="./scripts/DeepARG_run.sh"
 AMR3_PREDICTION="./scripts/SARG_run.sh"
 MGE1_PREDICTION="./scripts/Plasflow_run.sh"
 MGE2_PREDICTION="./scripts/DVF_Seeker_run.sh"
+MGE3_PREDICTION="./scripts/mobileOG_run.sh"
 VIRULENCE_PREDICTION="./scripts/Virulence_run.sh"
 #default parameters
 if (options.project_prefix is None):
@@ -122,27 +123,30 @@ if (options.config_file is None):
 
 #mutiprocessing
 ##AMR prediction
-def ARG1_prediction():
+def ARG1_prediction(): #rgi
     subprocess.call(["bash", AMR1_PREDICTION, 
                      "-i", rgi_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
-def ARG2_prediction():
+def ARG2_prediction():#deeparg
     subprocess.call(["bash", AMR2_PREDICTION, 
                      "-i", deeparg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])   
-def ARG3_prediction():
+def ARG3_prediction():#sarg
     subprocess.call(["bash", AMR3_PREDICTION, 
                         "-i", sarg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
 ##MGE prediction
-def MGE_prediction():
+def MGE_prediction(): #plasflow
     subprocess.call(["bash", MGE1_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
-##MGE2 prediction
-def MGE2_prediction():
+def MGE2_prediction(): #seeker&dvf
     subprocess.call(["bash", MGE2_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])  
+def MGE3_prediction(): #mobileOG
+    subprocess.call(["bash", MGE3_PREDICTION, 
+                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
 ##Virlence prediction
-def VIR_prediction():
+def VIR_prediction(): #VF&Pathogen
     subprocess.call(["bash", VIRULENCE_PREDICTION, 
                      "-i", VF_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
+    
 
 
 #===============================================================================
@@ -165,7 +169,8 @@ if __name__ == '__main__':
     AMR_PRED3 = multiprocessing.Process(target=ARG3_prediction) #sarg
     MGE_PRED = multiprocessing.Process(target=MGE_prediction) #plasflow
     MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf&seeker
-    VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB
+    MGE3_PRED = multiprocessing.Process(target=MGE3_prediction) #mobileOG
+    VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB&PATH
 
     
     #Write in abs conda path
@@ -183,10 +188,12 @@ if __name__ == '__main__':
     # print(end-start)
     
     
+    #multiprocessing
     # AMR_PRED1.start()
     # AMR_PRED2.start()
-    AMR_PRED3.start()
-    # VIR_PRED.start()
+    # AMR_PRED3.start()
+    VIR_PRED.start()
+    MGE3_PRED.start()
     # AMR_PRED.join()
     # VIR_PRED.join()
     # MGE_PRED.start()

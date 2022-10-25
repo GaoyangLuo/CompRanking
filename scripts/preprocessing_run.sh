@@ -30,7 +30,9 @@ mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/SARG
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Plasflow
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/DVF
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Seeker
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/MobileOG
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence/VFDB
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence/PATRIC
 
 #mkdir -p ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
