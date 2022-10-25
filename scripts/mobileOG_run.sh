@@ -64,7 +64,7 @@ AMR_DIR_tmp=$(dirname ${INPUT_DIR})
 SARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/ARGranking
 MobileOG_DIR=$(dirname ${AMR_DIR_tmp})/MGE/MobileOG
 
-#blastp SARG
+#blastp mobileOG
 if [ -e ${PREFIX}.ARG_ranking.done ]; then
 	echo "ARG_ranking predition file existed..."
 else
@@ -76,15 +76,13 @@ else
 	for i in ${INPUT_DIR}/*faa
 	do
 	base=${i%%.f*}
-	diamond blastp --query ${i} --db ${WORK_DIR}/databases/SARG/SARG.db.fasta.dmnd --out ${base}_SARG_Protein_diamond.txt --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1
+	diamond blastp --query ${i} --db ${WORK_DIR}/databases/MobileOG-db/mobileOG-db_aa.dmnd --out ${base}_mobileOG_diamond.txt --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1
 	done
 	#finish Running VF prediction
 	echo "[TIMESTAMP] $(date) Running ARG_ranking prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG_ranking prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.ARG_ranking.done
-	mv ${INPUT_DIR}/*_SARG_Protein_diamond.txt ${SARG_DIR}
+	mv ${INPUT_DIR}/*mobileOG_diamond.txt ${MobileOG_DIR}
 fi
 
-
-#blasp 
