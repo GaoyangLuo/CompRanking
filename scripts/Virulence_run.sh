@@ -97,7 +97,7 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running PATRIC prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.PATRIC.done
-	mv ${INPUT_DIR}/*PATRIC.out ${VIR_DIR}/mobileOG
+	# mv ${INPUT_DIR}/*PATRIC.out ${VIR_DIR}/PATRIC
 fi
 
 
