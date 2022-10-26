@@ -28,7 +28,7 @@ class AMRCombined():
 
     
     
-    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,filebase):
+    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG,filebase):
         #open RGI results
         df_RGI=pd.read_csv(input_rgi, sep="\t")
         df_RGI=df_RGI.fillna("-")
@@ -259,7 +259,7 @@ class AMRCombined():
                                 
         ####save####
         # df_AMR_annotate_contig.to_csv("/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/CompRanking_ERR1191817_AMR_result.csv",sep="\t",index=0)
-        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction2.tsv", sep="\t", index=0)
+        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction.tsv", sep="\t", index=0)
         
         return AMRfile
 
@@ -300,7 +300,7 @@ if __name__ == "__main__":
         seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
         input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
 
-        a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,i)
+        a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG,i)
     
     
     
