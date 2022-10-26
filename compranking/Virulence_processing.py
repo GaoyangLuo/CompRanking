@@ -15,7 +15,7 @@ import glob
 import os
 import path
 
-def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,filebase):
+def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,input_patric,filebase):
     #load index
     df_contig=pd.read_csv(input_contig,sep="\t",header=None)
     #load VFDB output
@@ -59,7 +59,7 @@ def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,fi
     df_VFs_PATH_contig.columns=["Contig","ORF","Virulence_factor","VF_Name","VF_Host_Bacteria","VFcategory","ESKAPE","Pathogenicity"]
     
     #save
-    VFfile=df_VFDB_output_annote.to_csv(output + "/CompRanking_"+filebase+"_Virulence_VFDB_output.tsv",sep="\t",index=None)
+    VFfile=df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+filebase+"_Virulence_Pathogenic_prediction.tsv",sep="\t",index=None)
     
     return VFfile
     
@@ -73,23 +73,26 @@ if __name__ == "__main__":
     import os
     import path
     
-    input_contig="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
-    input_ERR_VFDB_output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/ERR1191817.contigs_5M_contigs_VFDB_setA1e-5.out"
+    # input_contig="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
+    # input_ERR_VFDB_output="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/ERR1191817.contigs_5M_contigs_VFDB_setA1e-5.out"
     
-    input_patric="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/PATRIC/ERR1191817.contigs_5M_contigs_PATRIC.out"
+    # input_patric="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/Virulence/PATRIC/ERR1191817.contigs_5M_contigs_PATRIC.out"
     
     #gloab settings
-    #flexible setting
+    ##flexible setting
     input_dir="/lomi_home/gaoyang/software/CompRanking/test" 
-    #fixed setting
-    input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" 
+    project_prefix="CompRanking"
+    ##fixed setting
+    input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
     output=os.path.join(input_dir,"CompRanking/CompRanking_result")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     
-    
-    # print(file_abs_path)
     for i in file_name_base:
-        VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,i)
+        input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
+        input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
+        
+        VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,input_patric,i)
     
     
