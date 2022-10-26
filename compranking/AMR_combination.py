@@ -13,7 +13,7 @@ import pandas as pd
 import re
 import glob
 import os
-from compranking import path
+import path
 
 
 class AMRCombined():
@@ -222,8 +222,44 @@ class AMRCombined():
         df_AMR_contig=df_AMR_contig.drop_duplicates()
         df_AMR_contig.columns=["Contig","ORF_ID","ARG_prediction","ARG_class","SNPs","Database","ARG_rank","CompRanking_MGE_prediction"]
         
+        ####processing MobileOG-db
+        #load MobileOG result
+        df_MobileOG=pd.read_csv(input_mobileOG, sep="\t", header=None)
+        df_MobileOG.columns=['id', 'sub_id', 'identity', 'alignLen', 'mismat', 'gapOpens', 'qStart', 'qEnd', 'sStart', 'sEnd', 'eval', 'bit']
+        #处理分列
+        df_MobileOG_tmp=df_MobileOG["sub_id"].str.split("|",expand=True)
+        df_MobileOG_tmp=df_MobileOG_tmp[[0,1,3,4,5]]
+        df_MobileOG_tmp.columns=["mobileOG_ID", "Gene_Name", "Taxonomy","Major_Category","MGE_Database"]     
+        #concat
+        df_MobileOG_concat=pd.concat((df_MobileOG,df_MobileOG_tmp),axis=1)
+        df_MobileOG_concat=df_MobileOG_concat.drop(["sub_id","mismat","gapOpens","qStart","qEnd","sStart","sEnd","eval","bit"],axis=1, inplace=False)  
+        #load mobileOG structure
+        input_mobileOG_structure="/lomi_home/gaoyang/software/CompRanking/databases/MobileOG-db/MobileOG-db_structure.tsv"
+        df_mobileOG_structure=pd.read_csv(input_mobileOG_structure, sep="\t", header=0) 
+        #creat dic index of structure
+        mobilOG_structure_dic={}
+        for i, name in df_mobileOG_structure.iterrows():
+            mobilOG_structure_dic[df_mobileOG_structure["mobileOG_ID"][i]]=df_mobileOG_structure["length"][i]
+        #cal identity and cov
+        #identity60
+        df_MobileOG_concat["coverage"]="-"
+        df_MobileOG_concat_iden60=df_MobileOG_concat[df_MobileOG_concat.identity > 60]    
+        #cal cov
+        empty=[]
+        for index, name in df_MobileOG_concat_iden60.iterrows():
+            empty.append(df_MobileOG_concat_iden60["alignLen"][index]/mobilOG_structure_dic[df_MobileOG_concat_iden60["mobileOG_ID"][index]])
+        df_MobileOG_concat_iden60["coverage"]=empty
+        #coverage>0.9
+        df_MobileOG_concat_iden60_cov90=df_MobileOG_concat_iden60[df_MobileOG_concat_iden60.coverage > 0.9]
+        #merge mobileOG 
+        df_AMR_annotate_contig=pd.merge(df_AMR_contig,df_MobileOG_concat_iden60_cov90,left_on="ORF_ID",right_on="id",how="left")
+        df_AMR_annotate_contig=df_AMR_annotate_contig.drop(["id","identity","alignLen"],axis=1, inplace=False)
+        df_AMR_annotate_contig=df_AMR_annotate_contig.fillna("-")
+        
+                                
         ####save####
-        AMRfile=df_AMR_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction.tsv", sep="\t")
+        # df_AMR_annotate_contig.to_csv("/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/CompRanking_ERR1191817_AMR_result.csv",sep="\t",index=0)
+        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction2.tsv", sep="\t", index=0)
         
         return AMRfile
 
@@ -237,26 +273,33 @@ if __name__ == "__main__":
     #gloab settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    project_prefix="CompRanking"
     
     #AMR combine
-    input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
-    input_deeparg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
+    # input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
+    # input_deeparg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
     
     # input_SARG="../test_SARGrank_Protein_Result_tmp.txt"
-    input_contig_ID="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
-    input_dvf="../test/CompRanking/CompRanking_intermediate/MGE/DVF/ERR1191817.contigs_5M_contigs.fa_gt500bp_dvfpred.txt"
-    input_plasflow="../test/CompRanking/CompRanking_intermediate/MGE/Plasflow/ERR1191817.contigs_5M_contigs_plasflow_predictions.tsv"
-    seeker_table="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/Seeker/seeker_ERR1191817.contigs_5M_contigs_output.txt"
-    
+    # input_contig_ID="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_5M_contigs.index"
+    # input_dvf="../test/CompRanking/CompRanking_intermediate/MGE/DVF/ERR1191817.contigs_5M_contigs.fa_gt500bp_dvfpred.txt"
+    # input_plasflow="../test/CompRanking/CompRanking_intermediate/MGE/Plasflow/ERR1191817.contigs_5M_contigs_plasflow_predictions.tsv"
+    # seeker_table="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/Seeker/seeker_ERR1191817.contigs_5M_contigs_output.txt"
+    # input_mobileOG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/MobileOG/ERR1191817.contigs_5M_contigs_mobileOG_diamond.txt"
     
     
     a=AMRCombined()
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     for i in file_name_base:
-        input_rgi=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
-        input_SARG=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/ARGranking")+"/CompRanking_"+i+"_SARGrank_Protei80_Result.tsv"
-        
+        input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
+        input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
+        input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein80_Result.tsv")
+        input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+        input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt500bp_dvfpred.txt")
+        input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
+        seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
+        input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
+
         a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,i)
     
     

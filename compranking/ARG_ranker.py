@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# title             :ARG_ranker.py
+# title             :ARG_ranker.py -> SARG_processing.ipynb
 # description       :function ARG ranking from SARG
 # author            :Gaoyang Luo
 # date              :202209020
@@ -70,19 +70,24 @@ if __name__=="__main__":
     import pandas as pd
     import os
     import path    
-    #arg rank processing
-    input_sarg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_5M_contigs_SARG_Protein_diamond.txt"
-    input_sarg_structure="/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.structure.txt"
-    input_argrank="/lomi_home/gaoyang/software/CompRanking/databases/SARG/ARG_rank.txt"
-    input_sarg_length="../databases/SARG/SARG.db.fasta.length"
     
     #globle settings
-    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    output=os.path.join(input_dir,"CompRanking/CompRanking_intermediate/AMR/ARGranking")
-    file_abs_path=path.file_abs_path_list_generation(input_dir)
-    file_name_base = path.file_base_acquire(file_abs_path)
+    #default settings
+    ##flexible settings
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test" #-i manual setting
+    project_prefix="CompRanking" #-p manual setting
+    ##fixed settings
+    input_argrank="/lomi_home/gaoyang/software/CompRanking/databases/SARG/ARG_rank.txt"
+    input_sarg_length="../databases/SARG/SARG.db.fasta.length"
+    input_sarg_structure="../databases/SARG/SARG.structure.txt" #"/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.structure.txt"
+    output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking") #fixed path
+    file_abs_path=path.file_abs_path_list_generation(input_dir) #fixed path
+    file_name_base = path.file_base_acquire(file_abs_path) #fixed path
     
+    #arg rank processing
+    # input_sarg="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_5M_contigs_SARG_Protein_diamond.txt"
     for i in file_name_base:
+        input_sarg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking", i+"_5M_contigs_SARG_Protein_diamond.txt")
         arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, output)
     
     
