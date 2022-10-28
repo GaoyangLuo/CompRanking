@@ -57,7 +57,7 @@ else
 	echo "[TIMER] Filtering 5M contigs took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.5Mfilter.done
 fi
-mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs
+mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
 #filter 5M-1K
 # if [ -e ${PREFIX}.5M-1Kfilter.done ]; then
 # 	echo "5M-1K_filetered file existed..."
@@ -102,12 +102,12 @@ fi
 conda deactivate
 
 #### Step4 Modify faa file ####
-cp ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/ori_file
-cp ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/ori_file
+cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa
 
 #### Step5 Building index ####
-for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*gff
+for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*gff
 do
 base=${i%%.gf*}
 sed -i '/^#/d' ${i}
