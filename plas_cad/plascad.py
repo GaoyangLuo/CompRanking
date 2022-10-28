@@ -7,7 +7,7 @@ import argparse
 import sys
 import subprocess
 sys.path.append("..")
-import plas_cad
+# import plas_cad
 
 def main():
     usage = ("usage: Plascad -i your.plasmid.seqs.fasta")

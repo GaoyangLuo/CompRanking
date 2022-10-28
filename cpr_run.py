@@ -167,7 +167,7 @@ if __name__ == '__main__':
     mobileog_input=faaFile_input
     deeparg_input=faaFile_input
     sarg_input=faaFile_input
-    plascad_input=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/ori_file")
+    plascad_input= input_dir #os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/ori_file")
     output_prefix=os.path.join(input_dir,project_prefix,"CompRanking_result")
     print(yaml_path)
 
