@@ -179,6 +179,7 @@ shared_domains.tsv
 RGI_deeparg.txt
 ipython_scripts
 benchmarking
+tmp/
 
 #databases
 DEG
