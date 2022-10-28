@@ -24,6 +24,7 @@ done
 #### STEP1 Ativate preprocessing env ####
 source $CONDA_BIN_PATH/activate preprocessing_test
 mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs
+mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/ori_file
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/RGI
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/DeepARG
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/SARG
@@ -90,7 +91,7 @@ else
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa
 	do
 	base=${i%%.f*}
-	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q -o ${base}.temp.txt
 	done
 	#finish ORFs prediction
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
@@ -101,6 +102,8 @@ fi
 conda deactivate
 
 #### Step4 Modify faa file ####
+cp ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/ori_file
+cp ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/ori_file
 sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa
 
 #### Step5 Building index ####

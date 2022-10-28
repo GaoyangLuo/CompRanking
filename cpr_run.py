@@ -26,6 +26,7 @@ import yaml
 from compranking import path
 from compranking.AMR_combination import AMRCombined
 
+
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
                   help = "director contained input fasta files")
@@ -59,6 +60,7 @@ MGE1_PREDICTION="./scripts/Plasflow_run.sh"
 MGE2_PREDICTION="./scripts/DVF_Seeker_run.sh"
 MGE3_PREDICTION="./scripts/mobileOG_run.sh"
 VIRULENCE_PREDICTION="./scripts/Virulence_run.sh"
+PLASCAD_PREDICTION="./scripts/plascad_run.sh"
 #default parameters
 if (options.project_prefix is None):
     project_prefix="CompRanking" #default project name
@@ -146,6 +148,10 @@ def MGE3_prediction(): #mobileOG
 def VIR_prediction(): #VF&Pathogen
     subprocess.call(["bash", VIRULENCE_PREDICTION, 
                      "-i", VF_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
+#plascad
+def plascad_prediction(): #plascad   
+    subprocess.call(["bash", PLASCAD_PREDICTION, 
+                     "-i", plascad_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
     
 
 
@@ -161,6 +167,7 @@ if __name__ == '__main__':
     mobileog_input=faaFile_input
     deeparg_input=faaFile_input
     sarg_input=faaFile_input
+    plascad_input=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/ori_file")
     output_prefix=os.path.join(input_dir,project_prefix,"CompRanking_result")
     print(yaml_path)
 
@@ -171,6 +178,7 @@ if __name__ == '__main__':
     MGE_PRED = multiprocessing.Process(target=MGE_prediction) #plasflow
     MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf&seeker
     MGE3_PRED = multiprocessing.Process(target=MGE3_prediction) #mobileOG
+    PLASCAD_PRED = multiprocessing.Process(target=plascad_prediction) #plascad
     VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB&PATH
 
     
@@ -194,13 +202,21 @@ if __name__ == '__main__':
     # AMR_PRED2.start()
     # AMR_PRED3.start()
     # VIR_PRED.start()
-    MGE3_PRED.start()
+    # MGE3_PRED.start()
+    PLASCAD_PRED.start()
     # AMR_PRED.join()
     # VIR_PRED.join()
     # MGE_PRED.start()
     # MGE2_PRED.start()
     # MGE_PRED.join()
     # MGE2_PRED.join()
+    
+    
+    ###################Plasmide Conj Classificatio#################
+
+    
+    
+    
     #### Step 2 ARG Prediction ####
     # start = datetime.datetime.now() #time start
     # # rgi_input=os.path.join(input_dir,project_prefix,"preprocessing/5M_contigs")

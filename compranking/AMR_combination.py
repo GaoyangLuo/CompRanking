@@ -13,7 +13,7 @@ import pandas as pd
 import re
 import glob
 import os
-import path
+# from compranking import path
 
 
 class AMRCombined():
