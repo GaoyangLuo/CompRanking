@@ -165,9 +165,14 @@ class AMRCombined():
         #Write seeker result into dictionary
         dic={} 
         for i, names in seeker_res.iterrows():
-            keys=names[0]
-            values=names[1]
-            dic[keys]=values
+            if  seeker_res[2][i] <= 0.7:
+                keys=names[0]
+                values="Bacteria"
+                dic[keys]=values
+            else:
+                keys=names[0]
+                values="Phage"
+                dic[keys]=values 
         PF_res["seeker_res"]="0"
         #Concatenate seeker resulte to pathofact table
         seeker_res_list=[]

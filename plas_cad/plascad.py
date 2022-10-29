@@ -25,7 +25,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i",
                         help="input plasmids file for classification", type=str,
-                        default='/lomi_home/gaoyang/software/CompRanking/tmp/ERR1191817.contigs_5M_contigs.fa')
+                        default='/lomi_home/gaoyang/software/CompRanking/benchmarking/plas_cla_benchmarking/DEG10_bacteria.fa')
     parser.add_argument("-n", action='store_true',
                         help="prodigal normal mode")
     parser.add_argument("-cMOBB",
@@ -62,15 +62,15 @@ def main():
     dirname = os.path.dirname(os.path.abspath(args.i))
     os.chdir(dirname)
 ###################################### Prodigal ###########################################################
-    # cmdprodigal_meta = "prodigal"  + " -i "  + str(file_input) + \
-    #             " -a " + str(file_name) + ".faa " + " -p meta -q -o temp.txt"
-    # cmdprodigal_normal = "prodigal"  + " -i "  + str(file_input) + \
-    #             " -a " + str(file_name) + ".faa " + " -q -o temp.txt"
-    # if args.n:
-    #     os.system(cmdprodigal_normal)
-    # else:
-    #     os.system(cmdprodigal_meta)
-    # os.remove("temp.txt")
+    cmdprodigal_meta = "prodigal"  + " -i "  + str(file_input) + \
+                " -a " + str(file_name) + ".faa " + " -p meta -q -o temp.txt"
+    cmdprodigal_normal = "prodigal"  + " -i "  + str(file_input) + \
+                " -a " + str(file_name) + ".faa " + " -q -o temp.txt"
+    if args.n:
+        os.system(cmdprodigal_normal)
+    else:
+        os.system(cmdprodigal_meta)
+    os.remove("temp.txt")
 ###################################### MOB hmmer ###############################################################
     mob_hmm = os.path.join(directory, "database/hmm_module/MOB_hmm")
     for root, dirnames, filenames in os.walk(mob_hmm):
