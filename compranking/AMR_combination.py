@@ -43,26 +43,58 @@ class AMRCombined():
         df_RGI_deeparg=df_RGI_deeparg.fillna("-")
         df_RGI_deeparg["ARG_prediction"]="-" #add empty column
         df_RGI_deeparg["Database"]="-"
-        
+        df_RGI_deeparg["orf_final"]="-"
         #orfid_filter
         #merge RGI and DeepARG
-        for index, name in df_RGI_deeparg.iterrows():
-            if df_RGI_deeparg["read_id"][index]=="-":
-                df_RGI_deeparg["read_id"][index]=df_RGI_deeparg["ORF_ID"][index]
-            if df_RGI_deeparg["#ARG"][index]=="-":#DeepARG not found, only RGI found
-                df_RGI_deeparg["#ARG"][index]=df_RGI_deeparg["Best_Hit_ARO"][index]
-                df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
-                df_RGI_deeparg["Database"][index]="RGI"
-            if df_RGI_deeparg["#ARG"][index]!="-" and df_RGI_deeparg["Best_Hit_ARO"][index]!="-":#both found
-                if df_RGI_deeparg["#ARG"][index]== df_RGI_deeparg["Best_Hit_ARO"][index]:#identical
+        # for index, name in df_RGI_deeparg.iterrows(): #RGI:ORF_ID deepARG:read_id
+        #     if df_RGI_deeparg["read_id"][index]=="-": #not found in deepARG
+        #         df_RGI_deeparg["read_id"][index]=df_RGI_deeparg["ORF_ID"][index] #fill deeparg with RGI
+        #     if df_RGI_deeparg["#ARG"][index]=="-":#DeepARG not found, only RGI found
+        #         df_RGI_deeparg["Database"][index]="RGI" # #ARG:deepARG  Best_Hit_ARO:RGI
+        #         df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["Best_Hit_ARO"][index]
+        #     #both found
+        #     if df_RGI_deeparg["#ARG"][index]!="-" and df_RGI_deeparg["Best_Hit_ARO"][index]!="-":#both found
+        #         if df_RGI_deeparg["#ARG"][index]== df_RGI_deeparg["Best_Hit_ARO"][index]:#identical
+        #             df_RGI_deeparg["Database"][index]="DeepARG/RGI"
+        #             df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]     
+        #         if df_RGI_deeparg["#ARG"][index] != df_RGI_deeparg["Best_Hit_ARO"][index]:#differ
+        #             df_RGI_deeparg["Database"][index]="DeepARG/RGI"
+        #             df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index] + "/" + df_RGI_deeparg["Best_Hit_ARO"][index]
+        #     #only DeepARG found        
+        #     if df_RGI_deeparg["#ARG"][index]!="-" and df_RGI_deeparg["Best_Hit_ARO"][index]=="-": #only DeepARG found
+        #         df_RGI_deeparg["Database"][index]="DeepARG"
+        #         df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
+        
+        for index, name in df_RGI_deeparg.iterrows(): #RGI:ORF_ID deepARG:read_id
+            # if df_RGI_deeparg["read_id"][index]=="-": #not found in deepARG
+            #     df_RGI_deeparg["read_id"][index]=df_RGI_deeparg["ORF_ID"][index] #fill deeparg with RGI
+            #DeepARG not found, only RGI found
+            if df_RGI_deeparg["#ARG"][index]=="-":
+                if df_RGI_deeparg["Best_Hit_ARO"][index]!="-":#DeepARG not found, only RGI found
+                    df_RGI_deeparg["Database"][index]="RGI" # #ARG:deepARG  Best_Hit_ARO:RGI
+                    df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["ORF_ID"][index]
+                    df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["Best_Hit_ARO"][index]
+            #only DeepARG found    
+            if df_RGI_deeparg["#ARG"][index]!="-": 
+                if df_RGI_deeparg["Best_Hit_ARO"][index]=="-": #only DeepARG found
+                    df_RGI_deeparg["Database"][index]="DeepARG"
+                    df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
                     df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
-                    df_RGI_deeparg["Database"][index]="DeepARG/RGI"
-                if df_RGI_deeparg["#ARG"][index] != df_RGI_deeparg["Best_Hit_ARO"][index]:#differ
-                    df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index] + "/" + df_RGI_deeparg["Best_Hit_ARO"][index]
-                    df_RGI_deeparg["Database"][index]="DeepARG/RGI"
-            if df_RGI_deeparg["#ARG"][index]!="-" and df_RGI_deeparg["Best_Hit_ARO"][index]=="-":
-                df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
-                df_RGI_deeparg["Database"][index]="DeepARG"
+                else:
+                    if df_RGI_deeparg["#ARG"][index]== df_RGI_deeparg["Best_Hit_ARO"][index]:#identical
+                        df_RGI_deeparg["Database"][index]="DeepARG/RGI"
+                        df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
+                        df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
+                    
+                    if df_RGI_deeparg["#ARG"][index] != df_RGI_deeparg["Best_Hit_ARO"][index]:#differ
+                        df_RGI_deeparg["Database"][index]="DeepARG/RGI"
+                        df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
+                        df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index] + "/" + df_RGI_deeparg["Best_Hit_ARO"][index]
+        
+        #recover the ori id
+        df_RGI_deeparg=df_RGI_deeparg[["orf_final","read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]]
+        df_RGI_deeparg=df_RGI_deeparg.drop(["read_id"],axis=1,inplace=False)
+        df_RGI_deeparg.columns=["read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]
         
         df_RGI_deeparg.sort_values('read_id') #sort
         #rename columns
@@ -264,7 +296,7 @@ class AMRCombined():
                                 
         ####save####
         # df_AMR_annotate_contig.to_csv("/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/CompRanking_ERR1191817_AMR_result.csv",sep="\t",index=0)
-        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking" + filebase + "_AMR_prediction.tsv", sep="\t", index=0)
+        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking_" + filebase + "_AMR_prediction.tsv", sep="\t", index=0)
         
         return AMRfile
 
@@ -298,7 +330,7 @@ if __name__ == "__main__":
     for i in file_name_base:
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
         input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
-        input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein80_Result.tsv")
+        input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
         input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
         input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt500bp_dvfpred.txt")
         input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
