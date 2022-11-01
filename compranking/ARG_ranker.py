@@ -31,8 +31,8 @@ def arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,f
     for index, name in df_sarg_len.iterrows():
         df_sarg_len["coverage"][index]=df_sarg_len["alignLen"][index]/df_sarg_len[2][index]
 
-    # filter out contigs identity under 80
-    df_sarg_iden80 = df_sarg_len[df_sarg_len.identity > 80]
+    # filter out contigs identity under 60
+    df_sarg_iden80 = df_sarg_len[df_sarg_len.identity > 60]
     # filter out contigs coverage more than 0.7
     df_sarg_cov = df_sarg_iden80[df_sarg_iden80.coverage>0.7]
     df_sarg_tmp=df_sarg_cov.iloc[:,[0,1]]

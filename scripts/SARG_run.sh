@@ -76,7 +76,7 @@ else
 	for i in ${INPUT_DIR}/*faa
 	do
 	base=${i%%.f*}
-	diamond blastp --query ${i} --db ${WORK_DIR}/databases/SARG/SARG.db.fasta.dmnd --out ${base}_SARG_Protein_diamond.txt --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1
+	diamond blastp --query ${i} --db ${WORK_DIR}/databases/SARG/SARG.db.fasta.dmnd --out ${base}_SARG_Protein_diamond.txt --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1 
 	done
 	#finish Running VF prediction
 	echo "[TIMESTAMP] $(date) Running ARG_ranking prediction... Done"
