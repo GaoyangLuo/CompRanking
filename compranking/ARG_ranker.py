@@ -63,7 +63,7 @@ def arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,f
     df_argrank2.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
     
     #save
-    df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein80_Result.tsv", sep="\t")
+    df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein60_Result.tsv", sep="\t")
     
 
 if __name__=="__main__":   
