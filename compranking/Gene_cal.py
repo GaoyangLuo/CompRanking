@@ -49,7 +49,8 @@ def get_MobilOG_len(input_mobileOG_structure):
     return DB_MobileOG_length
     
     
-def RB_gene_sum(input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,filebase):
+def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
+                input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,filebase):
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -104,20 +105,74 @@ def RB_gene_sum(input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,
         DB_SARG_length_res.setdefault(i,DB_SARG_length[SARG_output_dic[i]])
     #RGI_output_ARG_cal
     for i, name in df_RGI.iterrows():
-        DB_CARD_length_res.setdefault(str(name["ORF_ID"]), len(str(name["CARD_Protein_Sequence"]))) 
+        DB_CARD_length_res.setdefault(str(name["ORF_ID"]), len(str(name["CARD_Protein_Sequence"])))
+    
+    #cal ARGs relative abundance    
+    abundance_arg=0
+    for orf in Record_db_orf:
+        find_db=''
+        if Record_db_orf[orf]:
+            find_db=Record_db_orf[orf]
+            if find_db=="DeepARG":
+                abundance_arg += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
+            elif find_db=="RGI":
+                abundance_arg += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
+            elif find_db=="SARG":
+                abundance_arg += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
+            else:
+                continue
+    print(abundance_arg)
+    
+    abundance_MGE=0
+    
+    
+    result=[abundance_arg,abundance_MGE]
+    
+    return result
+    
     
 if __name__ == "__main__":
-    #input
+    #global settings
+    #gloab settings
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    project_prefix="CompRanking"
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    file_name_base = path.file_base_acquire(file_abs_path)
+    
+    #input_db
     input_deeparg_length="/lomi_home/gaoyang/software/CompRanking/databases/deepargdata1.0.2/database/v2/features.gene.length"
     input_sarg_structure="/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.db.fasta.length"
+    input_mobileOG_structure="/lomi_home/gaoyang/software/CompRanking/databases/MobileOG-db/MobileOG-db_structure.tsv"
+    
+    #input_result
     input_AMR_sum="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result/CompRanking_ERR1191817.contigs_AMR_prediction.tsv"
     input_kk2="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_report_kk2_mpaStyle.txt"
     input_deeparg_sure="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
     input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
     input_SARG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_SARGrank_Protein60_Result.tsv"
-    input_mobileOG_structure="/lomi_home/gaoyang/software/CompRanking/databases/MobileOG-db/MobileOG-db_structure.tsv"
     
+    #calculate relative abundance of functional genes
+    for i in file_name_base:
+        #load ARGs result
+        input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
+        input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
+        input_deeparg_sure=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG", i+"_5M_contigs_DeepARG.out.mapping.ARG")
+        input_kk2=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs", i+"_report_kk2_mpaStyle.txt")
+        input_AMR_sum=os.path.join(input_dir,project_prefix,"CompRanking_result","CompRanking_"+i+"_AMR_prediction.tsv")
+        
+        #load reference length
+        DB_deepARG_length = get_DB_DeepARG_len(input_deeparg_length)
+        DB_SARG_length =get_DB_SARG_len(input_sarg_structure)
+        DB_MobileOG_length=get_MobilOG_len(input_mobileOG_structure)
+        
+        
+        result=RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
+                input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,i)
+        output="\t".join(map(str, result))
     
-    DB_deepARG_length = get_DB_DeepARG_len(input_deeparg_length)
-    DB_SARG_length =get_DB_SARG_len(input_sarg_structure)
+        with open(os.path.join(input_dir,"CompRanking/CompRanking_result")+"Gene_Abundance_Sum.txt", "a") as f:
+            f.write("\n" + i + "\t" + output)
+        
+        
     
