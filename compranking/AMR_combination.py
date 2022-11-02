@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # title             :AMR_combined.py
-# description       :process hmm output for virulence prediction
+# description       :combine AMR output
 # author            :Gaoyang Luo
 # date              :202209017
 # version           :1.0
