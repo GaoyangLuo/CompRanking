@@ -123,9 +123,29 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
                 continue
     print(abundance_arg)
     
+    ###################### MGE relative abundance calculation####################
+    #get DB_mobile_OG_len_dic
+    df_mobileOG_structure=pd.read_csv(input_mobileOG_structure,sep="\t", header=0)
+    #get MGE reference length
+    DB_MobileOG_length={}
+    for i, name in df_mobileOG_structure.iterrows():
+        DB_MobileOG_length.setdefault(str(name["mobileOG_ID"]), name["length"])
+    #load MGE result
+    df_MGE_hit=df_AMR_sum[df_AMR_sum.mobileOG_ID != "-"]
+    #generate DB_MobileOG_length_res
+    DB_MobileOG_length_res={}
+    for i, name in df_MGE_hit.iterrows():
+        DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]),DB_MobileOG_length[name["mobileOG_ID"]])
+    
+    
+    #cal MGEs relative abundance
     abundance_MGE=0
+    for orf_MGE in DB_MobileOG_length_res:
+        abundance_MGE += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
     
+    print(abundance_MGE)
     
+    #combine it using a list
     result=[abundance_arg,abundance_MGE]
     
     return result
