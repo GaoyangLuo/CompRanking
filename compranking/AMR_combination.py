@@ -33,7 +33,7 @@ class AMRCombined():
         df_RGI=pd.read_csv(input_rgi, sep="\t")
         df_RGI=df_RGI.fillna("-")
         df_RGI=df_RGI[df_RGI.Nudged == "-"]
-        df_RGI_tmp=df_RGI.loc[:,["ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism","SNPs_in_Best_Hit_ARO"]]
+        df_RGI_tmp=df_RGI.loc[:,["ORF_ID","Best_Hit_ARO","Drug Class","Resistance Mechanism","SNPs_in_Best_Hit_ARO"]]
         df_RGI_tmp["Best_Hit_ARO"]=df_RGI_tmp["Best_Hit_ARO"].str.upper()
         
         #load deeparg results
@@ -69,36 +69,40 @@ class AMRCombined():
             # if df_RGI_deeparg["read_id"][index]=="-": #not found in deepARG
             #     df_RGI_deeparg["read_id"][index]=df_RGI_deeparg["ORF_ID"][index] #fill deeparg with RGI
             #DeepARG not found, only RGI found
-            if df_RGI_deeparg["#ARG"][index]=="-":
-                if df_RGI_deeparg["Best_Hit_ARO"][index]!="-":#DeepARG not found, only RGI found
+            if df_RGI_deeparg["read_id"][index]=="-":
+                if df_RGI_deeparg["ORF_ID"][index]!="-":#DeepARG not found, only RGI found
                     df_RGI_deeparg["Database"][index]="RGI" # #ARG:deepARG  Best_Hit_ARO:RGI
                     df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["ORF_ID"][index]
                     df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["Best_Hit_ARO"][index]
-            #only DeepARG found    
-            if df_RGI_deeparg["#ARG"][index]!="-": 
-                if df_RGI_deeparg["Best_Hit_ARO"][index]=="-": #only DeepARG found
+                    df_RGI_deeparg["predicted_ARG-class"][index]=df_RGI_deeparg["Drug Class"][index].split(" ")[0]
+            #when DeepARG found   
+            if df_RGI_deeparg["read_id"][index]!="-": 
+                #but RGI not found
+                if df_RGI_deeparg["ORF_ID"][index]=="-": #only DeepARG found
                     df_RGI_deeparg["Database"][index]="DeepARG"
                     df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
                     df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
                 else:
-                    if df_RGI_deeparg["#ARG"][index]== df_RGI_deeparg["Best_Hit_ARO"][index]:#identical
+                    #if df_RGI_deeparg["read_id"][index]!="-" and df_RGI_deeparg["ORF_ID"][index]!="-"
+                    #both found RGI found too
+                    if df_RGI_deeparg["#ARG"][index]== df_RGI_deeparg["Best_Hit_ARO"][index]:#check identical
                         df_RGI_deeparg["Database"][index]="DeepARG/RGI"
                         df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
                         df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index]
                     
-                    if df_RGI_deeparg["#ARG"][index] != df_RGI_deeparg["Best_Hit_ARO"][index]:#differ
+                    if df_RGI_deeparg["#ARG"][index] != df_RGI_deeparg["Best_Hit_ARO"][index]:#check differ
                         df_RGI_deeparg["Database"][index]="DeepARG/RGI"
                         df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["read_id"][index]
                         df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["#ARG"][index] + "/" + df_RGI_deeparg["Best_Hit_ARO"][index]
         
         #recover the ori id
-        df_RGI_deeparg=df_RGI_deeparg[["orf_final","read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]]
+        df_RGI_deeparg=df_RGI_deeparg[["orf_final","read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","Drug Class","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]]
         df_RGI_deeparg=df_RGI_deeparg.drop(["read_id"],axis=1,inplace=False)
-        df_RGI_deeparg.columns=["read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]
+        df_RGI_deeparg.columns=["read_id","#ARG","predicted_ARG-class","ORF_ID","Best_Hit_ARO","Drug Class","Resistance Mechanism","SNPs_in_Best_Hit_ARO","ARG_prediction","Database"]
         
         df_RGI_deeparg.sort_values('read_id') #sort
         #rename columns
-        df_RGI_deeparg1=df_RGI_deeparg.drop(["#ARG","ORF_ID","Best_Hit_ARO","AMR Gene Family","Resistance Mechanism"],axis=1,inplace=False)
+        df_RGI_deeparg1=df_RGI_deeparg.drop(["#ARG","ORF_ID","Best_Hit_ARO","Drug Class","Resistance Mechanism"],axis=1,inplace=False)
         df_RGI_deeparg1=df_RGI_deeparg1[["read_id","ARG_prediction","predicted_ARG-class","SNPs_in_Best_Hit_ARO","Database"]]
         
         ####merge SARG####
@@ -110,29 +114,35 @@ class AMRCombined():
         #merge SARG and RGI_DeepARG
         df_RGI_Deeparg_SARG=pd.merge(df_RGI_deeparg1,df_SARG,left_on="read_id",right_on="ORF",how="outer")
         df_RGI_Deeparg_SARG=df_RGI_Deeparg_SARG.fillna("-")
+        for i ,name in df_RGI_Deeparg_SARG.iterrows():
+            if name["Phenotype"]=="macrolide-lincosamide-streptogramin":
+                df_RGI_Deeparg_SARG["Phenotype"][i]="MLS"
         
         #orfid_filter
         #merge SARG with RGI_DeepARG
         for index, name in df_RGI_Deeparg_SARG.iterrows():
             #add orf from SARG found
-            if df_RGI_Deeparg_SARG["read_id"][index]=="-":
-                df_RGI_Deeparg_SARG["read_id"][index]=df_RGI_Deeparg_SARG["ORF"][index]
+            # if df_RGI_Deeparg_SARG["read_id"][index]=="-":
+            #     df_RGI_Deeparg_SARG["orf_final"][index]=df_RGI_Deeparg_SARG["ORF"][index]
+            
+            #add both found
+            #when both found 
+            if df_RGI_Deeparg_SARG["read_id"][index]!="-" and df_RGI_Deeparg_SARG["ORF"][index]!="-":#both found
+                df_RGI_Deeparg_SARG["Database"][index]=df_RGI_Deeparg_SARG["Database"][index]+"/" + "SARG"
+                #check if indentical
+                if df_RGI_Deeparg_SARG["ARG_prediction"][index] == df_RGI_Deeparg_SARG["class"][index]:#identical
+                    continue
+                else: #differ
+                    df_RGI_Deeparg_SARG["ARG_prediction"][index]=df_RGI_Deeparg_SARG["ARG_prediction"][index] + "/" + df_RGI_Deeparg_SARG["class"][index]+"(SARG)"
+                #check class identity
+                if df_RGI_Deeparg_SARG["predicted_ARG-class"][index] != df_RGI_Deeparg_SARG["Phenotype"][index]:
+                    df_RGI_Deeparg_SARG["predicted_ARG-class"][index]=df_RGI_Deeparg_SARG["predicted_ARG-class"][index] + "/"+df_RGI_Deeparg_SARG["Phenotype"][index]+"(SARG)"
             #add only SARG found
-            if df_RGI_Deeparg_SARG["ARG_prediction"][index]=="-":
+            if df_RGI_Deeparg_SARG["read_id"][index]=="-" and df_RGI_Deeparg_SARG["ORF"][index]!="-" :
+                df_RGI_Deeparg_SARG["read_id"][index]=df_RGI_Deeparg_SARG["ORF"][index] #fill read_id with SARG hit
                 df_RGI_Deeparg_SARG["ARG_prediction"][index]=df_RGI_Deeparg_SARG["class"][index] #fill arg_pred
                 df_RGI_Deeparg_SARG["Database"][index]="SARG" # fill database
                 df_RGI_Deeparg_SARG["predicted_ARG-class"][index]=df_RGI_Deeparg_SARG["Phenotype"][index]#fill arg class
-            #add both found
-            if df_RGI_Deeparg_SARG["ARG_prediction"][index]!="-" and df_RGI_Deeparg_SARG["class"][index]!="-":#both found
-                #check if indentity
-                if df_RGI_Deeparg_SARG["ARG_prediction"][index] == df_RGI_Deeparg_SARG["class"][index]:#identical
-                    df_RGI_Deeparg_SARG["Database"][index]="DeepARG/RGI/SARG"
-                if df_RGI_Deeparg_SARG["ARG_prediction"][index] != df_RGI_Deeparg_SARG["class"][index]:#differ
-                    df_RGI_Deeparg_SARG["ARG_prediction"][index]=df_RGI_Deeparg_SARG["ARG_prediction"][index] + "/" + df_RGI_Deeparg_SARG["class"][index]
-                    df_RGI_Deeparg_SARG["Database"][index]=df_RGI_Deeparg_SARG["Database"][index] + "/" + "SARG"
-                #check class identity
-                if df_RGI_Deeparg_SARG["predicted_ARG-class"][index] != df_RGI_Deeparg_SARG["Phenotype"][index]:
-                    df_RGI_Deeparg_SARG["predicted_ARG-class"][index]=df_RGI_Deeparg_SARG["predicted_ARG-class"][index] + "/"+df_RGI_Deeparg_SARG["Phenotype"][index]
         
         #cut off the edges
         df_RGI_Deeparg_SARG_final=df_RGI_Deeparg_SARG.drop(["ORF","query","class","Phenotype"],axis=1, inplace=False)
