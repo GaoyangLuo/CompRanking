@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# title             :combined.py
+# title             :AMR_combined.py
 # description       :process hmm output for virulence prediction
 # author            :Gaoyang Luo
 # date              :202209017
