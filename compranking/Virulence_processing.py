@@ -97,6 +97,6 @@ if __name__ == "__main__":
         
         df_VFs_PATH_contig=VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,input_patric)
         
-        df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+ i +"_Virulence_Pathogenic_prediction.tsv",sep="\t",index=None)
+        df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+ i +"_Virulence_Pathogenic1_prediction.tsv",sep="\t",index=None)
     
     
