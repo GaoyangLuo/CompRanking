@@ -14,6 +14,7 @@ import re
 import glob
 import os
 import MOB_concat
+import Virulence_processing
 # from compranking import path
 
 
