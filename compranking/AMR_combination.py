@@ -13,6 +13,7 @@ import pandas as pd
 import re
 import glob
 import os
+import MOB_concat
 # from compranking import path
 
 
@@ -28,7 +29,7 @@ class AMRCombined():
 
     
     
-    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG,filebase):
+    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG):
         #open RGI results
         df_RGI=pd.read_csv(input_rgi, sep="\t")
         df_RGI=df_RGI.fillna("-")
@@ -306,9 +307,12 @@ class AMRCombined():
                                 
         ####save####
         # df_AMR_annotate_contig.to_csv("/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/CompRanking_ERR1191817_AMR_result.csv",sep="\t",index=0)
-        AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking_" + filebase + "_AMR_prediction.tsv", sep="\t", index=0)
+        # AMRfile=df_AMR_annotate_contig.to_csv(output + "/CompRanking_" + filebase + "_AMR_prediction.tsv", sep="\t", index=0)
         
-        return AMRfile
+        # return AMRfile
+        return df_AMR_annotate_contig
+
+
 
 
 if __name__ == "__main__":
@@ -338,6 +342,7 @@ if __name__ == "__main__":
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     for i in file_name_base:
+        #set input
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
         input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
         input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
@@ -346,8 +351,17 @@ if __name__ == "__main__":
         input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
         seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
         input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
-
-        a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG,i)
+        input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
+        input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
+        
+        #generate sum table without mob ref
+        df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
+        #generate sum table with mob ref
+        df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
+        #save as tsv
+        df_AMR_annotate_MOB_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=0)
+        
+        
     
     
     
