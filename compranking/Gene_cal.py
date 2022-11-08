@@ -107,21 +107,28 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     for i, name in df_RGI.iterrows():
         DB_CARD_length_res.setdefault(str(name["ORF_ID"]), len(str(name["CARD_Protein_Sequence"])))
     
-    #cal ARGs relative abundance    
-    abundance_arg=0
+    #cal ARGs relative abundance 16S
+    #cal ARGs relative abundance RPKM
+    #RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
+    abundance_arg_16S=0
+    abundance_arg_RPKM=0
+    num_contigs=len(df_AMR_sum) #totalNumReads
     for orf in Record_db_orf:
         find_db=''
         if Record_db_orf[orf]:
             find_db=Record_db_orf[orf]
             if find_db=="DeepARG":
-                abundance_arg += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
+                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
+                abundance_arg_RPKM += 1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000000)
             elif find_db=="RGI":
-                abundance_arg += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
+                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
+                abundance_arg_RPKM += 1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000000)
             elif find_db=="SARG":
-                abundance_arg += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
+                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
+                abundance_arg_RPKM += 1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000000)
             else:
                 continue
-    print(abundance_arg)
+    print(abundance_arg_16S, abundance_arg_RPKM)   
     
     ###################### MGE relative abundance calculation####################
     #get DB_mobile_OG_len_dic
@@ -138,15 +145,24 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]),DB_MobileOG_length[name["mobileOG_ID"]])
     
     
-    #cal MGEs relative abundance
-    abundance_MGE=0
+    #cal MGEs relative abundance 16S
+    abundance_MGE_16S=0
+    abundance_MGE_RPKM=0
     for orf_MGE in DB_MobileOG_length_res:
-        abundance_MGE += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
+        abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
+        abundance_MGE_RPKM += 1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000000)
+        
     
-    print(abundance_MGE)
+    print(abundance_MGE_16S,abundance_MGE_RPKM)
     
-    #combine it using a list
-    result=[abundance_arg,abundance_MGE]
+    #cal ARGs relative abundance RPKM
+    #RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
+    
+    
+    
+    
+    ###################combine it using a list##########################
+    result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
     
     return result
     
