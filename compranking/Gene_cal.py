@@ -110,8 +110,18 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     #cal ARGs relative abundance 16S
     #cal ARGs relative abundance RPKM
     #RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
+    """
+    Normalization for comparing gene coverage values. 
+    RPKM corrects differences in both: sample sequencing depth and gene length.
+    RPKM is introduced in
+    http://www.ncbi.nlm.nih.gov/pubmed/18516045
+
+    RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
+    """
     abundance_arg_16S=0
     abundance_arg_RPKM=0
+    RPKM_ARG={}
+    TAXO_ARG={}
     num_contigs=len(df_AMR_sum) #totalNumReads
     for orf in Record_db_orf:
         find_db=''
@@ -120,15 +130,47 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             if find_db=="DeepARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
                 abundance_arg_RPKM += 1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000000)
+                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
+                RPKM_ARG.setdefault(str(orf), float(1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000000)))
             elif find_db=="RGI":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
-                abundance_arg_RPKM += 1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000000)
+                abundance_arg_RPKM  += 1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000000)
+                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
+                RPKM_ARG.setdefault(str(orf), float(1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000000)))
             elif find_db=="SARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
-                abundance_arg_RPKM += 1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000000)
+                abundance_arg_RPKM  += 1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000000)
+                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_SARG_length_res[orf]))
+                RPKM_ARG.setdefault(str(orf), float(1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000000)))
             else:
                 continue
     print(abundance_arg_16S, abundance_arg_RPKM)   
+    
+    #cal subtype
+    """
+    subtypes including:
+        All, multigrug, beta-lactam, aminoglycoside,
+        tetracycline, sulfonamide, MLS, bacitracin,
+        chloramphenicol, quinlone, fosmidomycin, trimethoprim,
+        kasugamycin, vancomycin, rifamycin, fosfomycin, belomycin, unclassified
+    """
+    abundance_ARG_subtype_16S={}
+    abundance_ARG_subtype_RPKM={}
+    for i , name in df_AMR_hit.iterrows():
+        tmp_16s=0
+        tmp_rpkm=0
+        #16s
+        if abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0]):
+            tmp_16s=abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0]) + TAXO_ARG[name["ORF_ID"]]
+            abundance_ARG_subtype_16S[name["ARG_class"].split("/")[0].split(":")[0]] = tmp_16s
+        else:
+            abundance_ARG_subtype_16S.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0]), float(TAXO_ARG[name["ORF_ID"]]))
+        #rpkm
+        if abundance_ARG_subtype_RPKM.get(name["ARG_class"].split("/")[0].split(":")[0]):
+            tmp_rpkm=abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0]) + RPKM_ARG[name["ORF_ID"]]
+            abundance_ARG_subtype_RPKM[name["ARG_class"].split("/")[0].split(":")[0]] = tmp_rpkm    
+        else:
+            abundance_ARG_subtype_RPKM.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0]), float(RPKM_ARG[name["ORF_ID"]])) 
     
     ###################### MGE relative abundance calculation####################
     #get DB_mobile_OG_len_dic
@@ -148,9 +190,11 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     #cal MGEs relative abundance 16S
     abundance_MGE_16S=0
     abundance_MGE_RPKM=0
+    RPKM_MGE={}
     for orf_MGE in DB_MobileOG_length_res:
         abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
         abundance_MGE_RPKM += 1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000000)
+        RPKM_MGE.setdefault(str(orf_MGE),float(1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000000)))
         
     
     print(abundance_MGE_16S,abundance_MGE_RPKM)
@@ -163,8 +207,12 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     
     ###################combine it using a list##########################
     result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
+    df_ARG_subtype_16S = pd.DataFrame(pd.Series(abundance_ARG_subtype_16S))
+    df_ARG_subtype_RPKM = pd.DataFrame(pd.Series(abundance_ARG_subtype_RPKM))
     
-    return result
+    
+    
+    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM, 
     
     
 if __name__ == "__main__":
