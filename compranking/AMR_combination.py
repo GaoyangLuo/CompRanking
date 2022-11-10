@@ -312,7 +312,7 @@ class AMRCombined():
         
         # return AMRfile
         return df_AMR_annotate_contig
-
+ 
 
 
 
