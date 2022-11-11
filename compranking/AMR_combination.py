@@ -30,7 +30,8 @@ class AMRCombined():
 
     
     
-    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG,input_mob_conj,input_mob_unconj):
+    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG):
+        #######################Processing deepARG,RGI, SARG###################################
         #open RGI results
         df_RGI=pd.read_csv(input_rgi, sep="\t")
         df_RGI=df_RGI.fillna("-")
@@ -149,7 +150,7 @@ class AMRCombined():
         #cut off the edges
         df_RGI_Deeparg_SARG_final=df_RGI_Deeparg_SARG.drop(["ORF","query","class","Phenotype"],axis=1, inplace=False)
         
-        ####add contig ID####
+        #add contig ID#
         #load index
         df_contig_ID=pd.read_csv(input_contig_ID, sep="\t", header=None)
         
@@ -160,7 +161,7 @@ class AMRCombined():
         #drop duplicates
         df_RGI_Deeparg_contig=df_RGI_Deeparg_contig.drop(["read_id"],axis=1,inplace=False)
         
-        ####merge MGE####
+        ###################################Processing MGE#####################################
         #open df_dvf
         df_dvf=pd.read_csv(input_dvf,sep="\t",header=0)
         df_dvf["name"]=df_dvf["name"].str.split(" ", expand=True)[0]
@@ -264,14 +265,14 @@ class AMRCombined():
         PF_res["CompRanking_MGE_prediction"]=peram_MGE_pred
         PF_res=PF_res.drop(["MGE_prediction","seeker_res"],axis=1,inplace=False)
         
-        ####merge ARG and MGE####
+        ##############################merge ARG and MGE####################################
         #merge ARG and MGE
         df_AMR_contig=pd.merge(df_RGI_Deeparg_contig,PF_res,left_on=0,right_on="Contig",how="left")
         df_AMR_contig=df_AMR_contig.drop(["Contig","ORF_ID"], axis=1, inplace=False)
         df_AMR_contig=df_AMR_contig.drop_duplicates()
         df_AMR_contig.columns=["Contig","ORF_ID","ARG_prediction","ARG_class","SNPs","Database","ARG_rank","CompRanking_MGE_prediction"]
         
-        ####processing MobileOG-db
+        ############################processing MobileOG-db##############################
         #load MobileOG result
         df_MobileOG=pd.read_csv(input_mobileOG, sep="\t", header=None)
         df_MobileOG.columns=['id', 'sub_id', 'identity', 'alignLen', 'mismat', 'gapOpens', 'qStart', 'qEnd', 'sStart', 'sEnd', 'eval', 'bit']
@@ -305,62 +306,6 @@ class AMRCombined():
         df_AMR_annotate_contig=df_AMR_annotate_contig.drop(["id","identity","alignLen"],axis=1, inplace=False)
         df_AMR_annotate_contig=df_AMR_annotate_contig.fillna("-")
         
-        ##################################Conjuative and mobility judgement###############################
-        """
-        A plasmid containing relaxase, T4CP, and T4SSs is considered a conjugative plasmid, 
-        whereas one encoding only a relaxase is called a mobilizable plasmid.
-        Conjugative:T4CP, and T4SSs
-        Mobilizable:relaxase
-        """        
-        #open moblizable plasmid output
-        df_mob_conj=pd.read_csv(input_mob_conj,sep="\t",header=None)
-        df_mob_unconj=pd.read_csv(input_mob_unconj,sep="\t",header=None)
-        df_mob_conj["MOB"]="mob_conj"
-        df_mob_unconj["MOB"]="mob_unconj"
-        df_mob_conj=pd.concat([df_mob_conj,df_mob_unconj],ignore_index=True)
-        #MOB merge summary table
-        df_AMR_annotate_MOB_contig=pd.merge(df_AMR_annotate_contig,df_mob_conj,left_on="Contig",right_on=0,how="left")
-        df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.drop([0],axis=1,inplace=False)
-        df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.fillna("-")
-        
-        
-        ##########################Using reference adjust MGE prediction results###########################
-        #according to MOB to filter ambiguous (plasmid/phage)
-        a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
-        b=a[a.MOB == "mob_conj"]
-        index_list=[]
-        for i, name in b.iterrows():
-            index_list.append(i)
-        for i in index_list:
-            df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-            
-        #Using MobileOG result filter
-        Insertion_Sequences=["ISFinder"]
-        Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
-        Plasmids=["COMPASS","PlasmidRefSeq"]
-        Bacteriophages=["pVOG","GPD"]
-        Multiple=["ACLAME", "Multiple"]
-        count_ref_plasmid=[]
-        count_ref_phage=[]
-        for i, name in df_AMR_annotate_MOB_contig.iterrows():
-            if name["MGE_Database"] in Bacteriophages:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"
-                count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Plasmids:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Insertion_Sequences:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IS"
-            if name["MGE_Database"] in Integrative_Elements:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IE"
-            if name["MGE_Database"] in Multiple:
-                if name["Taxonomy"] != "phage":
-                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                if name["Taxonomy"] == "phage":
-                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
-
-        
-
                                 
         ####save####
         # df_AMR_annotate_contig.to_csv("/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/CompRanking_ERR1191817_AMR_result.csv",sep="\t",index=0)
@@ -414,7 +359,7 @@ if __name__ == "__main__":
         
         
         #generate sum table without mob ref
-        df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG, input_mob_conj,input_mob_unconj)
+        df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
         #generate sum table with mob ref
         df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
         #save as tsv
