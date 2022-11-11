@@ -33,49 +33,49 @@ def plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig):
     df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.drop([0],axis=1,inplace=False)
     df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.fillna("-")
     
-    #according to MOB to filter phage again
-    a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "phage"]
-    b=a[a.MOB == "mob_conj"]
-    index_list=[]
-    for i, name in b.iterrows():
-        index_list.append(i)
-    for i in index_list:
-        df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="ambiguous (conj/phage)"
+    # #according to MOB to filter phage again
+    # a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "phage"]
+    # b=a[a.MOB == "mob_conj"]
+    # index_list=[]
+    # for i, name in b.iterrows():
+    #     index_list.append(i)
+    # for i in index_list:
+    #     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="ambiguous (conj/phage)"
     
-    #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
-    a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
-    b=a[a.MOB == "mob_conj"]
-    index_list=[]
-    for i, name in b.iterrows():
-        index_list.append(i)
+    # #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
+    # a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
+    # b=a[a.MOB == "mob_conj"]
+    # index_list=[]
+    # for i, name in b.iterrows():
+    #     index_list.append(i)
 
-    for i in index_list:
-        df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+    # for i in index_list:
+    #     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
     
-    #Using MobileOG result filter
-        Insertion_Sequences=["ISFinder"]
-        Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
-        Plasmids=["COMPASS","PlasmidRefSeq"]
-        Bacteriophages=["pVOG","GPD"]
-        Multiple=["ACLAME", "Multiple"]
-        count_ref_plasmid=[]
-        count_ref_phage=[]
-        for i, name in df_AMR_annotate_MOB_contig.iterrows():
-            if name["MGE_Database"] in Bacteriophages:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"
-                count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Plasmids:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Insertion_Sequences:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IS"
-            if name["MGE_Database"] in Integrative_Elements:
-                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IE"
-            if name["MGE_Database"] in Multiple:
-                if name["Taxonomy"] != "phage":
-                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                if name["Taxonomy"] == "phage":
-                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
+    # #Using MobileOG result filter
+    #     Insertion_Sequences=["ISFinder"]
+    #     Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
+    #     Plasmids=["COMPASS","PlasmidRefSeq"]
+    #     Bacteriophages=["pVOG","GPD"]
+    #     Multiple=["ACLAME", "Multiple"]
+    #     count_ref_plasmid=[]
+    #     count_ref_phage=[]
+    #     for i, name in df_AMR_annotate_MOB_contig.iterrows():
+    #         if name["MGE_Database"] in Bacteriophages:
+    #             df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"
+    #             count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
+    #         if name["MGE_Database"] in Plasmids:
+    #             df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+    #             count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
+    #         if name["MGE_Database"] in Insertion_Sequences:
+    #             df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IS"
+    #         if name["MGE_Database"] in Integrative_Elements:
+    #             df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IE"
+    #         if name["MGE_Database"] in Multiple:
+    #             if name["Taxonomy"] != "phage":
+    #                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+    #             if name["Taxonomy"] == "phage":
+    #                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
   
         
         
