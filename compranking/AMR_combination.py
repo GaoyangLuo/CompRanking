@@ -314,7 +314,42 @@ class AMRCombined():
         # return AMRfile
         return df_AMR_annotate_contig
  
+    def refFilter(df_AMR_annotate_MOB_contig):
+        #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
+        a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
+        b=a[a.MOB == "mob_conj"]
+        index_list=[]
+        for i, name in b.iterrows():
+            index_list.append(i)
 
+        for i in index_list:
+            df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+    
+        #Using MobileOG result filter
+        Insertion_Sequences=["ISFinder"]
+        Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
+        Plasmids=["COMPASS","PlasmidRefSeq"]
+        Bacteriophages=["pVOG","GPD"]
+        Multiple=["ACLAME", "Multiple"]
+        count_ref_plasmid=[]
+        count_ref_phage=[]
+        for i, name in df_AMR_annotate_MOB_contig.iterrows():
+            if name["MGE_Database"] in Bacteriophages:
+                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"
+                count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
+            if name["MGE_Database"] in Plasmids:
+                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+                count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
+            if name["MGE_Database"] in Insertion_Sequences:
+                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IS"
+            if name["MGE_Database"] in Integrative_Elements:
+                df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IE"
+            if name["MGE_Database"] in Multiple:
+                if name["Taxonomy"] != "phage":
+                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+                if name["Taxonomy"] == "phage":
+                    df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
+        return df_AMR_annotate_MOB_contig
 
 
 if __name__ == "__main__":
@@ -362,8 +397,9 @@ if __name__ == "__main__":
         df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
         #generate sum table with mob ref
         df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
+        df_AMR_annotate_MOB_refFilter_contig=a.refFilter(df_AMR_annotate_MOB_contig)
         #save as tsv
-        df_AMR_annotate_MOB_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=0)
+        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=0)
         
         
     
