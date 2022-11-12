@@ -314,7 +314,7 @@ class AMRCombined():
         # return AMRfile
         return df_AMR_annotate_contig
  
-    def refFilter(df_AMR_annotate_MOB_contig):
+    def refFilter(self,df_AMR_annotate_MOB_contig):
         #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
         a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
         b=a[a.MOB == "mob_conj"]
@@ -328,7 +328,7 @@ class AMRCombined():
         #Using MobileOG result filter
         Insertion_Sequences=["ISFinder"]
         Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
-        Plasmids=["COMPASS","PlasmidRefSeq"]
+        Plasmids=["COMPASS","Plasmid"]
         Bacteriophages=["pVOG","GPD"]
         Multiple=["ACLAME", "Multiple"]
         count_ref_plasmid=[]
@@ -358,6 +358,7 @@ if __name__ == "__main__":
     import glob
     import os
     import path
+    import datetime
     #gloab settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     output=os.path.join(input_dir,"CompRanking/CompRanking_result")
@@ -378,6 +379,8 @@ if __name__ == "__main__":
     a=AMRCombined()
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
+    
+    start = datetime.datetime.now() #time start 
     for i in file_name_base:
         #set input
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
@@ -391,15 +394,16 @@ if __name__ == "__main__":
         input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
         input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
         
-        
-        
         #generate sum table without mob ref
         df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
         #generate sum table with mob ref
         df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
         df_AMR_annotate_MOB_refFilter_contig=a.refFilter(df_AMR_annotate_MOB_contig)
         #save as tsv
-        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=0)
+        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB1_prediction.tsv", sep="\t", index=0)
+    
+    end = datetime.datetime.now() #time end
+    print(end-start)
         
         
     
