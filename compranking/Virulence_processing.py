@@ -15,7 +15,7 @@ import glob
 import os
 import path
 
-def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,input_patric):
+def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,input_patric):
     #load index
     df_contig=pd.read_csv(input_contig,sep="\t",header=None)
     #load VFDB output
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
         input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
         
-        df_VFs_PATH_contig=VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,output,input_patric)
+        df_VFs_PATH_contig=VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,input_patric)
         
         df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+ i +"_Virulence_Pathogenic1_prediction.tsv",sep="\t",index=None)
     

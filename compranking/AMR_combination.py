@@ -11,10 +11,10 @@
 #import modules
 import pandas as pd
 import re
-import glob
 import os
 import MOB_concat
 import Virulence_processing
+import summary_all
 # from compranking import path
 
 
@@ -355,12 +355,13 @@ class AMRCombined():
 if __name__ == "__main__":
     import pandas as pd
     import re
-    import glob
     import os
     import path
     import datetime
+    import summary_all
     #gloab settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
     output=os.path.join(input_dir,"CompRanking/CompRanking_result")
     project_prefix="CompRanking"
     
@@ -376,13 +377,13 @@ if __name__ == "__main__":
     # input_mobileOG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/MGE/MobileOG/ERR1191817.contigs_5M_contigs_mobileOG_diamond.txt"
     
     
-    a=AMRCombined()
+    AMR_combine=AMRCombined()
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     
     start = datetime.datetime.now() #time start 
     for i in file_name_base:
-        #set input
+        #set ARG&MGE input
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
         input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
         input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
@@ -394,16 +395,33 @@ if __name__ == "__main__":
         input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
         input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
         
+        #set VF input
+        input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
+        input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
+        
         #generate sum table without mob ref
-        df_AMR_annotate_contig=a.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
+        df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
         #generate sum table with mob ref
         df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
-        df_AMR_annotate_MOB_refFilter_contig=a.refFilter(df_AMR_annotate_MOB_contig)
-        #save as tsv
-        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB1_prediction.tsv", sep="\t", index=0)
-    
+        df_AMR_annotate_MOB_refFilter_contig=AMR_combine.refFilter(df_AMR_annotate_MOB_contig)
+        #save ARG to tsv
+        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=None)
+        
+        #vf processing
+        df_VFs_PATH_contig=Virulence_processing.VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,input_patric)
+        #save vf to tsv
+        df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+ i +"_Virulence_Pathogenic_prediction.tsv",sep="\t",index=None)
+
+        #summary
+        df_sum=summary_all.sum_all(df_AMR_annotate_MOB_refFilter_contig,df_VFs_PATH_contig)
+        df_sum.to_csv(output + "/CompRanking_" + i + "_Summary.tsv", sep="\t", index=None)
+        
     end = datetime.datetime.now() #time end
     print(end-start)
+    
+    
+    
         
         
     
