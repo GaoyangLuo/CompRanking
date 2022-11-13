@@ -127,14 +127,19 @@ if __name__ == "__main__":
                 #write into new fasta file
                 fasta_file = open(inputFASTA,"r")
                 f_list = PATH_host_list
-                dickf = subSeqFileGeneration(fasta_file)
-                for i in f_list:
-                    i = i.strip()
-                    for j in dickf.keys():
-                        if re.match(">"+i,j):
-                            print(j,end="")
-                            print(dickf[j])
-                fasta_file.close()            
+                dicfq = subSeqFileGeneration(fasta_file)
+                with open(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])),
+                                       name+"_PATH_host.txt"),"w") as file:
+                    for i in f_list:
+                        i = i.strip()
+                        for j in dicfq.keys():
+                            if re.match(">"+i,j):
+                                print(j,end="")
+                                print(dicfq[j])
+                                file.write(">"+i + '\n'  + str(
+                            dicfq[j]))
+                fasta_file.close()
+                file.close()            
         except:
             raise TypeError("Something wrong...")
             
