@@ -12,9 +12,10 @@
 import pandas as pd
 import os
 import re
-from compranking import path
-from Bio import SeqIO
 import optparse
+import sys
+sys.path.append("..")
+from compranking import path
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
@@ -89,45 +90,40 @@ if __name__ == "__main__":
     if class_type == "ARG":
         try:
             for name in file_name_base:
+                #read summary table
                 inputFASTA=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",name+"_5M_contigs.fa")
-                inputTable=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs","CompRanking_"+name+"_Summary.tsv")
+                inputTable=os.path.join(input_dir,project_prefix,"CompRanking_result","CompRanking_"+name+"_Summary.tsv")
                 print("You must want to extract ARG host sequences...")
                 ARG_host_list=seq_id_extract_ARG_host(inputTable)
-                #generate fasta file
-                # #写入“ContigsID.txt”
-                # filename=file_name_base + "_ARGHost_ContigsID.txt"
-                # with open (filename, "w") as f1:
-                #     for i in ARG_host_list:
-                #         f1.write(i + "\n")
                 
                 #write into new fasta file
                 fasta_file = open(inputFASTA,"r")
                 f_list = ARG_host_list
-                dickf = subSeqFileGeneration(fasta_file)
-                for i in f_list:
-                    i = i.strip()
-                    for j in dickf.keys():
-                        if re.match(">"+i,j):
-                            print(j,end="")
-                            print(dickf[j])
-                fasta_file.close()            
+                dicfq = subSeqFileGeneration(fasta_file)
+                with open(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])),
+                                       name+"_ARG_host.txt"),"w") as file:
+                    for i in f_list:
+                        i = i.strip()
+                        for j in dicfq.keys():
+                            if re.match(">"+i,j):
+                                print(j,end="")
+                                print(dicfq[j])
+                                file.write(">"+i + '\n'  + str(
+                            dicfq[j]))
+                fasta_file.close()
+                file.close()            
         except:
             raise TypeError("Something wrong...")
         
     if class_type == "PATH":
         try:
             for name in file_name_base:
+                #read summary table
                 inputFASTA=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",name+"_5M_contigs.fa")
                 inputTable=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs","CompRanking_"+name+"_Summary.tsv")
                 print("You must want to extract ARG host sequences...")
                 PATH_host_list=seq_id_extract_PATH_host(inputTable)
-                #generate fasta file
-                # #写入“ContigsID.txt”
-                # filename=file_name_base + "_ARGHost_ContigsID.txt"
-                # with open (filename, "w") as f1:
-                #     for i in ARG_host_list:
-                #         f1.write(i + "\n")
-                
+                                
                 #write into new fasta file
                 fasta_file = open(inputFASTA,"r")
                 f_list = PATH_host_list
