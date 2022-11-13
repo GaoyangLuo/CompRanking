@@ -71,14 +71,14 @@ def seq_id_extract_PATH_host(sumTable):
     return seq_id_PATH_host
 
 def subSeqFileGeneration(FASTA_file):
-	dickf = {}
+	dicfq = {}
 	for i in FASTA_file:
 		if re.match(">",i):
-			dickf[i]=""
+			dicfq[i]=""
 			flag = i
 		else:
-			dickf[flag] = dickf[flag]+i
-	return dickf
+			dicfq[flag] = dicfq[flag]+i
+	return dicfq
     
     
 if __name__ == "__main__":
@@ -110,10 +110,40 @@ if __name__ == "__main__":
                         if re.match(">"+i,j):
                             print(j,end="")
                             print(dickf[j])
-                fasta_file.close()
+                fasta_file.close()            
         except:
             raise TypeError("Something wrong...")
         
+    if class_type == "PATH":
+        try:
+            for name in file_name_base:
+                inputFASTA=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",name+"_5M_contigs.fa")
+                inputTable=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs","CompRanking_"+name+"_Summary.tsv")
+                print("You must want to extract ARG host sequences...")
+                PATH_host_list=seq_id_extract_PATH_host(inputTable)
+                #generate fasta file
+                # #写入“ContigsID.txt”
+                # filename=file_name_base + "_ARGHost_ContigsID.txt"
+                # with open (filename, "w") as f1:
+                #     for i in ARG_host_list:
+                #         f1.write(i + "\n")
+                
+                #write into new fasta file
+                fasta_file = open(inputFASTA,"r")
+                f_list = PATH_host_list
+                dickf = subSeqFileGeneration(fasta_file)
+                for i in f_list:
+                    i = i.strip()
+                    for j in dickf.keys():
+                        if re.match(">"+i,j):
+                            print(j,end="")
+                            print(dickf[j])
+                fasta_file.close()            
+        except:
+            raise TypeError("Something wrong...")
+            
+            
+#python EzSeq.py -i /lomi_home/gaoyang/software/CompRanking/test
     
 
     
