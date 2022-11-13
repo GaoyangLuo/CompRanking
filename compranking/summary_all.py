@@ -10,7 +10,6 @@
 #==============================================================================
 #import modules
 import pandas as pd
-import os
 # from compranking import path
 
 def sum_all(df_AMR_MOB, df_VF_PATH):
