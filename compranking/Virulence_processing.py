@@ -10,10 +10,7 @@
 #==============================================================================
 #import modules
 import pandas as pd
-import re
-import glob
 import os
-import path
 
 def VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,input_patric):
     #load index
