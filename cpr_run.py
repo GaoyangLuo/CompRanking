@@ -23,8 +23,9 @@ import datetime
 import multiprocessing
 import threading
 import yaml
-from compranking import path
+from compranking import path, summary_all, MOB_concat,Virulence_processing
 from compranking.AMR_combination import AMRCombined
+
 
 
 parser = optparse.OptionParser()
@@ -71,57 +72,6 @@ if (options.config_file is None):
 
 #===============================================================================
 ####################################Function####################################
-#configeration
-# def read_conda_path(name,path,yaml_path):
-#     CONDA_PATH=[]
-#     #open yaml file
-#     with open(yaml_path,"r") as f:
-#         data=yaml.load(f,Loader=yaml.FullLoader)
-#         # print(data)
-#         try:
-#             if name in data.keys():
-#                 if len(data[name][path]) > 0:
-#                     # print(data[name][path])
-#                     CONDA_PATH.append(data[name][path])
-#                     # print(CONDA_PATH)
-#                 else:
-#                     raise Exception("Empty or wrong conda bin path")
-#         except:
-#             raise Exception("Wrong configeration, \
-#                    please firstly write your conda bin path into the configeratoion file")
-#         if len(CONDA_PATH) != 0:
-#             try:
-#                 for i in CONDA_PATH:
-#                     if os.path.exists(i):
-#                         # print("Conda bin path exist")
-#                         return CONDA_PATH
-#                     else:
-#                         if i.startwith("/"):
-#                             print("plese check your conda path")
-#                         else:
-#                             print("please use absolute path started with / ")
-#             except:
-#                 raise IndexError("Conda bin path don't existed")
-#                 sys.exit('Something happened')
-
-# #acquire abs path of sample
-# def file_abs_path_list_generation(input_dir):
-#     input=input_dir+"/*fa"
-#     file_abs_path_list=glob.glob(input)
-#     return file_abs_path_list
-
-# #acquire sample name base
-# def file_base_acquire(file_abs_path): #get names of all the sample files
-#     base_list=[]
-#     #Acquire file_base
-#     try:
-#         for i in file_abs_path:
-#             fileBase_1=i.split("/")[-1]
-#             fileBase_2=fileBase_1.strip(".fa")
-#             base_list.append(fileBase_2)
-#     except:
-#         raise IndexError("Faile to acquire base name of samples...")
-#     return base_list
 
 #mutiprocessing
 ##AMR prediction
@@ -135,7 +85,7 @@ def ARG3_prediction():#sarg
     subprocess.call(["bash", AMR3_PREDICTION, 
                         "-i", sarg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
 ##MGE prediction
-def MGE_prediction(): #plasflow
+def MGE1_prediction(): #plasflow
     subprocess.call(["bash", MGE1_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 def MGE2_prediction(): #seeker&dvf
@@ -169,53 +119,47 @@ if __name__ == '__main__':
     sarg_input=faaFile_input
     plascad_input= input_dir #os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/ori_file")
     output_prefix=os.path.join(input_dir,project_prefix,"CompRanking_result")
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    file_name_base = path.file_base_acquire(file_abs_path)
     print(yaml_path)
 
     #multiprocessing
     AMR_PRED1 = multiprocessing.Process(target=ARG1_prediction) #rgi
     AMR_PRED2 = multiprocessing.Process(target=ARG2_prediction) #deeparg
     AMR_PRED3 = multiprocessing.Process(target=ARG3_prediction) #sarg
-    MGE_PRED = multiprocessing.Process(target=MGE_prediction) #plasflow
+    MGE1_PRED = multiprocessing.Process(target=MGE1_prediction) #plasflow
     MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf&seeker
     MGE3_PRED = multiprocessing.Process(target=MGE3_prediction) #mobileOG
     PLASCAD_PRED = multiprocessing.Process(target=plascad_prediction) #plascad
     VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB&PATH
-
     
     #Write in abs conda path
     path_bin="abs_path_to_conda_bin"
     conda_path_str="".join(path.read_conda_path(project_prefix,path_bin,yaml_path)) #record abs path of conda bin
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
-    # subprocess.call(["bash", VIRULENCE_PREDICTION, 
-    #                  "-i", VF_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
-
     
-    #### Step 1 Preprocessing ####
-    # start = datetime.datetime.now() #time start
-    # subprocess.call(["bash", PREPROCESSING, "-i", input_dir]) 
-    # end = datetime.datetime.now() #time end
-    # print(end-start)
+    ################################### Step 1 Preprocessing ################################
+    start = datetime.datetime.now() #time start
+    print("Preprocessing fasta files...")
+    subprocess.call(["bash", PREPROCESSING, "-i", input_dir]) 
+    end = datetime.datetime.now() #time end
+    print("Step Preprocessing cost time: {}".format(end-start))
+    
+    ################################## Step 2 multiprocessing ############################################
+    #ARG search
+    start = datetime.datetime.now() #time start
+    AMR_PRED1.start()
+    AMR_PRED2.start()
+    AMR_PRED3.start()
+    end = datetime.datetime.now() #time end
+    print("ARG search cost time: {}".format(end-start))
     
     
-    #multiprocessing
-    # AMR_PRED1.start()
-    # AMR_PRED2.start()
-    # AMR_PRED3.start()
-    # VIR_PRED.start()
-    # MGE3_PRED.start()
+    VIR_PRED.start()
+    MGE3_PRED.start()
     PLASCAD_PRED.start()
-    # AMR_PRED.join()
-    # VIR_PRED.join()
-    # MGE_PRED.start()
-    # MGE2_PRED.start()
-    # MGE_PRED.join()
-    # MGE2_PRED.join()
-    
-    
-    ###################Plasmide Conj Classificatio#################
-
-    
-    
+    MGE1_PRED.start()
+    MGE2_PRED.start()
     
     #### Step 2 ARG Prediction ####
     # start = datetime.datetime.now() #time start
@@ -271,6 +215,61 @@ if __name__ == '__main__':
     #     input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
     #     output=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
     #     hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
+    
+    ###################check output########################
+    
+    
+    
+    
+    
+    ####################Combine AMR########################
+    #gloab settings
+    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
+    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    
+    AMR_combine=AMRCombined()
+    
+    start = datetime.datetime.now() #time start 
+    for i in file_name_base:
+        #set ARG&MGE input
+        input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
+        input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
+        input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
+        input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+        input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt500bp_dvfpred.txt")
+        input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
+        seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
+        input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
+        input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
+        input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
+        
+        #set VF input
+        input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
+        input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
+        
+        #generate sum table without mob ref
+        df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
+        #generate sum table with mob ref
+        df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
+        df_AMR_annotate_MOB_refFilter_contig=AMR_combine.refFilter(df_AMR_annotate_MOB_contig)
+        #save ARG to tsv
+        df_AMR_annotate_MOB_refFilter_contig.to_csv(output + "/CompRanking_" + i + "_AMR_MOB_prediction.tsv", sep="\t", index=None)
+        
+        #vf processing
+        df_VFs_PATH_contig=Virulence_processing.VF_processing(input_contig, input_ERR_VFDB_output,input_cpr_VF_sum,input_patric)
+        #save vf to tsv
+        df_VFs_PATH_contig.to_csv(output + "/CompRanking_"+ i +"_Virulence_Pathogenic_prediction.tsv",sep="\t",index=None)
+
+        #summary
+        df_sum=summary_all.sum_all(df_AMR_annotate_MOB_refFilter_contig,df_VFs_PATH_contig)
+        df_sum.to_csv(output + "/CompRanking_" + i + "_Summary.tsv", sep="\t", index=None)
+        
+    end = datetime.datetime.now() #time end
+    print(end-start)
+    
+    
         
         
     
