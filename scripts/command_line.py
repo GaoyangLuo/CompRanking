@@ -22,8 +22,9 @@ def predict_metagenome():
     print("name\tprediction\tscore")
     
     predictions = seeker_fasta.phage_or_bacteria()
-    file_base=(sys.argv[1]).strip(".fa")
-    output="seeker_" + file_base + "_output.txt"
+    abs_path= os.path.dirname(os.path.abspath(sys.argv[1]))
+    file_base=(os.path.split(sys.argv[1])[1]).strip(".fa")
+    output=abs_path + "/" + "seeker_" + file_base + "_output.txt"
     with open(output, "a+") as f:
         for i in predictions:
             f.write(i + "\n")

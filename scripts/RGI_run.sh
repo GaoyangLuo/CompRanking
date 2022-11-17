@@ -43,8 +43,8 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG prediction took $(($ENDTIME - $STARTTIME)) sec."
 	touch ${PREFIX}.RGI.done
+	mv ${INPUT_DIR}/*RGI.out* ${RGI_DIR}
 fi
 
-mv ${INPUT_DIR}/*RGI.out* ${RGI_DIR}
 
 conda deactivate

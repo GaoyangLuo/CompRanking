@@ -10,11 +10,11 @@
 #==============================================================================
 #import modules
 import pandas as pd
-import re
+# import re
 import os
-import MOB_concat
-import Virulence_processing
-import summary_all
+# import MOB_concat
+# import Virulence_processing
+# import summary_all
 # from compranking import path
 
 
@@ -274,13 +274,21 @@ class AMRCombined():
         
         ############################processing MobileOG-db##############################
         #load MobileOG result
+
         df_MobileOG=pd.read_csv(input_mobileOG, sep="\t", header=None)
         df_MobileOG.columns=['id', 'sub_id', 'identity', 'alignLen', 'mismat', 'gapOpens', 'qStart', 'qEnd', 'sStart', 'sEnd', 'eval', 'bit']
         #处理分列
         df_MobileOG_tmp=df_MobileOG["sub_id"].str.split("|",expand=True)
+        df_MobileOG_tmp
+        if df_MobileOG_tmp.shape[1] < 7:
+            if df_MobileOG_tmp.shape[1] == 5:
+                df_MobileOG_tmp[5]="-"
+            if df_MobileOG_tmp.shape[1] == 6:
+                df_MobileOG_tmp[6] = "-"
+        # df_MobileOG_tmp[5]="-"
         df_MobileOG_tmp=df_MobileOG_tmp[[0,1,3,4,5]]
-        df_MobileOG_tmp.columns=["mobileOG_ID", "Gene_Name", "Taxonomy","Major_Category","MGE_Database"]     
-        #concat
+        df_MobileOG_tmp.columns=["mobileOG_ID", "Gene_Name", "Taxonomy","Major_Category","MGE_Database"]
+  
         df_MobileOG_concat=pd.concat((df_MobileOG,df_MobileOG_tmp),axis=1)
         df_MobileOG_concat=df_MobileOG_concat.drop(["sub_id","mismat","gapOpens","qStart","qEnd","sStart","sEnd","eval","bit"],axis=1, inplace=False)  
         #load mobileOG structure
@@ -305,6 +313,7 @@ class AMRCombined():
         df_AMR_annotate_contig=pd.merge(df_AMR_contig,df_MobileOG_concat_iden60_cov50,left_on="ORF_ID",right_on="id",how="left")
         df_AMR_annotate_contig=df_AMR_annotate_contig.drop(["id","identity","alignLen"],axis=1, inplace=False)
         df_AMR_annotate_contig=df_AMR_annotate_contig.fillna("-")
+
         
                                 
         ####save####
@@ -315,15 +324,15 @@ class AMRCombined():
         return df_AMR_annotate_contig
  
     def refFilter(self,df_AMR_annotate_MOB_contig):
-        #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
-        a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
-        b=a[a.MOB == "mob_conj"]
-        index_list=[]
-        for i, name in b.iterrows():
-            index_list.append(i)
+        # #according to MOB to filter ambiguous (plasmid/phage), if MOB == conj, ambiguous = plasmid
+        # a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "ambiguous (plasmid/phage)"]
+        # b=a[a.MOB == "mob_conj"]
+        # index_list=[]
+        # for i, name in b.iterrows():
+        #     index_list.append(i)
 
-        for i in index_list:
-            df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+        # for i in index_list:
+        #     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
     
         #Using MobileOG result filter
         Insertion_Sequences=["ISFinder"]
@@ -337,18 +346,22 @@ class AMRCombined():
             if name["MGE_Database"] in Bacteriophages:
                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"
                 count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Plasmids:
+            elif name["MGE_Database"] in Plasmids:
                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
                 count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
-            if name["MGE_Database"] in Insertion_Sequences:
+            elif name["MGE_Database"] in Insertion_Sequences:
                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IS"
-            if name["MGE_Database"] in Integrative_Elements:
+            elif name["MGE_Database"] in Integrative_Elements:
                 df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="IE"
-            if name["MGE_Database"] in Multiple:
+            elif name["MGE_Database"] in Multiple:
                 if name["Taxonomy"] != "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                if name["Taxonomy"] == "phage":
+                elif name["Taxonomy"] == "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
+                else:
+                    continue
+            else:
+                continue
         return df_AMR_annotate_MOB_contig
 
 
@@ -359,6 +372,8 @@ if __name__ == "__main__":
     import path
     import datetime
     import summary_all
+    import MOB_concat
+    import Virulence_processing
     #gloab settings
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
@@ -397,7 +412,7 @@ if __name__ == "__main__":
         
         #set VF input
         input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
-        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
+        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/VFDB",i+"_5M_contigs_VFDB.out") #5M_contigs_VFDB_setA1e-5.out
         input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
         
         #generate sum table without mob ref
@@ -419,6 +434,10 @@ if __name__ == "__main__":
         
     end = datetime.datetime.now() #time end
     print(end-start)
+    
+    #calculate
+    start = datetime.datetime.now() #time start
+    
     
     
     

@@ -11,7 +11,6 @@
 
 import pandas as pd
 import os
-import path
 
 
 def arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,filebase, output):

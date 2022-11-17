@@ -23,6 +23,8 @@ import datetime
 import multiprocessing
 import threading
 import yaml
+sys.path.append("..")
+from compranking import ARG_ranker
 from compranking import path, summary_all, MOB_concat,Virulence_processing
 from compranking.AMR_combination import AMRCombined
 
@@ -39,8 +41,8 @@ parser.add_option("-t", "--threads", action = "store", type = "string", dest = "
 				 help = "how many cpus you want use")      
 parser.add_option("-c", "--config_file", action = "store", type = "string", dest = "config_file", 
                   help = "file contains basic configeration information")           
-#parser.add_option("-o", "--out", action = "store", type = "string", dest = "output_dir",
-									#default='./', help = "output directory")
+parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
+									default='1', help = "restart all the processs")
 
 (options, args) = parser.parse_args()
 
@@ -51,7 +53,7 @@ project_prefix=options.project_prefix
 output_dir=options.output_dir
 threads=options.threads
 config_path=options.config_file
-
+restart=options.restart
 #scrip path
 PREPROCESSING="./scripts/preprocessing_run.sh"
 AMR1_PREDICTION="./scripts/RGI_run.sh"
@@ -69,6 +71,9 @@ if (options.threads is None):
     threads = "12" #default threads
 if (options.config_file is None):
     config_path = "./test_yaml.yaml"#default config_file path
+if options.restart == "1":
+    os.system("rm *done")
+    
 
 #===============================================================================
 ####################################Function####################################
@@ -108,7 +113,6 @@ def plascad_prediction(): #plascad
 #===============================================================================
 ####################################Get Started#################################
 if __name__ == '__main__': 
-    
     #### Step 0 Presetting ####
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
     faaFile_input=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")
@@ -139,53 +143,55 @@ if __name__ == '__main__':
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
     
     ################################### Step 1 Preprocessing ################################
-    start = datetime.datetime.now() #time start
+    start_all = datetime.datetime.now() 
+    start_prepro = datetime.datetime.now() #time start
     print("Preprocessing fasta files...")
     subprocess.call(["bash", PREPROCESSING, "-i", input_dir]) 
-    end = datetime.datetime.now() #time end
-    print("Step Preprocessing cost time: {}".format(end-start))
+    end_prepro = datetime.datetime.now() #time end
+    print("Step Preprocessing cost time: {}".format(end_prepro-start_prepro))
     
     ################################## Step 2 multiprocessing ############################################
     #ARG search
-    start = datetime.datetime.now() #time start
+    #time start
+    start = datetime.datetime.now() 
     AMR_PRED1.start()
     AMR_PRED2.start()
     AMR_PRED3.start()
-    end = datetime.datetime.now() #time end
+    #time end
+    end = datetime.datetime.now() 
     print("ARG search cost time: {}".format(end-start))
     
-    
+    #### VF prediction ####
+    start_VF = datetime.datetime.now() #time start
     VIR_PRED.start()
-    MGE3_PRED.start()
+    end_VF = datetime.datetime.now() #time end
+    print("VF and Pathogen prediction cost: {}".format(end_VF-start_VF))
+    
+    #### MGE prediction ####
+    start_MGE = datetime.datetime.now() #time start
     PLASCAD_PRED.start()
+    MGE3_PRED.start()
     MGE1_PRED.start()
     MGE2_PRED.start()
+    MGE2_PRED.join()
+    end_MGE = datetime.datetime.now() #time end
+    print("MGE prediction cost: {}".format(end_MGE-start_MGE))
+   
     
+    
+    
+
+    
+    
+    
+    # end_all = datetime.datetime.now() #time end
+    # print("All prediction cost time: {}".format(end_all-start_all))
     #### Step 2 ARG Prediction ####
-    # start = datetime.datetime.now() #time start
-    # # rgi_input=os.path.join(input_dir,project_prefix,"preprocessing/5M_contigs")
-    # # print(rgi_input)
-    # # subprocess.call(["bash", AMR_PREDICTION, "-i", rgi_input, "-t", threads])
-    # ARG_prediction()
-    # end = datetime.datetime.now() #time end
-    # print(end-start)
+   
 
-    #### MGE prediction ####
-    # start = datetime.datetime.now() #time start
-    # subprocess.call(["bash", MGE_PREDICTION, "-i", input_dir, "-t", threads])
-    # end = datetime.datetime.now() #time end
-    # print(end-start)
 
-    #### VF prediction ####
-    # start = datetime.datetime.now() #time start
-    # VF_input=os.path.join(input_dir,project_prefix,"preprocessing/5M_contigs")
-    # subprocess.call(["bash", VIRULENCE_PREDICTION, "-i", VF_input, "-t", threads])
-    # end = datetime.datetime.now() #time end
-    # #print(end-start)
-    #print(type(input_dir))
-    #print(type(project_prefix))
-    #print(type("/preprocessing/5M_contigs"))
-    #print(VF_input)
+
+    
     
     
     #check file completeness
@@ -195,42 +201,40 @@ if __name__ == '__main__':
     # print(base_list)
     # yt.check_file_completness()
     
-    #hmm processing
-    #acquire base
-    #input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    # file_abs_path=path.file_abs_path_list_generation(input_dir)
-    # file_name_base = path.file_base_acquire(file_abs_path)
-    
-    ##generate hmm.csv
-    # input="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_itermediate/Virulence/111.hmm.txt"
-    # suffix="_5M_contigs"
-    # for i in file_name_base:
-    #     hmm_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence",i+suffix+"_tmp_hmm.txt")
-    #     output_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
-    #     hmm_processing.change_tab_hmmscan(input_hmmscan=hmm_file,output_hmm_csv=output_file)
-    
-    # ##hmmcsv2predcsv
-    # positive_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/models_and_domains/positive_domains.tsv") 
-    # for i in file_name_base:
-    #     input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
-    #     output=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
-    #     hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
+  
     
     ###################check output########################
     
     
     
+    ###################rankARG########################
+    ##fixed settings
+    input_argrank="/lomi_home/gaoyang/software/CompRanking/databases/SARG/ARG_rank.txt"
+    input_sarg_length="databases/SARG/SARG.db.fasta.length"
+    input_sarg_structure="databases/SARG/SARG.structure.txt" #"/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.structure.txt"
+    SARG_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking") #fixed path
+    file_abs_path=path.file_abs_path_list_generation(input_dir) #fixed path
+    file_name_base = path.file_base_acquire(file_abs_path) #fixed path
+    
+    #arg rank processing
+    for i in file_name_base:
+        input_sarg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking", i+"_5M_contigs_SARG_Protein_diamond.txt")
+        if os.path.getsize(input_sarg) != 0:
+            ARG_ranker.arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, SARG_output)
+        else:
+            continue
     
     
-    ####################Combine AMR########################
+    
+    ###################Combine AMR########################
     #gloab settings
-    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
+    input_cpr_VF_sum=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" )#fixed
     output=os.path.join(input_dir,"CompRanking/CompRanking_result")
     
     AMR_combine=AMRCombined()
     
-    start = datetime.datetime.now() #time start 
+    start_sum = datetime.datetime.now() #time start 
     for i in file_name_base:
         #set ARG&MGE input
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
@@ -246,7 +250,7 @@ if __name__ == '__main__':
         
         #set VF input
         input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
-        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence",i+"_5M_contigs_VFDB_setA1e-5.out")
+        input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/VFDB",i+"_5M_contigs_VFDB.out")
         input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
         
         #generate sum table without mob ref
@@ -266,8 +270,39 @@ if __name__ == '__main__':
         df_sum=summary_all.sum_all(df_AMR_annotate_MOB_refFilter_contig,df_VFs_PATH_contig)
         df_sum.to_csv(output + "/CompRanking_" + i + "_Summary.tsv", sep="\t", index=None)
         
-    end = datetime.datetime.now() #time end
-    print(end-start)
+    end_sum = datetime.datetime.now() #time end
+    end_all = datetime.datetime.now()
+    
+    print("Summary ouput takes time {}: ".format(end_sum-start_sum))
+    print("All process takes time {}: ".format(end_all-start_all))
+    
+    
+    
+    
+    
+    
+    
+    
+      #hmm processing
+        #acquire base
+        #input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+        # file_abs_path=path.file_abs_path_list_generation(input_dir)
+        # file_name_base = path.file_base_acquire(file_abs_path)
+        
+        ##generate hmm.csv
+        # input="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_itermediate/Virulence/111.hmm.txt"
+        # suffix="_5M_contigs"
+        # for i in file_name_base:
+        #     hmm_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence",i+suffix+"_tmp_hmm.txt")
+        #     output_file=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
+        #     hmm_processing.change_tab_hmmscan(input_hmmscan=hmm_file,output_hmm_csv=output_file)
+        
+        # ##hmmcsv2predcsv
+        # positive_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/models_and_domains/positive_domains.tsv") 
+        # for i in file_name_base:
+        #     input=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_hmm.csv")
+        #     output=os.path.join(input_dir,project_prefix,"CompRanking_itermediate","Virulence","hmm_result",i+suffix+"_VF_Prediction.csv")
+        #     hmm_processing.VF_predition(input_hmmcsv=input,positive_domains=positive_path,name_VF_output=output)
     
     
         

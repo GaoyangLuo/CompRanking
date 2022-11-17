@@ -77,7 +77,7 @@ def writeSeq2Dic(FASTA_file):
     seq_store={}
     for record in SeqIO.parse(FASTA_file, 'fasta'):
         seq_store.setdefault(">" + str(record.id),
-                                    str(record.seq))
+            str(record.seq))
     return seq_store
 
 def subSeqFileGeneration(FASTA_file):
@@ -95,18 +95,16 @@ if __name__ == "__main__":
     #read file names
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
-    
+    #if ARG host
     if class_type == "ARG":
         try:
             start = datetime.datetime.now() #time start
-            
             for name in file_name_base:
                 #read summary table
                 inputFASTA=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",name+"_5M_contigs.fa")
                 inputTable=os.path.join(input_dir,project_prefix,"CompRanking_result","CompRanking_"+name+"_Summary.tsv")
                 print("You must want to extract PATH host sequences...")
                 ARG_host_list=seq_id_extract_ARG_host(inputTable)
-                
                 #write into new fasta file
                 fasta_file = open(inputFASTA,"r")
                 f_list = ARG_host_list
@@ -114,30 +112,23 @@ if __name__ == "__main__":
                 dicfq = subSeqFileGeneration(fasta_file)
                 seq_store = writeSeq2Dic(inputFASTA)
                 with open(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])),
-                                       name+"_ARG_tmp_host.txt"),"w") as file:
+                    name+"_ARG_tmp_host.txt"),"w") as file:
                     for i in f_list:
                         i = i.strip()
                         i = i.split(" ")[0]
-                        # for j in dicfq.keys():
-                        #     if re.match(">"+i,j):
-                        #         print(j,end="")
-                        #         print(dicfq[j])
-                        #         file.write(">"+i + '\n'  + str(
-                        #     dicfq[j]))
                         if (">"+i) in seq_store.keys():
                             print(">"+ i )
                             print(seq_store[">"+i])
                             file.write(">"+ i + '\n'  + str(
-                                seq_store[">"+i]) + '\n')
-                        
-                fasta_file.close()
-                file.close()         
-                
-            end = datetime.datetime.now() #time end
+                                seq_store[">"+i]) + '\n')     
+                    file.close() 
+                fasta_file.close()  
+            #time end      
+            end = datetime.datetime.now() 
             print("ARG extract cost time: {}".format(end-start))   
         except:
             raise TypeError("Something wrong...")
-        
+    #if Pathogen host
     if class_type == "PATH":
         try:
             start = datetime.datetime.now() #time start
@@ -146,8 +137,7 @@ if __name__ == "__main__":
                 inputFASTA=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",name+"_5M_contigs.fa")
                 inputTable=os.path.join(input_dir,project_prefix,"CompRanking_result","CompRanking_"+name+"_Summary.tsv")
                 print("You must want to extract Pathogen host sequences...")
-                PATH_host_list=seq_id_extract_PATH_host(inputTable)
-                                
+                PATH_host_list=seq_id_extract_PATH_host(inputTable)          
                 #write into new fasta file
                 fasta_file = open(inputFASTA,"r")
                 f_list = PATH_host_list
@@ -155,7 +145,7 @@ if __name__ == "__main__":
                 dicfq = subSeqFileGeneration(fasta_file)
                 seq_store = writeSeq2Dic(inputFASTA)
                 with open(os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])),
-                                       name+"_PATH_tmp_host.txt"),"w") as file:
+                    name+"_PATH_tmp_host.txt"),"w") as file:
                     for i in f_list:
                         i = i.strip()
                         i = i.split(" ")[0]
@@ -163,12 +153,11 @@ if __name__ == "__main__":
                             print(">"+ i )
                             print(seq_store[">"+i])
                             file.write(">"+ i + '\n'  + str(
-                                seq_store[">"+i]) + '\n')
-                        
-                fasta_file.close()
-                file.close()         
-                
-            end = datetime.datetime.now() #time end
+                                seq_store[">"+i]) + '\n')             
+                    file.close()  
+                fasta_file.close()       
+            #time end    
+            end = datetime.datetime.now() 
             print("PATH extract cost time: {}".format(end-start))       
         except:
             raise TypeError("Something wrong...")
