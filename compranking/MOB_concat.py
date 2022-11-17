@@ -11,8 +11,6 @@
 
 import pandas as pd
 import os
-import path
-
 
 def plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig):
     """
@@ -22,16 +20,28 @@ def plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig):
     
     """
     #load mob ref and AMR annotate_contig
-    df_mob_conj=pd.read_csv(input_mob_conj,sep="\t",header=None)
-    df_mob_unconj=pd.read_csv(input_mob_unconj,sep="\t",header=None)
-    df_mob_conj["MOB"]="mob_conj"
-    df_mob_unconj["MOB"]="mob_unconj"
-    df_mob_conj=pd.concat([df_mob_conj,df_mob_unconj],ignore_index=True)
+    try:
+        if os.path.getsize(input_mob_conj) != 0:
+            df_mob_conj=pd.read_csv(input_mob_conj,sep="\t",header=None)
+            df_mob_unconj=pd.read_csv(input_mob_unconj,sep="\t",header=None)
+            df_mob_conj["MOB"]="mob_conj"
+            df_mob_unconj["MOB"]="mob_unconj"
+            df_mob_conj=pd.concat([df_mob_conj,df_mob_unconj],ignore_index=True)
+            #MOB merge summary table
+            df_AMR_annotate_MOB_contig=pd.merge(df_AMR_annotate_contig,df_mob_conj,left_on="Contig",right_on=0,how="left")
+            df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.drop([0],axis=1,inplace=False)
+            df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.fillna("-")
+        else:
+            df_mob_unconj=pd.read_csv(input_mob_unconj,sep="\t",header=None)
+            df_mob_unconj["MOB"]="mob_unconj"
+            #MOB merge summary table
+            df_AMR_annotate_MOB_contig=pd.merge(df_AMR_annotate_contig,df_mob_unconj,left_on="Contig",right_on=0,how="left")
+            df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.drop([0],axis=1,inplace=False)
+            df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.fillna("-")
+    except:
+        raise TypeError("Mobility process failed...Please contact Gaoyang for help...")
     
-    #MOB merge summary table
-    df_AMR_annotate_MOB_contig=pd.merge(df_AMR_annotate_contig,df_mob_conj,left_on="Contig",right_on=0,how="left")
-    df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.drop([0],axis=1,inplace=False)
-    df_AMR_annotate_MOB_contig=df_AMR_annotate_MOB_contig.fillna("-")
+    
     
     # #according to MOB to filter phage again
     # a=df_AMR_annotate_MOB_contig[df_AMR_annotate_MOB_contig.CompRanking_MGE_prediction == "phage"]

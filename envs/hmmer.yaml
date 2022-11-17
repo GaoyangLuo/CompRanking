@@ -1,0 +1,40 @@
+name: CompRanking_hmmer_env
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=0_gnu
+  - ca-certificates=2022.9.24=ha878542_0
+  - hmmer=3.2.1=he1b5a44_2
+  - ld_impl_linux-64=2.39=hc81fddc_0
+  - libffi=3.2.1=he1b5a44_1007
+  - libgcc-ng=9.2.0=h24d8f2e_2
+  - libgomp=9.2.0=h24d8f2e_2
+  - libstdcxx-ng=9.2.0=hdf63c60_2
+  - ncurses=6.2=h58526e2_4
+  - openssl=1.1.1h=h516909a_0
+  - pip=22.3=pyhd8ed1ab_0
+  - prodigal=2.6.3=h516909a_2
+  - python=3.8.6=h852b56e_0_cpython
+  - python_abi=3.8=2_cp38
+  - readline=8.0=he28a2e2_2
+  - setuptools=65.5.0=pyhd8ed1ab_0
+  - sqlite=3.33.0=h4cf870e_1
+  - tk=8.6.11=h21135ba_0
+  - wheel=0.37.1=pyhd8ed1ab_0
+  - xz=5.2.5=h516909a_1
+  - zlib=1.2.11=h36c2ea0_1011
+  - pip:
+    - bio==1.4.0
+    - biopython==1.79
+    - biothings-client==0.2.6
+    - certifi==2022.9.24
+    - charset-normalizer==2.1.1
+    - idna==3.4
+    - mygene==3.2.2
+    - numpy==1.23.4
+    - requests==2.28.1
+    - tqdm==4.64.1
+    - urllib3==1.26.12

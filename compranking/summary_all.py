@@ -34,6 +34,7 @@ def sum_all(df_AMR_MOB, df_VF_PATH):
             cpr_rank.append("I")
         else:
             cpr_rank.append("-")
+    df_sum["ARG_Rank(in-situ)"]=cpr_rank
     
     return df_sum
     

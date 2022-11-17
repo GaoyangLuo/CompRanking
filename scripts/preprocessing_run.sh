@@ -23,17 +23,19 @@ done
 
 #### STEP1 Ativate preprocessing env ####
 source $CONDA_BIN_PATH/activate preprocessing_test
-mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/5M_contigs
-mkdir -p ${INPUT_DIR}/${PREFIX}/preprocessing/ori_file
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/RGI
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/DeepARG
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/AMR/SARG
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Plasflow
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/DVF
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Seeker
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/MobileOG
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence/VFDB
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/Virulence/PATRIC
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/RGI
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/DeepARG
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/ARGranking
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/MobileOG
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/Virulence/VFDB
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/Virulence/PATRIC
 
 #mkdir -p ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
@@ -55,9 +57,12 @@ else
 	echo "[TIMESTAMP] $(date) Filtering 5M contigs... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Filtering 5M contigs took $(($ENDTIME - $STARTTIME)) sec."
+	mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
+    # cp ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+	
 	touch ${PREFIX}.5Mfilter.done
 fi
-mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
+
 #filter 5M-1K
 # if [ -e ${PREFIX}.5M-1Kfilter.done ]; then
 # 	echo "5M-1K_filetered file existed..."
@@ -88,10 +93,10 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal..."
 	#predict ORFs with prodigal
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
 	do
 	base=${i%%.f*}
-	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q -o ${base}.temp.txt
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q 
 	done
 	#finish ORFs prediction
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
@@ -104,7 +109,7 @@ conda deactivate
 #### Step4 Modify faa file ####
 cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*faa
+sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa
 
 #### Step5 Building index ####
 for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*gff

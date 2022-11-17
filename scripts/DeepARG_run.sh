@@ -22,7 +22,7 @@ done
 
 #######################################Preset####################################
 AMR_DIR_tmp=$(dirname ${INPUT_DIR})
-DeepARG_DIR=$(dirname ${AMR_DIR_tmp})/CompRanking_itermediate/AMR/DeepARG
+DeepARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/DeepARG
 
 #run DeepARG
 source ${CONDA_BIN_PATH}/activate deeparg1.0.2
@@ -42,10 +42,11 @@ else
 	echo "[TIMESTAMP] $(date) Running DeepARG prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG prediction took $(($ENDTIME - $STARTTIME)) sec."
+	mv ${INPUT_DIR}/*DeepARG.out* ${DeepARG_DIR}
 	touch ${PREFIX}.DeepARG.done
 fi
 
-mv ${INPUT_DIR}/*DeepARG_.out* ${DeepARG_DIR}
+
 
 conda deactivate
 

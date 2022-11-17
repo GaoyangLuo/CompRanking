@@ -1,4 +1,4 @@
-name: preprocessing_test1
+name: preprocessing_test
 channels:
   - bioconda
   - conda-forge

@@ -27,7 +27,7 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running plasmid prediction..."	
 	#Running plasflow
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
     base=${i%%.f*}
     PlasFlow.py --input ${i} --output ${base}_plasflow_predictions.tsv --threshold 0.7
@@ -36,10 +36,12 @@ else
 	echo "[TIMESTAMP] $(date) Running plasmid prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running plasmid prediction took $(($ENDTIME - $STARTTIME)) sec."
+	
+	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
 	touch ${PREFIX}.PLASFLOW.done
 fi
 conda deactivate
-mv ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_itermediate/MGE/Plasflow
+
 
 # #run DVF
 # source ~/miniconda/bin/activate dvf
