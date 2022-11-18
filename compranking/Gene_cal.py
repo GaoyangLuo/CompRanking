@@ -13,8 +13,43 @@ import pandas as pd
 import os
 import path
 import subprocess
+import optparse
 from Bio import SeqIO
 
+parser = optparse.OptionParser()
+parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
+                  help = "director contained input fasta files")
+parser.add_option("-p", "--prefix", action = "store", type = "string", dest = "project_prefix",
+				 help = "set your project name as global prefix")
+parser.add_option("-o", "--output", action = "store", type = "string", dest = "output_dir",
+				 help = "director tontained output files")
+parser.add_option("-t", "--threads", action = "store", type = "string", dest = "threads",
+				 help = "how many cpus you want use")      
+parser.add_option("-c", "--config_file", action = "store", type = "string", dest = "config_file", 
+                  help = "file contains basic configeration information")           
+parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
+				  help = "The path to Kranken2 database")
+
+(options, args) = parser.parse_args()
+#path configeration
+input_dir=options.input_dir
+project_prefix=options.project_prefix
+output=options.output_dir
+threads=options.threads
+config_path=options.config_file
+database=options.database
+output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+#default parameters
+if (options.project_prefix is None):
+    project_prefix="CompRanking" #default project name
+if (options.threads is None):
+    threads = "24" #default threads
+if (options.config_file is None):
+    config_path = "../test_yaml.yaml"#default config_file path
+if (options.database is None):
+    database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
+if (options.output_dir is None):
+    output = os.path.join(input_dir,"CompRanking/CompRanking_result") #default output directory
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -154,7 +189,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     print("The relative abundance of ARG by 16S is: {}".format(abundance_arg_16S))
     print("The relative abundance of ARG by RPKK is: {}".format(abundance_arg_RPKM))
     
-    #cal subtype
+    #cal ARG subtype
     """
     subtypes including:
         All, multigrug, beta-lactam, aminoglycoside,
@@ -164,7 +199,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     """
     abundance_ARG_subtype_16S={}
     abundance_ARG_subtype_RPKM={}
-    for i , name in df_AMR_hit.iterrows():
+    for i, name in df_AMR_hit.iterrows():
         tmp_16s=0
         tmp_rpkm=0
         #16s
@@ -175,7 +210,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             abundance_ARG_subtype_16S.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(TAXO_ARG[name["ORF_ID"]]))
         #rpkm
         if abundance_ARG_subtype_RPKM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")):
-            tmp_rpkm=abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + RPKM_ARG[name["ORF_ID"]]
+            tmp_rpkm=abundance_ARG_subtype_RPKM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + RPKM_ARG[name["ORF_ID"]]
             abundance_ARG_subtype_RPKM[name["ARG_class"].split("/")[0].split(":")[0].strip(";")] = tmp_rpkm    
         else:
             abundance_ARG_subtype_RPKM.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(RPKM_ARG[name["ORF_ID"]]))   
@@ -199,36 +234,150 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     abundance_MGE_16S=0
     abundance_MGE_RPKM=0
     RPKM_MGE={}
+    TAXO_MGE={}
     for orf_MGE in DB_MobileOG_length_res:
         abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
         abundance_MGE_RPKM += 1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000)
+        TAXO_MGE.setdefault(str(orf_MGE),float((gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])))
         RPKM_MGE.setdefault(str(orf_MGE),float(1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000)))
         
     
     print("The relative abundance of MGE by 16S is: {}".format(abundance_MGE_16S))
-    print("The relative abundance of MGE by rpmk is: {}".format(abundance_MGE_RPKM))
+    print("The relative abundance of MGE by RPKK is: {}".format(abundance_MGE_RPKM))
     
-    #cal ARGs relative abundance RPKM
-    #RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
-    
+    #cal MGE subtype
+    """
+    subtypes including:
+        Insertion_Sequences=["ISFinder"]
+        Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
+        Plasmids=["COMPASS","Plasmid","ACLAME-nonphage","Multiple-nonphage" ]
+        Bacteriophages=["pVOG","GPD", "ACLAME-phage","Multiple-phage"]
+    """
+    Insertion_Sequences_db=["ISFinder"]
+    Integrative_Elements_db=["AICE","ICE","CIME","IME","immedb"]
+    Plasmids_db=["COMPASS","Plasmid"]
+    Bacteriophages_db=["pVOG","GPD"]
+    Multiple_db=["ACLAME", "Multiple"]
+    count_ref_plasmid=[]
+    count_ref_phage=[]
+    Insertion_Sequences=0
+    Integrative_Elements=0
+    Plasmids=0
+    phages=0
+    abundance_MGE_subtype_16S={}
+    abundance_MGE_subtype_RPKM={}
+    for i,name in df_MGE_hit.iterrows():
+        tmp_16s=0
+        tmp_rpkm=0
+        #record phage into dic
+        if name["MGE_Database"] in Bacteriophages_db:
+            #16s
+            if abundance_MGE_subtype_16S["phage"]:
+                tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_16S["phage"] = tmp_16s                                 
+            else:
+                abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
+            #rpkm   
+            if abundance_MGE_subtype_RPKM["phage"]:
+                tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
+            else:
+                abundance_MGE_subtype_RPKM.setdefault(str("phage"), float(RPKM_MGE[name["ORF_ID"]]))
+        
+        #record plasmid into dic
+        elif name["MGE_Database"] in Plasmids_db:
+            #16s
+            if abundance_MGE_subtype_16S["plasmid"]:
+                tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_16S["plasmid"] = tmp_16s
+            else:
+                abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))
+            #rpkm   
+            if abundance_MGE_subtype_RPKM["plasmid"]:
+                tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
+            else:
+                abundance_MGE_subtype_RPKM.setdefault(str("plasmid"), float(RPKM_MGE[name["ORF_ID"]]))
+        
+        #record Insertion_Sequences into dic
+        elif name["MGE_Database"] in Insertion_Sequences_db:
+            #16s
+            if abundance_MGE_subtype_16S["Insertion_Sequences"]:
+                tmp_16s = abundance_MGE_subtype_16S.get("Insertion_Sequences") + TAXO_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_16S["Insertion_Sequences"] = tmp_16s
+            else:
+                abundance_MGE_subtype_16S.setdefault(str("Insertion_Sequences"), float(TAXO_MGE[name["ORF_ID"]]))
+            #rpkm   
+            if abundance_MGE_subtype_RPKM["Insertion_Sequences"]:
+                tmp_rpkm = abundance_MGE_subtype_RPKM.get("Insertion_Sequences") + RPKM_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_RPKM["Insertion_Sequences"] = tmp_rpkm  
+            else:
+                abundance_MGE_subtype_RPKM.setdefault(str("Insertion_Sequences"), float(RPKM_MGE[name["ORF_ID"]]))
+        
+        #record Integrative_Elements into dic
+        elif name["MGE_Database"] in Integrative_Elements_db:
+            #16s
+            if abundance_MGE_subtype_16S["Integrative_Elements"]:
+                tmp_16s = abundance_MGE_subtype_16S.get("Integrative_Elements") + TAXO_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_16S["Integrative_Elements_db"] = tmp_16s
+            else:
+                #16s
+                abundance_MGE_subtype_16S.setdefault(str("Integrative_Elements"), float(TAXO_MGE[name["ORF_ID"]]))
+            #rpkm   
+            if abundance_MGE_subtype_RPKM["Integrative_Elements"]:
+                tmp_rpkm = abundance_MGE_subtype_RPKM.get("Integrative_Elements") + RPKM_MGE[name["ORF_ID"]]
+                abundance_MGE_subtype_RPKM["Integrative_Elements"] = tmp_rpkm
+            else:
+                abundance_MGE_subtype_RPKM.setdefault(str("Integrative_Elements"), float(RPKM_MGE[name["ORF_ID"]]))
+                    
+        #record phage and plasmid from ACLAME into dic
+        elif name["MGE_Database"] in Multiple_db:
+            if name["Taxonomy"] == "phage":
+                #16s
+                if abundance_MGE_subtype_16S["phage"]:
+                    tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
+                    abundance_MGE_subtype_16S["phage"] = tmp_16s
+                else:
+                    abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
+                #rpkm   
+                if abundance_MGE_subtype_RPKM["phage"]:
+                    tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
+                    abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
+                else:
+                    abundance_MGE_subtype_RPKM.setdefault(str("phage"), float(RPKM_MGE[name["ORF_ID"]]))
+            else: #name["Taxonomy"] != "phage"
+                #16s
+                if abundance_MGE_subtype_16S["plasmid"]:
+                    tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
+                    abundance_MGE_subtype_16S["plasmid"] = tmp_16s
+                else:
+                    abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))    
+                #rpkm  
+                if abundance_MGE_subtype_RPKM["plasmid"]:
+                    tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
+                    abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
+                else:
+                    abundance_MGE_subtype_RPKM.setdefault(str("plasmid"), float(RPKM_MGE[name["ORF_ID"]]))
     
     ###################combine it using a list##########################
     result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
     df_ARG_subtype_16S = pd.DataFrame(pd.Series(abundance_ARG_subtype_16S))
     df_ARG_subtype_RPKM = pd.DataFrame(pd.Series(abundance_ARG_subtype_RPKM))
+    df_MGE_subtype_16S = pd.DataFrame(pd.Series(abundance_MGE_subtype_16S))
+    df_MGE_subtype_RPKM = pd.DataFrame(pd.Series(abundance_MGE_subtype_RPKM))
     
-    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM
+    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM, df_MGE_subtype_16S, df_MGE_subtype_RPKM
     
     
 if __name__ == "__main__":
     #global settings
     #gloab settings
     config_path=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml")
-    input_dir="/lomi_home/gaoyang/software/CompRanking/test"
-    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
-    project_prefix="CompRanking"
-    database="/lomi_home/gaoyang/db/kraken2/202203"
-    threads="24"
+    # input_dir="/lomi_home/gaoyang/software/CompRanking/test"
+    # output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    # project_prefix="CompRanking"
+    # database="/lomi_home/gaoyang/db/kraken2/202203"
+    # threads="24"
     kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
@@ -238,9 +387,6 @@ if __name__ == "__main__":
     conda_path_str="".join(path.read_conda_path(project_prefix,path_bin,yaml_path)) #record abs path of conda bin
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
     
-    #run kranken2
-    # subprocess.call(["bash", kk2_script, 
-    #                  "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database])
     
     #input_db
     # input_deeparg_length="/lomi_home/gaoyang/software/CompRanking/databases/deepargdata1.0.2/database/v2/features.gene.length"
@@ -269,57 +415,125 @@ if __name__ == "__main__":
     # input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
     # input_SARG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_SARGrank_Protein60_Result.tsv"
     
+    #run kranken2
+    for i in file_name_base:
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
+            print("It seems that we have already done the KK2 taxonomy annotation...")
+            continue
+        else:
+            print("KK2 mpaStyle output don't exist... {}".\
+                format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
+            subprocess.call(["bash", kk2_script, 
+                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database])
+            
     #calculate relative abundance of functional genes
     for i in file_name_base:
-        #load ARGs result
-        input_rgi=os.path.join(input_dir,project_prefix,
-                               "CompRanking_intermediate/AMR/RGI",
-                                    i+"_5M_contigs.RGI.out.txt")
-        input_SARG=os.path.join(input_dir,project_prefix,
-                                "CompRanking_intermediate/AMR/ARGranking",
-                                    i+"_SARGrank_Protein60_Result.tsv")
-        input_deeparg_sure=os.path.join(input_dir,project_prefix,
-                                "CompRanking_intermediate/AMR/DeepARG", 
-                                    i+"_5M_contigs_DeepARG.out.mapping.ARG")
-        input_kk2=os.path.join(input_dir,project_prefix,
-                                "CompRanking_intermediate/preprocessing/5M_contigs", 
-                                    i+"_report_kk2_mpaStyle.txt")
-        input_AMR_sum=os.path.join(input_dir,project_prefix,
-                                "CompRanking_result",
-                                    "CompRanking_"+i+"_AMR_prediction.tsv")
+        try:
+            #load ARGs result
+            input_rgi=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/AMR/RGI",
+                                        i+"_5M_contigs.RGI.out.txt")
+            input_SARG=os.path.join(input_dir,project_prefix,
+                                    "CompRanking_intermediate/AMR/ARGranking",
+                                        i+"_SARGrank_Protein60_Result.tsv")
+            input_deeparg_sure=os.path.join(input_dir,project_prefix,
+                                    "CompRanking_intermediate/AMR/DeepARG", 
+                                        i+"_5M_contigs_DeepARG.out.mapping.ARG")
+            input_kk2=os.path.join(input_dir,project_prefix,
+                                    "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                        i+"_report_kk2_mpaStyle.txt")
+            input_AMR_sum=os.path.join(input_dir,project_prefix,
+                                    "CompRanking_result",
+                                        "CompRanking_"+i+"_AMR_MOB_prediction.tsv")
+        except:
+            raise ValueError("Missing the output...")
         
-        #load reference length
-        DB_deepARG_length = get_DB_DeepARG_len(input_deeparg_length)
-        DB_SARG_length =get_DB_SARG_len(input_sarg_structure)
-        DB_MobileOG_length=get_MobilOG_len(input_mobileOG_structure)
+        try:
+            #load reference length
+            DB_deepARG_length = get_DB_DeepARG_len(input_deeparg_length)
+            DB_SARG_length =get_DB_SARG_len(input_sarg_structure)
+            DB_MobileOG_length=get_MobilOG_len(input_mobileOG_structure)
+        except:
+            raise SystemError("Can't load reference length, please check the original files...")
         
-        result, df_ARG_subtype_16S,df_ARG_subtype_RPKM= \
-            RB_gene_sum(DB_deepARG_length,
-                DB_SARG_length, DB_MobileOG_length, 
-                    input_AMR_sum,input_kk2,input_deeparg_sure,
-                        input_rgi,input_SARG,i)
+        try:
+            #load subtype dataframe
+            result, \
+            df_ARG_subtype_16S, \
+            df_ARG_subtype_RPKM, \
+            df_MGE_subtype_16S, \
+            df_MGE_subtype_RPKM = RB_gene_sum(DB_deepARG_length,
+                                            DB_SARG_length, 
+                                            DB_MobileOG_length, 
+                                            input_AMR_sum,
+                                            input_kk2,
+                                            input_deeparg_sure,
+                                            input_rgi,
+                                            input_SARG,
+                                            i)
+            #output total relative abundance in a list    
+            output_abundance="\t".join(map(str, result))
+            #save output as tmp file
+            df_ARG_subtype_16S.to_csv(os.path.join(
+                        input_dir,
+                            "CompRanking/CompRanking_result",
+                                i+"_ARG_16sAbu_tmp.txt"),
+                                    sep="\t",header=False)
+            df_ARG_subtype_RPKM.to_csv(os.path.join(
+                        input_dir,
+                            "CompRanking/CompRanking_result",
+                                i+"_ARG_rpkmAbu_tmp.txt"),
+                                    sep="\t",header=False)
+            df_MGE_subtype_16S.to_csv(os.path.join(
+                        input_dir,
+                            "CompRanking/CompRanking_result",
+                                i+"_MGE_16sAbu_tmp.txt"),
+                                    sep="\t",header=False)
+            df_MGE_subtype_RPKM.to_csv(os.path.join(
+                        input_dir,
+                            "CompRanking/CompRanking_result",
+                                i+"_MGE_16sAbu_tmp.txt"),
+                                    sep="\t",header=False)
             
-        output="\t".join(map(str, result))
-        df_ARG_subtype_16S.to_csv(os.path.join(
-                    input_dir,
-                        "CompRanking/CompRanking_result",
-                            i+"_16sAbu_tmp.txt"),
-                                sep="\t",header=False)
-        df_ARG_subtype_RPKM.to_csv(os.path.join(
-                    input_dir,
-                        "CompRanking/CompRanking_result",
-                            i+"_rpkmAbu_tmp.txt"),
-                                sep="\t",header=False)
-        
+            with open(os.path.join(input_dir,"CompRanking/CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
+                f.write("\n" + i + "\t" + output_abundance)
+        except:
+            raise ValueError("Write to summary abundacne file failed...")
     
-        with open(os.path.join(input_dir,"CompRanking/CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
-            f.write("\n" + i + "\t" + output)
+    #check abu tmp files
+    check_point_list=[]
+    for i in file_name_base:
+        try:
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_ARG_16sAbu_tmp.txt")):
+                pass
+            else:
+                print("ARG subtype abundance 16s cal file doesn't exit...")
+                break
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_ARG_rpkmAbu_tmp.txt")):
+                pass
+            else:
+                print("ARG subtype abundance rpkm cal file doesn't exit...")
+                break
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_MGE_16sAbu_tmp.txt")):
+                pass
+            else:
+                print("MGE subtype abundance 16s cal file doesn't exit...")
+                break
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_MGE_rpkmAbu_tmp.txt")):
+                pass
+            else:
+                print("MGE subtype abundance rpkm cal file doesn't exit...")
+                break
+        except:
+            raise FileNotFoundError("subtype tmp cal file miss...")
     
-    #concat all the abu result
+    
+    #########concat all the abu result############
+    #concat ARG result
     #concat 16S
     name_list_16S=[]
     for i in file_name_base:
-        name_list_16S.append(i+"_16sAbu_tmp.txt")
+        name_list_16S.append(i+"_ARG_16sAbu_tmp.txt")
     init=0
     df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[0]),sep="\t", header=None)
     df_main.columns=["type",name_list_16S[0]]
@@ -338,15 +552,17 @@ if __name__ == "__main__":
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
-        name_list_rpkm.append(i+"_rpkmAbu_tmp.txt")
+        name_list_rpkm.append(i+"_ARG_rpkmAbu_tmp.txt")
     init=0
-    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[0]),sep="\t", header=None)
+    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[0]),
+                        sep="\t", header=None)
     df_main.columns=["type",name_list_rpkm[0]]
     for i,name in enumerate(name_list_rpkm):
         if i < len(name_list_16S)-1:
             init+=1
             if name_list_rpkm[init]:
-                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[init]),sep="\t", header=None)
+                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[init]),
+                                 sep="\t", header=None)
                 df_2.columns=["type",name_list_rpkm[init]]
                 df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
     #save rpkm subtype abu
@@ -354,6 +570,50 @@ if __name__ == "__main__":
                     input_dir,
                         "CompRanking/CompRanking_result",
                             project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
+    
+    #concat MGE result
+    #concat 16S
+    name_list_16S=[]
+    for i in file_name_base:
+        name_list_16S.append(i+"_MGE_16sAbu_tmp.txt")
+    init=0
+    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[0]),sep="\t", header=None)
+    df_main.columns=["type",name_list_16S[0]]
+    for i,name in enumerate(name_list_16S):
+        if i < len(name_list_16S)-1:
+            init+=1
+            if name_list_16S[init]:
+                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[init]),sep="\t", header=None)
+                df_2.columns=["type",name_list_16S[init]]
+                df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
+    #save 16s subtype abu
+    df_main.to_csv(os.path.join(
+                input_dir,
+                    "CompRanking/CompRanking_result",
+                        project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
+    #cal rpkm
+    name_list_rpkm=[]
+    for i in file_name_base:
+        name_list_rpkm.append(i+"_MGE_rpkmAbu_tmp.txt")
+    init=0
+    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[0]),
+                        sep="\t", header=None)
+    df_main.columns=["type",name_list_rpkm[0]]
+    for i,name in enumerate(name_list_rpkm):
+        if i < len(name_list_16S)-1:
+            init+=1
+            if name_list_rpkm[init]:
+                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[init]),
+                                 sep="\t", header=None)
+                df_2.columns=["type",name_list_rpkm[init]]
+                df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
+    #save rpkm subtype abu
+    df_main.to_csv(os.path.join(
+                    input_dir,
+                        "CompRanking/CompRanking_result",
+                            project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
+    
+#python Gene_cal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test
         
         
     
