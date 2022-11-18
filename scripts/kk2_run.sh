@@ -22,7 +22,7 @@ while getopts "i:p:m:t:d:o" option; do
 	esac
 done
 
-${DATABASE}=/lomi_home/gaoyang/db/kraken2/202203
+# ${DATABASE}=/lomi_home/gaoyang/db/kraken2/202203
 #run kk2
 source ${CONDA_BIN_PATH}/activate argranker
 
@@ -41,7 +41,7 @@ else
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_Conj_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/  
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_mob_unconj_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_unmob_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
-      mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
+    #   mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 	#finish Running plascad
 	echo "[TIMESTAMP] $(date) Running Kraken2 prediction... Done"
 	ENDTIME=$(date +%s)

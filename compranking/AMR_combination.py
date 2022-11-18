@@ -356,8 +356,10 @@ class AMRCombined():
             elif name["MGE_Database"] in Multiple:
                 if name["Taxonomy"] != "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
+                    count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
                 elif name["Taxonomy"] == "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
+                    count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
                 else:
                     continue
             else:
