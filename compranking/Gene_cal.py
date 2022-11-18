@@ -469,23 +469,23 @@ if __name__ == "__main__":
             output_abundance="\t".join(map(str, result))
             #save output as tmp file
             df_ARG_subtype_16S.to_csv(os.path.join(
-                        input_dir,
-                            "CompRanking/CompRanking_result",
+                        input_dir,project_prefix,
+                            "CompRanking_result",
                                 i+"_ARG_16sAbu_tmp.txt"),
                                     sep="\t",header=False)
             df_ARG_subtype_RPKM.to_csv(os.path.join(
-                        input_dir,
-                            "CompRanking/CompRanking_result",
+                        input_dir,project_prefix,
+                            "CompRanking_result",
                                 i+"_ARG_rpkmAbu_tmp.txt"),
                                     sep="\t",header=False)
             df_MGE_subtype_16S.to_csv(os.path.join(
-                        input_dir,
-                            "CompRanking/CompRanking_result",
+                        input_dir,project_prefix,
+                            "CompRanking_result",
                                 i+"_MGE_16sAbu_tmp.txt"),
                                     sep="\t",header=False)
             df_MGE_subtype_RPKM.to_csv(os.path.join(
-                        input_dir,
-                            "CompRanking/CompRanking_result",
+                        input_dir,project_prefix,
+                            "CompRanking_result",
                                 i+"_MGE_rpkmAbu_tmp.txt"),
                                     sep="\t",header=False)
             
@@ -498,22 +498,22 @@ if __name__ == "__main__":
     check_point_list=[]
     for i in file_name_base:
         try:
-            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_ARG_16sAbu_tmp.txt")):
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_16sAbu_tmp.txt")):
                 pass
             else:
                 print("ARG subtype abundance 16s cal file doesn't exit...")
                 break
-            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_ARG_rpkmAbu_tmp.txt")):
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_rpkmAbu_tmp.txt")):
                 pass
             else:
                 print("ARG subtype abundance rpkm cal file doesn't exit...")
                 break
-            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_MGE_16sAbu_tmp.txt")):
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_16sAbu_tmp.txt")):
                 pass
             else:
                 print("MGE subtype abundance 16s cal file doesn't exit...")
                 break
-            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking/CompRanking_result",i +"_MGE_rpkmAbu_tmp.txt")):
+            if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_rpkmAbu_tmp.txt")):
                 pass
             else:
                 print("MGE subtype abundance rpkm cal file doesn't exit...")
@@ -606,6 +606,7 @@ if __name__ == "__main__":
                     input_dir,
                         "CompRanking/CompRanking_result",
                             project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
+
     
 #python Gene_cal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test
         
