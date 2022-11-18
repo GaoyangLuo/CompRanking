@@ -29,6 +29,9 @@ parser.add_option("-c", "--config_file", action = "store", type = "string", dest
                   help = "file contains basic configeration information")           
 parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
 				  help = "The path to Kranken2 database")
+parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
+									default='1', help = "restart all the processs")
+
 
 (options, args) = parser.parse_args()
 #path configeration
@@ -50,6 +53,8 @@ if (options.database is None):
     database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
 if (options.output_dir is None):
     output = os.path.join(input_dir,"CompRanking/CompRanking_result") #default output directory
+if options.restart == "1":
+    os.system("rm *done")
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -244,26 +249,14 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     
     print("The relative abundance of MGE by 16S is: {}".format(abundance_MGE_16S))
     print("The relative abundance of MGE by RPKK is: {}".format(abundance_MGE_RPKM))
-    
+    print(TAXO_MGE)
+    print(RPKM_MGE)
     #cal MGE subtype
-    """
-    subtypes including:
-        Insertion_Sequences=["ISFinder"]
-        Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
-        Plasmids=["COMPASS","Plasmid","ACLAME-nonphage","Multiple-nonphage" ]
-        Bacteriophages=["pVOG","GPD", "ACLAME-phage","Multiple-phage"]
-    """
     Insertion_Sequences_db=["ISFinder"]
     Integrative_Elements_db=["AICE","ICE","CIME","IME","immedb"]
-    Plasmids_db=["COMPASS","Plasmid"]
+    Plasmids_db=["COMPASS","Plasmid RefSeq"]
     Bacteriophages_db=["pVOG","GPD"]
     Multiple_db=["ACLAME", "Multiple"]
-    count_ref_plasmid=[]
-    count_ref_phage=[]
-    Insertion_Sequences=0
-    Integrative_Elements=0
-    Plasmids=0
-    phages=0
     abundance_MGE_subtype_16S={}
     abundance_MGE_subtype_RPKM={}
     for i,name in df_MGE_hit.iterrows():
@@ -272,13 +265,13 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         #record phage into dic
         if name["MGE_Database"] in Bacteriophages_db:
             #16s
-            if abundance_MGE_subtype_16S["phage"]:
+            if abundance_MGE_subtype_16S.get("phage"):
                 tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_16S["phage"] = tmp_16s                                 
             else:
                 abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
             #rpkm   
-            if abundance_MGE_subtype_RPKM["phage"]:
+            if abundance_MGE_subtype_RPKM.get("phage"):
                 tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
             else:
@@ -287,13 +280,13 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         #record plasmid into dic
         elif name["MGE_Database"] in Plasmids_db:
             #16s
-            if abundance_MGE_subtype_16S["plasmid"]:
+            if abundance_MGE_subtype_16S.get("plasmid"):
                 tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_16S["plasmid"] = tmp_16s
             else:
                 abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))
             #rpkm   
-            if abundance_MGE_subtype_RPKM["plasmid"]:
+            if abundance_MGE_subtype_RPKM.get("plasmid"):
                 tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
             else:
@@ -302,13 +295,13 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         #record Insertion_Sequences into dic
         elif name["MGE_Database"] in Insertion_Sequences_db:
             #16s
-            if abundance_MGE_subtype_16S["Insertion_Sequences"]:
+            if abundance_MGE_subtype_16S.get("Insertion_Sequences"):
                 tmp_16s = abundance_MGE_subtype_16S.get("Insertion_Sequences") + TAXO_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_16S["Insertion_Sequences"] = tmp_16s
             else:
                 abundance_MGE_subtype_16S.setdefault(str("Insertion_Sequences"), float(TAXO_MGE[name["ORF_ID"]]))
             #rpkm   
-            if abundance_MGE_subtype_RPKM["Insertion_Sequences"]:
+            if abundance_MGE_subtype_RPKM.get("Insertion_Sequences"):
                 tmp_rpkm = abundance_MGE_subtype_RPKM.get("Insertion_Sequences") + RPKM_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_RPKM["Insertion_Sequences"] = tmp_rpkm  
             else:
@@ -317,47 +310,48 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         #record Integrative_Elements into dic
         elif name["MGE_Database"] in Integrative_Elements_db:
             #16s
-            if abundance_MGE_subtype_16S["Integrative_Elements"]:
+            if abundance_MGE_subtype_16S.get("Integrative_Elements"):
                 tmp_16s = abundance_MGE_subtype_16S.get("Integrative_Elements") + TAXO_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_16S["Integrative_Elements_db"] = tmp_16s
+                abundance_MGE_subtype_16S["Integrative_Elements"] = tmp_16s
             else:
                 #16s
                 abundance_MGE_subtype_16S.setdefault(str("Integrative_Elements"), float(TAXO_MGE[name["ORF_ID"]]))
             #rpkm   
-            if abundance_MGE_subtype_RPKM["Integrative_Elements"]:
+            if abundance_MGE_subtype_RPKM.get("Integrative_Elements"):
                 tmp_rpkm = abundance_MGE_subtype_RPKM.get("Integrative_Elements") + RPKM_MGE[name["ORF_ID"]]
                 abundance_MGE_subtype_RPKM["Integrative_Elements"] = tmp_rpkm
             else:
                 abundance_MGE_subtype_RPKM.setdefault(str("Integrative_Elements"), float(RPKM_MGE[name["ORF_ID"]]))
-                    
+                
         #record phage and plasmid from ACLAME into dic
         elif name["MGE_Database"] in Multiple_db:
             if name["Taxonomy"] == "phage":
                 #16s
-                if abundance_MGE_subtype_16S["phage"]:
+                if abundance_MGE_subtype_16S.get("phage"):
                     tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
                     abundance_MGE_subtype_16S["phage"] = tmp_16s
                 else:
                     abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
                 #rpkm   
-                if abundance_MGE_subtype_RPKM["phage"]:
+                if abundance_MGE_subtype_RPKM.get("phage"):
                     tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
                     abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
                 else:
                     abundance_MGE_subtype_RPKM.setdefault(str("phage"), float(RPKM_MGE[name["ORF_ID"]]))
             else: #name["Taxonomy"] != "phage"
                 #16s
-                if abundance_MGE_subtype_16S["plasmid"]:
+                if abundance_MGE_subtype_16S.get("plasmid"):
                     tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
                     abundance_MGE_subtype_16S["plasmid"] = tmp_16s
                 else:
                     abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))    
                 #rpkm  
-                if abundance_MGE_subtype_RPKM["plasmid"]:
+                if abundance_MGE_subtype_RPKM.get("plasmid"):
                     tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
                     abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
                 else:
                     abundance_MGE_subtype_RPKM.setdefault(str("plasmid"), float(RPKM_MGE[name["ORF_ID"]]))
+    print(abundance_MGE_subtype_16S, abundance_MGE_subtype_RPKM)
     
     ###################combine it using a list##########################
     result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
@@ -492,7 +486,7 @@ if __name__ == "__main__":
             df_MGE_subtype_RPKM.to_csv(os.path.join(
                         input_dir,
                             "CompRanking/CompRanking_result",
-                                i+"_MGE_16sAbu_tmp.txt"),
+                                i+"_MGE_rpkmAbu_tmp.txt"),
                                     sep="\t",header=False)
             
             with open(os.path.join(input_dir,"CompRanking/CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
