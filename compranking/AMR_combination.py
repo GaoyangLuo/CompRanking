@@ -169,7 +169,7 @@ class AMRCombined():
         
         #determine dvf_pred
         for index, name in df_dvf.iterrows():
-            if (df_dvf["score"][index]>=0.8):
+            if (df_dvf["score"][index]>=0.75):
                 if (df_dvf["pvalue"][index] <= 0.05):
                     df_dvf["dvf_pred"][index]="phage"
         df_dvf=df_dvf[["name","dvf_pred"]]
@@ -204,13 +204,12 @@ class AMRCombined():
         df_plasflow_dvf_contig.columns=["Contig", "ORF_ID", "MGE_prediction"]
         
         ##merge seeker results
-        
         PF_res=df_plasflow_dvf_contig
         seeker_res=pd.read_csv(seeker_table, sep="\t", header=None)
         #Write seeker result into dictionary
         dic={} 
         for i, names in seeker_res.iterrows():
-            if  seeker_res[2][i] <= 0.8:
+            if  seeker_res[2][i] <= 0.75:
                 keys=names[0]
                 values="Bacteria"
                 dic[keys]=values
@@ -296,8 +295,15 @@ class AMRCombined():
         df_mobileOG_structure=pd.read_csv(input_mobileOG_structure, sep="\t", header=0) 
         #creat dic index of structure
         mobilOG_structure_dic={}
+        mobilOG_structure_db_dic={}
         for i, name in df_mobileOG_structure.iterrows():
             mobilOG_structure_dic[df_mobileOG_structure["mobileOG_ID"][i]]=df_mobileOG_structure["length"][i]
+            mobilOG_structure_db_dic[df_mobileOG_structure["mobileOG_ID"][i]]=df_mobileOG_structure["Database"][i]
+        #modify database
+        db_tmp=[]
+        for i, name in df_MobileOG_concat.iterrows():
+            db_tmp.append(mobilOG_structure_db_dic[name["mobileOG_ID"]])
+        df_MobileOG_concat["MGE_Database"]=db_tmp
         #cal identity and cov
         #identity60
         df_MobileOG_concat["coverage"]="-"
@@ -337,7 +343,7 @@ class AMRCombined():
         #Using MobileOG result filter
         Insertion_Sequences=["ISFinder"]
         Integrative_Elements=["AICE","ICE","CIME","IME","immedb"]
-        Plasmids=["COMPASS","Plasmid"]
+        Plasmids=["COMPASS","Plasmid RefSeq"]
         Bacteriophages=["pVOG","GPD"]
         Multiple=["ACLAME", "Multiple"]
         count_ref_plasmid=[]

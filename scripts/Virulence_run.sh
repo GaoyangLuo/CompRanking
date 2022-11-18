@@ -66,7 +66,7 @@ else
 	for i in ${INPUT_DIR}/*faa
 	do
 	base=${i%%.f*}
-	diamond blastp --query ${i} --db ${WORK_DIR}/databases/VFDB/VFDB_setB_pro.fas.dmnd --out ${base}_VFDB.out --evalue 1e-5 --outfmt 6 --threads ${THREADS} 
+	diamond blastp --query ${i} --db ${WORK_DIR}/databases/VFDB/VFDB_setB_pro.fas.dmnd --out ${base}_VFDB.out --evalue 1e-5 --outfmt 6 --threads ${THREADS} --max-target-seqs 1
 	done
 	#finish Running VF prediction
 	echo "[TIMESTAMP] $(date) Running VFDB prediction... Done"
