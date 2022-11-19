@@ -28,8 +28,6 @@ class AMRCombined():
     #     self.virulence_dir=VFInputDir
     #     self.contigIndex=contigIndex
 
-    
-    
     def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG):
         #######################Processing deepARG,RGI, SARG###################################
         #open RGI results

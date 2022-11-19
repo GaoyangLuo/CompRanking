@@ -564,7 +564,6 @@ if __name__ == "__main__":
                     input_dir,
                         "CompRanking/CompRanking_result",
                             project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
-    
     #concat MGE result
     #concat 16S
     name_list_16S=[]
