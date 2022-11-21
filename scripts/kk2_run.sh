@@ -24,7 +24,7 @@ done
 
 # ${DATABASE}=/lomi_home/gaoyang/db/kraken2/202203
 #run kk2
-source ${CONDA_BIN_PATH}/activate argranker
+source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
 if [ -e ${PREFIX}.Kraken2.done ]; then
 	echo "plascad file existed..."
