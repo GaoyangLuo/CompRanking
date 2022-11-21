@@ -1,4 +1,5 @@
 import sys
+import os
 from os.path import basename, isfile
 from .seeker import SeekerFasta
 

@@ -43,7 +43,7 @@ done
 
 
 #run DVF
-source ${CONDA_BIN_PATH}/activate dvf
+source ${CONDA_BIN_PATH}/activate CompRanking_dvf_env
 if [ -e ${PREFIX}.DVF.done ]; then
 	echo "The first round phage prediction file existed..."
 else
@@ -53,7 +53,7 @@ else
 	#Running DVF 
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
-    python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF -c 16 -l 500
+    python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF -c ${THREADS} -l 500
     done
 	#finish Running DVF
 	echo "[TIMESTAMP] $(date) Running the first round phage prediction... Done"
@@ -64,7 +64,7 @@ fi
 conda deactivate
 
 #run Seeker
-source ${CONDA_BIN_PATH}/activate seeker
+source ${CONDA_BIN_PATH}/activate CompRanking_seeker_env
 if [ -e ${PREFIX}.SEEKER.done ]; then
 	echo "The second round phage prediction file existed..."
 else

@@ -1,4 +1,4 @@
-name: preprocessing_test
+name: CompRanking_preprocessing_env
 channels:
   - bioconda
   - conda-forge

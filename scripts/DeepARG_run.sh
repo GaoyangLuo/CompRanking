@@ -25,7 +25,7 @@ AMR_DIR_tmp=$(dirname ${INPUT_DIR})
 DeepARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/DeepARG
 
 #run DeepARG
-source ${CONDA_BIN_PATH}/activate deeparg1.0.2
+source ${CONDA_BIN_PATH}/activate CompRanking_deeparg_env
 #input=/lomi_home/gaoyang/microplastic_test/metacompare_data/2_assembly/5M/faa
 if [ -e ${PREFIX}.DeepARG.done ]; then
 	echo "DeepARG file existed..."

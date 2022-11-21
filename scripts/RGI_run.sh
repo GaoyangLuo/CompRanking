@@ -25,7 +25,7 @@ AMR_DIR_tmp=$(dirname ${INPUT_DIR})
 RGI_DIR=$(dirname ${AMR_DIR_tmp})/AMR/RGI
 
 #run RGI
-source ${CONDA_BIN_PATH}/activate rgi
+source ${CONDA_BIN_PATH}/activate CompRanking_rgi_env
 #input=/lomi_home/gaoyang/microplastic_test/metacompare_data/2_assembly/5M/faa
 if [ -e ${PREFIX}.RGI.done ]; then
 	echo "RGI file existed..."
