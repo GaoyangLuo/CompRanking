@@ -38,7 +38,7 @@ while getopts "p:i:m:t:o" option; do
 		*) exit 1;;
 	esac
 done
-source ${CONDA_BIN_PATH}/activate argranker
+source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
 # if [ -e ${PREFIX}.ARG_ranking.done ]; then
 # 	echo "ARG_ranking predition file existed..."

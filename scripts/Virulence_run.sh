@@ -53,7 +53,7 @@ echo ${INPUT_DIR}
 # mv ${INPUT_DIR}/*hmmscan ${VIR_DIR}
 
 #VFDB
-source ${CONDA_BIN_PATH}/activate argranker
+source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
 if [ -e ${PREFIX}.VFDB.done ]; then
 	echo "Virulence predition file existed..."
@@ -77,7 +77,7 @@ else
 fi
 
 #PATRIC
-source ${CONDA_BIN_PATH}/activate argranker
+source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
 if [ -e ${PREFIX}.PATRIC.done ]; then
 	echo "Virulence predition file existed..."
