@@ -68,7 +68,7 @@ PLASCAD_PREDICTION="./scripts/plascad_run.sh"
 if (options.project_prefix is None):
     project_prefix="CompRanking" #default project name
 if (options.threads is None):
-    threads = "12" #default threads
+    threads = "32" #default threads
 if (options.config_file is None):
     config_path = "./test_yaml.yaml"#default config_file path
 if options.restart == "1":

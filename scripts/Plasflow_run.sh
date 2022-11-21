@@ -18,7 +18,7 @@ while getopts "p:i:m:t:o" option; do
 done
 
 #run plasflow
-source ${CONDA_BIN_PATH}/activate plasflow
+source ${CONDA_BIN_PATH}/activate CompRanking_plasflow_env #plasflow
 
 if [ -e ${PREFIX}.PLASFLOW.done ]; then
 	echo "plasflow file existed..."

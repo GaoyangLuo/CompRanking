@@ -22,7 +22,7 @@ while getopts "i:p:m:t:o" option; do
 done
 
 #run plascad
-source ${CONDA_BIN_PATH}/activate hmmer
+source ${CONDA_BIN_PATH}/activate CompRanking_hmmer_env
 
 if [ -e ${PREFIX}.PLASCAD.done ]; then
 	echo "plascad file existed..."

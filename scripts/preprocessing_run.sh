@@ -22,7 +22,7 @@ done
 # echo ${INPUT_DIR}
 
 #### STEP1 Ativate preprocessing env ####
-source $CONDA_BIN_PATH/activate preprocessing_test
+source $CONDA_BIN_PATH/activate CompRanking_preprocessing_env
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file

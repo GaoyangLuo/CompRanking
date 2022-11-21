@@ -17,7 +17,7 @@ conda env create -f envs/hmmer.yaml
 #adjust seeker env
 CONDA_BIN=`cat ${SCRIPT_PATH}/test_yaml.yaml |shyaml get-value CompRanking.abs_path_to_conda_bin`
 CONDA_PATH=$(dirname ${CONDA_BIN})
-SEEKER_DIR=${CONDA_PATH}/envs/seeker/lib/python3.7/site-packages/seeker
+SEEKER_DIR=${CONDA_PATH}/envs/CompRanking_seeker_env/lib/python3.7/site-packages/seeker
 rm ${SEEKER_DIR}/command_line.py && cp ${SCRIPT_PATH}/scripts/command_line.py ${SEEKER_DIR}
 
 #check 
