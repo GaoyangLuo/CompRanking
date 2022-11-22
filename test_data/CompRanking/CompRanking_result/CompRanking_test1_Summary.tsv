@@ -1,0 +1,22 @@
+Contig	ORF_ID	ARG_prediction	ARG_class	ARG_Database	ARG_rank	MGE_prediction	MGE_Name	MGE_Taxonomy	MGE_Category	MGE_Database	Mobility	Viculence_factor	VF_Category	VF_ESKAPE	Pathogenicity	ARG_Rank(in-situ)
+k119_63457	1_1	-	-	-	-	plasmid	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_63457	1_2	CAMP-REGULATORY_PROTEIN/CAMP-REGULATORY PROTEIN(SARG)	unclassified	DeepARG/SARG	IV	plasmid	-	-	-	-	-	vfr	Adherence	Positive	Pathogenic	I
+k119_63457	1_3	-	-	-	-	plasmid	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_137067	2_1	TETU	tetracycline	RGI	-	plasmid	NA:Keyword	replication/recombination/repair	initiation,copy	COMPASS	mob_unconj	-	-	-	Pathogenic	I
+k119_137067	2_2	-	-	-	-	plasmid	-	-	-	-	mob_unconj	-	-	-	Pathogenic	IV
+k119_137067	2_3	-	-	-	-	plasmid	-	-	-	-	mob_unconj	-	-	-	Pathogenic	IV
+k119_137067	2_4	-	-	-	-	plasmid	-	-	-	-	mob_unconj	-	-	-	Pathogenic	IV
+k119_137067	2_5	-	-	-	-	plasmid	-	-	-	-	mob_unconj	-	-	-	Pathogenic	IV
+k119_127248	3_1	TETU	tetracycline	RGI	-	plasmid	NA:Keyword	replication/recombination/repair	initiation,copy	Plasmid RefSeq	mob_unconj	-	-	-	Pathogenic	I
+k119_275757	4_1	TETU	tetracycline	SARG	III	plasmid	NA:Keyword	replication/recombination/repair	initiation,copy	COMPASS	mob_unconj	-	-	-	-	II
+k119_10079	5_1	-	-	-	-	phage	-	-	-	-	-	-	-	-	-	IV
+k119_10079	5_2	UGD	peptide	DeepARG	-	phage	-	-	-	-	-	-	-	-	-	II
+k119_10079	5_3	-	-	-	-	phage	-	-	-	-	-	-	-	-	-	IV
+k119_35	6_1	-	-	-	-	unclassified	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_35	6_2	-	-	-	-	unclassified	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_35	6_3	-	-	-	-	unclassified	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_35	6_4	-	-	-	-	unclassified	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_35	6_5	-	-	-	-	unclassified	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_135860	7_1	ESCHERICHIA COLI EF-TU MUTANTS CONFERRING RESISTANCE TO PULVOMYCIN	elfamycin	RGI	-	phage	-	-	-	-	-	-	-	-	Pathogenic	I
+k119_267039	8_1	-	-	-	-	plasmid	-	-	-	-	-	-	-	-	Pathogenic	IV
+k119_267039	8_2	BACA	bacitracin	SARG	IV	plasmid	-	-	-	-	-	-	-	-	Pathogenic	I

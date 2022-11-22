@@ -72,7 +72,7 @@ if (options.threads is None):
 if (options.config_file is None):
     config_path = "./test_yaml.yaml"#default config_file path
 if options.restart == "1":
-    os.system("rm *done")
+    os.system("rm " + project_prefix + "*done")
     
 
 #===============================================================================
@@ -139,14 +139,14 @@ if __name__ == '__main__':
     
     #Write in abs conda path
     path_bin="abs_path_to_conda_bin"
-    conda_path_str="".join(path.read_conda_path(project_prefix,path_bin,yaml_path)) #record abs path of conda bin
+    conda_path_str="".join(path.read_conda_path("CompRanking",path_bin,yaml_path)) #record abs path of conda bin
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
     
     ################################### Step 1 Preprocessing ################################
     start_all = datetime.datetime.now() 
     start_prepro = datetime.datetime.now() #time start
     print("Preprocessing fasta files...")
-    subprocess.call(["bash", PREPROCESSING, "-i", input_dir]) 
+    subprocess.call(["bash", PREPROCESSING, "-i", input_dir, "-p", project_prefix, "-t", threads]) 
     end_prepro = datetime.datetime.now() #time end
     print("Step Preprocessing cost time: {}".format(end_prepro-start_prepro))
     
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     
     ###################rankARG########################
     ##fixed settings
-    input_argrank="/lomi_home/gaoyang/software/CompRanking/databases/SARG/ARG_rank.txt"
+    input_argrank="databases/SARG/ARG_rank.txt"
     input_sarg_length="databases/SARG/SARG.db.fasta.length"
     input_sarg_structure="databases/SARG/SARG.structure.txt" #"/lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.structure.txt"
     SARG_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking") #fixed path
