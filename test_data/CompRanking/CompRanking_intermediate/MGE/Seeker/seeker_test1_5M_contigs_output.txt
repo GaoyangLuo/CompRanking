@@ -1,0 +1,8 @@
+k119_63457	Bacteria	0.11
+k119_137067	Bacteria	0.39
+k119_127248	Bacteria	0.27
+k119_275757	Bacteria	0.31
+k119_10079	Phage	0.76
+k119_35	Bacteria	0.37
+k119_135860	Phage	0.8
+k119_267039	Phage	0.68

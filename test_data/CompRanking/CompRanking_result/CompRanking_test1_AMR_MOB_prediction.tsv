@@ -1,0 +1,22 @@
+Contig	ORF_ID	ARG_prediction	ARG_class	SNPs	Database	ARG_rank	CompRanking_MGE_prediction	mobileOG_ID	Gene_Name	Taxonomy	Major_Category	MGE_Database	coverage	MOB
+k119_63457	1_1	-	-	-	-	-	plasmid	-	-	-	-	-	-	-
+k119_63457	1_2	CAMP-REGULATORY_PROTEIN/CAMP-REGULATORY PROTEIN(SARG)	unclassified	-	DeepARG/SARG	IV	plasmid	-	-	-	-	-	-	-
+k119_63457	1_3	-	-	-	-	-	plasmid	-	-	-	-	-	-	-
+k119_137067	2_1	TETU	tetracycline	-	RGI	-	plasmid	mobileOG_000399190	NA:Keyword	replication/recombination/repair	initiation,copy	COMPASS	0.831081081081081	mob_unconj
+k119_137067	2_2	-	-	-	-	-	plasmid	-	-	-	-	-	-	mob_unconj
+k119_137067	2_3	-	-	-	-	-	plasmid	-	-	-	-	-	-	mob_unconj
+k119_137067	2_4	-	-	-	-	-	plasmid	-	-	-	-	-	-	mob_unconj
+k119_137067	2_5	-	-	-	-	-	plasmid	-	-	-	-	-	-	mob_unconj
+k119_127248	3_1	TETU	tetracycline	-	RGI	-	plasmid	mobileOG_000750092	NA:Keyword	replication/recombination/repair	initiation,copy	Plasmid RefSeq	0.8944281524926686	mob_unconj
+k119_275757	4_1	TETU	tetracycline	-	SARG	III	plasmid	mobileOG_000415137	NA:Keyword	replication/recombination/repair	initiation,copy	COMPASS	0.8984771573604061	mob_unconj
+k119_10079	5_1	-	-	-	-	-	phage	-	-	-	-	-	-	-
+k119_10079	5_2	UGD	peptide	-	DeepARG	-	phage	-	-	-	-	-	-	-
+k119_10079	5_3	-	-	-	-	-	phage	-	-	-	-	-	-	-
+k119_35	6_1	-	-	-	-	-	unclassified	-	-	-	-	-	-	-
+k119_35	6_2	-	-	-	-	-	unclassified	-	-	-	-	-	-	-
+k119_35	6_3	-	-	-	-	-	unclassified	-	-	-	-	-	-	-
+k119_35	6_4	-	-	-	-	-	unclassified	-	-	-	-	-	-	-
+k119_35	6_5	-	-	-	-	-	unclassified	-	-	-	-	-	-	-
+k119_135860	7_1	ESCHERICHIA COLI EF-TU MUTANTS CONFERRING RESISTANCE TO PULVOMYCIN	elfamycin	R234F	RGI	-	phage	-	-	-	-	-	-	-
+k119_267039	8_1	-	-	-	-	-	plasmid	-	-	-	-	-	-	-
+k119_267039	8_2	BACA	bacitracin	-	SARG	IV	plasmid	-	-	-	-	-	-	-
