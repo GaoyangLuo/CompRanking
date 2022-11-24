@@ -173,7 +173,7 @@ class AMRCombined():
         df_dvf=df_dvf[["name","dvf_pred"]]
         
         #open df_plasflow
-        df_plasflow=pd.read_csv(input_plasflow,sep="\t",header=0,index_col=0)
+        df_plasflow=pd.read_csv(input_plasflow,sep="\t",header=0)#index_col=0
         df_plasflow["label"]=df_plasflow["label"].str.split(".", expand=True)[0]
         df_plasflow=df_plasflow[["contig_name","label"]]
         
@@ -192,10 +192,15 @@ class AMRCombined():
             if df_plasflow_dvf_contig["dvf_pred"][i] == "phage":
                 if df_plasflow_dvf_contig["label"][i] == "unclassified":
                     df_plasflow_dvf_contig["tmp"][i] = "phage"
-                else:
+                elif df_plasflow_dvf_contig["label"][i] == "-":
+                    df_plasflow_dvf_contig["tmp"][i] = "phage"
+                else:                
                     df_plasflow_dvf_contig["tmp"][i] = "ambiguous " + "(" + df_plasflow_dvf_contig["label"][i] + "/" + "phage" + ")"
             else:
-                df_plasflow_dvf_contig["tmp"][i] = df_plasflow_dvf_contig["label"][i]
+                if df_plasflow_dvf_contig["label"][i] == "-":
+                    df_plasflow_dvf_contig["tmp"][i] = "unclassified"
+                else:
+                    df_plasflow_dvf_contig["tmp"][i] = df_plasflow_dvf_contig["label"][i]
         
         #check results
         df_plasflow_dvf_contig=df_plasflow_dvf_contig.drop(["label","dvf_pred"],axis=1,inplace=False)
@@ -382,9 +387,10 @@ if __name__ == "__main__":
     import MOB_concat
     import Virulence_processing
     #gloab settings
+    project_prefix="CompRanking"
     input_dir="/lomi_home/gaoyang/software/CompRanking/test"
     input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
-    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    output=os.path.join(input_dir,project_prefix,"CompRanking_result")
     project_prefix="CompRanking"
     
     #AMR combine

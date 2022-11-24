@@ -62,15 +62,15 @@ def main():
     dirname = os.path.dirname(os.path.abspath(args.i))
     os.chdir(dirname)
 ###################################### Prodigal ###########################################################
-    cmdprodigal_meta = "prodigal"  + " -i "  + str(file_input) + \
-                " -a " + str(file_name) + ".faa " + " -p meta -q -o temp.txt"
-    cmdprodigal_normal = "prodigal"  + " -i "  + str(file_input) + \
-                " -a " + str(file_name) + ".faa " + " -q -o temp.txt"
-    if args.n:
-        os.system(cmdprodigal_normal)
-    else:
-        os.system(cmdprodigal_meta)
-    os.remove("temp.txt")
+    # cmdprodigal_meta = "prodigal"  + " -i "  + str(file_input) + \
+    #             " -a " + str(file_name) + ".faa " + " -p meta -q -o temp.txt"
+    # cmdprodigal_normal = "prodigal"  + " -i "  + str(file_input) + \
+    #             " -a " + str(file_name) + ".faa " + " -q -o temp.txt"
+    # if args.n:
+    #     os.system(cmdprodigal_normal)
+    # else:
+    #     os.system(cmdprodigal_meta)
+    # os.remove("temp.txt")
 ###################################### MOB hmmer ###############################################################
     mob_hmm = os.path.join(directory, "database/hmm_module/MOB_hmm")
     for root, dirnames, filenames in os.walk(mob_hmm):
