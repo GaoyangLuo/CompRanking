@@ -41,7 +41,7 @@ output=options.output_dir
 threads=options.threads
 config_path=options.config_file
 database=options.database
-output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+output=os.path.join(input_dir,project_prefix,"CompRanking_result")
 #default parameters
 if (options.project_prefix is None):
     project_prefix="CompRanking" #default project name
@@ -52,7 +52,7 @@ if (options.config_file is None):
 if (options.database is None):
     database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
 if (options.output_dir is None):
-    output = os.path.join(input_dir,"CompRanking/CompRanking_result") #default output directory
+    output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
 if options.restart == "1":
     os.system("rm *done")
 
@@ -378,7 +378,7 @@ if __name__ == "__main__":
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
     #Write in abs conda path
     path_bin="abs_path_to_conda_bin"
-    conda_path_str="".join(path.read_conda_path(project_prefix,path_bin,yaml_path)) #record abs path of conda bin
+    conda_path_str="".join(path.read_conda_path("CompRanking",path_bin,yaml_path)) #record abs path of conda bin
     print("The absolute path to conda bin is:{0}".format(conda_path_str)) 
     
     
@@ -489,7 +489,7 @@ if __name__ == "__main__":
                                 i+"_MGE_rpkmAbu_tmp.txt"),
                                     sep="\t",header=False)
             
-            with open(os.path.join(input_dir,"CompRanking/CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
+            with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
                 f.write("\n" + i + "\t" + output_abundance)
         except:
             raise ValueError("Write to summary abundacne file failed...")
@@ -529,40 +529,40 @@ if __name__ == "__main__":
     for i in file_name_base:
         name_list_16S.append(i+"_ARG_16sAbu_tmp.txt")
     init=0
-    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[0]),sep="\t", header=None)
+    df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
     df_main.columns=["type",name_list_16S[0]]
     for i,name in enumerate(name_list_16S):
         if i < len(name_list_16S)-1:
             init+=1
             if name_list_16S[init]:
-                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[init]),sep="\t", header=None)
+                df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[init]),sep="\t", header=None)
                 df_2.columns=["type",name_list_16S[init]]
                 df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
     #save 16s subtype abu
     df_main.to_csv(os.path.join(
-                input_dir,
-                    "CompRanking/CompRanking_result",
+                input_dir, project_prefix,
+                    "CompRanking_result",
                         project_prefix+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
         name_list_rpkm.append(i+"_ARG_rpkmAbu_tmp.txt")
     init=0
-    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[0]),
+    df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[0]),
                         sep="\t", header=None)
     df_main.columns=["type",name_list_rpkm[0]]
     for i,name in enumerate(name_list_rpkm):
         if i < len(name_list_16S)-1:
             init+=1
             if name_list_rpkm[init]:
-                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[init]),
+                df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[init]),
                                  sep="\t", header=None)
                 df_2.columns=["type",name_list_rpkm[init]]
                 df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
     #save rpkm subtype abu
     df_main.to_csv(os.path.join(
-                    input_dir,
-                        "CompRanking/CompRanking_result",
+                    input_dir,project_prefix,
+                        "CompRanking_result",
                             project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
     #concat MGE result
     #concat 16S
@@ -570,41 +570,43 @@ if __name__ == "__main__":
     for i in file_name_base:
         name_list_16S.append(i+"_MGE_16sAbu_tmp.txt")
     init=0
-    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[0]),sep="\t", header=None)
+    df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
     df_main.columns=["type",name_list_16S[0]]
     for i,name in enumerate(name_list_16S):
         if i < len(name_list_16S)-1:
             init+=1
             if name_list_16S[init]:
-                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_16S[init]),sep="\t", header=None)
+                df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[init]),sep="\t", header=None)
                 df_2.columns=["type",name_list_16S[init]]
                 df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
     #save 16s subtype abu
     df_main.to_csv(os.path.join(
-                input_dir,
-                    "CompRanking/CompRanking_result",
+                input_dir,project_prefix,
+                    "CompRanking_result",
                         project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
         name_list_rpkm.append(i+"_MGE_rpkmAbu_tmp.txt")
     init=0
-    df_main=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[0]),
+    df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[0]),
                         sep="\t", header=None)
     df_main.columns=["type",name_list_rpkm[0]]
     for i,name in enumerate(name_list_rpkm):
         if i < len(name_list_16S)-1:
             init+=1
             if name_list_rpkm[init]:
-                df_2=pd.read_csv(os.path.join(input_dir,"CompRanking/CompRanking_result",name_list_rpkm[init]),
+                df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[init]),
                                  sep="\t", header=None)
                 df_2.columns=["type",name_list_rpkm[init]]
                 df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
     #save rpkm subtype abu
     df_main.to_csv(os.path.join(
-                    input_dir,
-                        "CompRanking/CompRanking_result",
+                    input_dir,project_prefix,
+                        "CompRanking_result",
                             project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
+    
+    os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
     
 #python Gene_cal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test

@@ -31,15 +31,17 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running plascad prediction..."	
 	#Running plascad
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*contigs.fa
     do
 	echo ${i}
     python ${WORK_DIR}/plas_cad/plascad.py -i ${i}
+	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
+	rm -rf ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*out
     done
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_Conj_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/  
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_mob_unconj_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_unmob_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
-      mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
+    #   mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 	#finish Running plascad
 	echo "[TIMESTAMP] $(date) Running plascad prediction... Done"
 	ENDTIME=$(date +%s)

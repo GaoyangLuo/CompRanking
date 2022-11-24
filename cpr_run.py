@@ -170,6 +170,7 @@ if __name__ == '__main__':
     #### MGE prediction ####
     start_MGE = datetime.datetime.now() #time start
     PLASCAD_PRED.start()
+    PLASCAD_PRED.join()
     MGE3_PRED.start()
     MGE1_PRED.start()
     MGE2_PRED.start()
@@ -184,27 +185,20 @@ if __name__ == '__main__':
     
     
     
-    # end_all = datetime.datetime.now() #time end
-    # print("All prediction cost time: {}".format(end_all-start_all))
-    #### Step 2 ARG Prediction ####
-   
-
-
-
+    end_all = datetime.datetime.now() #time end
+    print("All prediction cost time: {}".format(end_all-start_all))
+    #
     
     
+  
     
+    ###################check output########################
     #check file completeness
     # file_list=file_abs_path_list_generation(input_dir)
     # base_list=file_base_acquire(file_list)
     # print(file_list)
     # print(base_list)
     # yt.check_file_completness()
-    
-  
-    
-    ###################check output########################
-    
     
     
     ###################rankARG########################
@@ -230,7 +224,7 @@ if __name__ == '__main__':
     #gloab settings
     input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed
     input_cpr_VF_sum=os.path.join(os.path.dirname(os.path.abspath(__file__)),"databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" )#fixed
-    output=os.path.join(input_dir,"CompRanking/CompRanking_result")
+    output=os.path.join(input_dir,project_prefix,"CompRanking_result")
     
     AMR_combine=AMRCombined()
     
