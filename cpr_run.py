@@ -62,6 +62,7 @@ AMR3_PREDICTION="./scripts/SARG_run.sh"
 MGE1_PREDICTION="./scripts/Plasflow_run.sh"
 MGE2_PREDICTION="./scripts/DVF_Seeker_run.sh"
 MGE3_PREDICTION="./scripts/mobileOG_run.sh"
+MGE4_PREDICTION="./scripts/seeker_run.sh"
 VIRULENCE_PREDICTION="./scripts/Virulence_run.sh"
 PLASCAD_PREDICTION="./scripts/plascad_run.sh"
 #default parameters
@@ -88,17 +89,20 @@ def ARG2_prediction():#deeparg
                      "-i", deeparg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])   
 def ARG3_prediction():#sarg
     subprocess.call(["bash", AMR3_PREDICTION, 
-                        "-i", sarg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
+                    "-i", sarg_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
 ##MGE prediction
 def MGE1_prediction(): #plasflow
     subprocess.call(["bash", MGE1_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
-def MGE2_prediction(): #seeker&dvf
+def MGE2_prediction(): #dvf
     subprocess.call(["bash", MGE2_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])  
 def MGE3_prediction(): #mobileOG
     subprocess.call(["bash", MGE3_PREDICTION, 
-                     "-i", mobileog_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
+                     "-i", mobileog_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
+def MGE4_prediction(): #seeker
+    subprocess.call(["bash", MGE4_PREDICTION, 
+                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
 ##Virlence prediction
 def VIR_prediction(): #VF&Pathogen
     subprocess.call(["bash", VIRULENCE_PREDICTION, 
@@ -132,8 +136,9 @@ if __name__ == '__main__':
     AMR_PRED2 = multiprocessing.Process(target=ARG2_prediction) #deeparg
     AMR_PRED3 = multiprocessing.Process(target=ARG3_prediction) #sarg
     MGE1_PRED = multiprocessing.Process(target=MGE1_prediction) #plasflow
-    MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf&seeker
+    MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf
     MGE3_PRED = multiprocessing.Process(target=MGE3_prediction) #mobileOG
+    MGE4_PRED = multiprocessing.Process(target=MGE4_prediction) #seeker
     PLASCAD_PRED = multiprocessing.Process(target=plascad_prediction) #plascad
     VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB&PATH
     
@@ -171,23 +176,23 @@ if __name__ == '__main__':
     start_MGE = datetime.datetime.now() #time start
     PLASCAD_PRED.start()
     PLASCAD_PRED.join()
+    MGE4_PRED.start()
     MGE3_PRED.start()
+    
+
     MGE1_PRED.start()
     MGE2_PRED.start()
     MGE2_PRED.join()
+    MGE3_PRED.join()
+    AMR_PRED1.join()
+    AMR_PRED2.join()
+    AMR_PRED3.join()
+    VIR_PRED.join()
     end_MGE = datetime.datetime.now() #time end
     print("MGE prediction cost: {}".format(end_MGE-start_MGE))
-   
-    
-    
-    
-
-    
-    
-    
     end_all = datetime.datetime.now() #time end
     print("All prediction cost time: {}".format(end_all-start_all))
-    #
+    
     
     
   
