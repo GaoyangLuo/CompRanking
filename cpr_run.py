@@ -10,6 +10,8 @@
 #                                      -t <threads defalut: 24> 
 #                                      -p <project_name default:[CompRanking]> 
 #                                      -c <config_file default:[config.yaml]>
+#                                      -r <default: 1 (restart), 0 means don't restat>
+#example            :python cpr_run.py -i /lomi_home/gaoyang/software/CompRanking/test -p CompRanking -r 0 -t 2
 # required packages :optparse, subprocess 
 # notification: makesure that put PathoFact table in to ./<Project_name>_PathoFact_result 
 # and put seeker result into ./<Project_name>_seeker_result
@@ -28,8 +30,6 @@ from compranking import ARG_ranker
 from compranking import path, summary_all, MOB_concat,Virulence_processing
 from compranking.AMR_combination import AMRCombined
 
-
-
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
                   help = "director contained input fasta files")
@@ -43,6 +43,8 @@ parser.add_option("-c", "--config_file", action = "store", type = "string", dest
                   help = "file contains basic configeration information")           
 parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
 									default='1', help = "restart all the processs")
+parser.add_option("-s", "--splitLength", action = "store", type = "string", dest = "splitLength",
+									default='10000', help = "split length of the input")
 
 (options, args) = parser.parse_args()
 
@@ -54,6 +56,7 @@ output_dir=options.output_dir
 threads=options.threads
 config_path=options.config_file
 restart=options.restart
+splitLength=options.splitLength
 #scrip path
 PREPROCESSING="./scripts/preprocessing_run.sh"
 AMR1_PREDICTION="./scripts/RGI_run.sh"
@@ -74,6 +77,8 @@ if (options.config_file is None):
     config_path = "./test_yaml.yaml"#default config_file path
 if options.restart == "1":
     os.system("rm " + project_prefix + "*done")
+if (options.splitLength is None):
+    options.splitLength == "10000"
     
 
 #===============================================================================
@@ -151,7 +156,20 @@ if __name__ == '__main__':
     start_all = datetime.datetime.now() 
     start_prepro = datetime.datetime.now() #time start
     print("Preprocessing fasta files...")
-    subprocess.call(["bash", PREPROCESSING, "-i", input_dir, "-p", project_prefix, "-t", threads]) 
+    # subprocess.call(["bash", PREPROCESSING, "-i", input_dir, "-p", project_prefix, "-t", threads]) 
+    #split files
+    # for i in file_name_base:
+    #     file_abs_pth_dir=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")
+    #     input_splitfile=os.path.join(file_abs_pth_dir,i +"_5M_contigs.fa")
+    #     output_splitfile=input_dir+"/"+project_prefix+"/CompRanking_intermediate/preprocessing/5M_contigs/split/"+i+"_5M_contigs"
+    #     print(output_splitfile)
+        
+    #     try:
+    #         os.stat(output_splitfile)
+    #     except:
+    #         os.system("mkdir -p " + output_splitfile)
+    #     os.system("python split.py "+ input_splitfile + " " + splitLength + " " + output_splitfile)
+        
     end_prepro = datetime.datetime.now() #time end
     print("Step Preprocessing cost time: {}".format(end_prepro-start_prepro))
     
@@ -159,43 +177,40 @@ if __name__ == '__main__':
     #ARG search
     #time start
     start = datetime.datetime.now() 
-    AMR_PRED1.start()
-    AMR_PRED2.start()
-    AMR_PRED3.start()
+    # AMR_PRED1.start()
+    # AMR_PRED2.start()
+    # AMR_PRED3.start()
     #time end
     end = datetime.datetime.now() 
     print("ARG search cost time: {}".format(end-start))
     
     #### VF prediction ####
     start_VF = datetime.datetime.now() #time start
-    VIR_PRED.start()
+    # VIR_PRED.start()
     end_VF = datetime.datetime.now() #time end
     print("VF and Pathogen prediction cost: {}".format(end_VF-start_VF))
     
     #### MGE prediction ####
     start_MGE = datetime.datetime.now() #time start
-    PLASCAD_PRED.start()
-    PLASCAD_PRED.join()
-    MGE4_PRED.start()
-    MGE3_PRED.start()
+    # PLASCAD_PRED.start()
+    # PLASCAD_PRED.join()
+    # MGE4_PRED.start()
+    # MGE3_PRED.start()
     
 
-    MGE1_PRED.start()
-    MGE2_PRED.start()
-    MGE2_PRED.join()
-    MGE3_PRED.join()
-    AMR_PRED1.join()
-    AMR_PRED2.join()
-    AMR_PRED3.join()
-    VIR_PRED.join()
+    # MGE1_PRED.start()
+    # MGE2_PRED.start()
+    # MGE2_PRED.join()
+    # MGE3_PRED.join()
+    # AMR_PRED1.join()
+    # AMR_PRED2.join()
+    # AMR_PRED3.join()
+    # VIR_PRED.join()
+    # MGE1_PRED.join()
     end_MGE = datetime.datetime.now() #time end
     print("MGE prediction cost: {}".format(end_MGE-start_MGE))
     end_all = datetime.datetime.now() #time end
     print("All prediction cost time: {}".format(end_all-start_all))
-    
-    
-    
-  
     
     ###################check output########################
     #check file completeness
@@ -205,6 +220,11 @@ if __name__ == '__main__':
     # print(base_list)
     # yt.check_file_completness()
     
+    ###################plasflowprocessing########################
+    # try:
+    #     os.system("python treat_plsf_tmp1.py -i "+input_dir+ " -p " + project_prefix)
+    # except:
+    #     raise ImportError("Can't stat plasflow input...")
     
     ###################rankARG########################
     ##fixed settings
@@ -222,8 +242,6 @@ if __name__ == '__main__':
             ARG_ranker.arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, SARG_output)
         else:
             continue
-    
-    
     
     ###################Combine AMR########################
     #gloab settings

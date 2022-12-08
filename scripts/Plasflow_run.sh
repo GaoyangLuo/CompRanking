@@ -18,6 +18,31 @@ while getopts "p:i:m:t:o" option; do
 done
 
 #run plasflow
+# source ${CONDA_BIN_PATH}/activate CompRanking_plasflow_env #plasflow
+
+# if [ -e ${PREFIX}.PLASFLOW.done ]; then
+# 	echo "plasflow file existed..."
+# else
+# 	#time start
+# 	STARTTIME=$(date +%s)
+# 	echo "[TIMESTAMP] $(date) Running plasmid prediction..."	
+# 	#Running plasflow
+# 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
+#     do
+#     base=${i%%.f*}
+#     PlasFlow.py --input ${i} --output ${base}_plasflow_predictions.tsv --threshold 0.7
+#     done
+# 	#finish Running plasflow
+# 	echo "[TIMESTAMP] $(date) Running plasmid prediction... Done"
+# 	ENDTIME=$(date +%s)
+# 	echo "[TIMER] Running plasmid prediction took $(($ENDTIME - $STARTTIME)) sec."
+	
+# 	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
+# 	touch ${PREFIX}.PLASFLOW.done
+# fi
+# conda deactivate
+
+#run plasflow2
 source ${CONDA_BIN_PATH}/activate CompRanking_plasflow_env #plasflow
 
 if [ -e ${PREFIX}.PLASFLOW.done ]; then
@@ -27,20 +52,33 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running plasmid prediction..."	
 	#Running plasflow
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
-    do
-    base=${i%%.f*}
-    PlasFlow.py --input ${i} --output ${base}_plasflow_predictions.tsv --threshold 0.7
-    done
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/*contigs
+	do
+	base_name=$(basename $i)
+	echo $i
+	echo $base_name
+		for j in ${i}/*fasta
+    	do
+		base=${j%%.fas*}
+    	PlasFlow.py --input ${j} --output ${base}_plasflow_predictions.tsv --threshold 0.7
+		mv ${base}_plasflow_predictions.tsv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
+		rm ${i}/*plasflow*fasta
+    	done
+	cat ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/*_plasflow_predictions.tsv > ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/tmp.tsv
+	cut -f 3,6 ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/tmp.tsv > ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/${base_name}_plasflow_predictions_final.tsv
+	rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/*_plasflow_predictions.tsv
+	rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow/tmp.tsv
+	done
 	#finish Running plasflow
 	echo "[TIMESTAMP] $(date) Running plasmid prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running plasmid prediction took $(($ENDTIME - $STARTTIME)) sec."
 	
-	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
+	# mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
 	touch ${PREFIX}.PLASFLOW.done
 fi
 conda deactivate
+
 
 
 # #run DVF

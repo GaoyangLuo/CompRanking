@@ -25,6 +25,7 @@ done
 source $CONDA_BIN_PATH/activate CompRanking_preprocessing_env
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/RGI
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/DeepARG
@@ -96,7 +97,8 @@ else
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
 	do
 	base=${i%%.f*}
-	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q 
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q
+	mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/${base} #ERR.contigs_5M_contigs
 	done
 	#finish ORFs prediction
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
