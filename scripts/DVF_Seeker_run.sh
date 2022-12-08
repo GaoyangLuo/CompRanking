@@ -63,25 +63,25 @@ else
 fi
 conda deactivate
 
-#run Seeker
-source ${CONDA_BIN_PATH}/activate CompRanking_seeker_env
-if [ -e ${PREFIX}.SEEKER.done ]; then
-	echo "The second round phage prediction file existed..."
-else
-	#time start
-	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running the second round phage prediction..."	
-	#Running Seeker
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fa
-    do
-    predict-metagenome ${i}
-    done
-	#finish Running Seeker
-	echo "[TIMESTAMP] $(date) Running the second round phage prediction... Done"
-	ENDTIME=$(date +%s)
-	echo "[TIMER] Running the second round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.SEEKER.done
-	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
-fi
+# #run Seeker
+# source ${CONDA_BIN_PATH}/activate CompRanking_seeker_env
+# if [ -e ${PREFIX}.SEEKER.done ]; then
+# 	echo "The second round phage prediction file existed..."
+# else
+# 	#time start
+# 	STARTTIME=$(date +%s)
+# 	echo "[TIMESTAMP] $(date) Running the second round phage prediction..."	
+# 	#Running Seeker
+# 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fa
+#     do
+#     predict-metagenome ${i}
+#     done
+# 	#finish Running Seeker
+# 	echo "[TIMESTAMP] $(date) Running the second round phage prediction... Done"
+# 	ENDTIME=$(date +%s)
+# 	echo "[TIMER] Running the second round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
+# 	touch ${PREFIX}.SEEKER.done
+# 	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
+# fi
 
 
