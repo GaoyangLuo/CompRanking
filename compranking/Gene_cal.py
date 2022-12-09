@@ -29,8 +29,8 @@ parser.add_option("-c", "--config_file", action = "store", type = "string", dest
                   help = "file contains basic configeration information")           
 parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
 				  help = "The path to Kranken2 database")
-parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
-									default='1', help = "restart all the processs")
+# parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
+# 									default='1', help = "restart all the processs")
 
 
 (options, args) = parser.parse_args()
@@ -48,13 +48,11 @@ if (options.project_prefix is None):
 if (options.threads is None):
     threads = "24" #default threads
 if (options.config_file is None):
-    config_path = "../test_yaml.yaml"#default config_file path
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml") #"../test_yaml.yaml" default config_file path
 if (options.database is None):
     database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
 if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
-if options.restart == "1":
-    os.system("rm *done")
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -372,7 +370,7 @@ if __name__ == "__main__":
     # project_prefix="CompRanking"
     # database="/lomi_home/gaoyang/db/kraken2/202203"
     # threads="24"
-    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run.sh")
+    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
@@ -412,13 +410,13 @@ if __name__ == "__main__":
     #run kranken2
     for i in file_name_base:
         if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
-            print("It seems that we have already done the KK2 taxonomy annotation...")
+            print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
             continue
         else:
             print("KK2 mpaStyle output don't exist... {}".\
                 format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
             subprocess.call(["bash", kk2_script, 
-                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database])
+                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
             
     #calculate relative abundance of functional genes
     for i in file_name_base:
