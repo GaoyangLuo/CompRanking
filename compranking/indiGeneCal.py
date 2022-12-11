@@ -376,7 +376,7 @@ if __name__ == "__main__":
     # project_prefix="CompRanking"
     # database="/lomi_home/gaoyang/db/kraken2/202203"
     # threads="24"
-    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run.sh")
+    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = [input_file]
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
@@ -421,7 +421,7 @@ if __name__ == "__main__":
             print("KK2 mpaStyle output don't exist... {}".\
                 format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
             subprocess.call(["bash", kk2_script, 
-                "-i", input_file, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database])
+                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", input_file])
             
     #calculate relative abundance of functional genes
     for i in file_name_base:
@@ -545,7 +545,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir, project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_"+i+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
@@ -566,7 +566,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
+                            project_prefix+"_"+i+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
     #concat MGE result
     #concat 16S
     name_list_16S=[]
@@ -586,7 +586,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir,project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_"+i+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
@@ -607,9 +607,9 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
+                            project_prefix+"_"+i+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
     
-    os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
+    # os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
     
 #python Gene_cal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test
