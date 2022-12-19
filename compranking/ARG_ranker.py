@@ -44,25 +44,52 @@ def arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,f
     df_sarg_type=pd.merge(df_sarg_tmp,df_sarg_structure,left_on="query",right_on="Reference",how="left")
     df_sarg_type1=df_sarg_type.drop(['Reference'], axis=1, inplace=False)
     
-    #standardizing format
-    df_sarg_type1["class"]=df_sarg_type1["Genotype"].str.split("__",expand=True)[1]
-    df_sarg_type2=df_sarg_type1.drop(['Genotype'], axis=1, inplace=False)
-    df_sarg_type2=df_sarg_type2[["Contig_ID","query","class","Phenotype"]]
+    #if empty
+    if len(df_sarg_type1["Contig_ID"]) == 0:
+        print("true")
+        df_sarg_type1["Phenotype"]=[]
+        df_sarg_type1["SARG_Rank"]=[]
+        df_sarg_type1.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
+        df_sarg_type1.to_csv(output + "/" + filebase +"_SARGrank_Protein60_Result.tsv", sep="\t")
+    else:
+        #standardizing format
+        df_sarg_type1["class"]=df_sarg_type1["Genotype"].str.split("__",expand=True)[1]
+        df_sarg_type2=df_sarg_type1.drop(['Genotype'], axis=1, inplace=False)
+        df_sarg_type2=df_sarg_type2[["Contig_ID","query","class","Phenotype"]]
+        
+        #processing ARG ranking index
+        #open arg rank index file
+        df_argrank=pd.read_csv(input_argrank, sep="\t", header=0)
+        
+        #chose columns
+        df_arg1=df_argrank[["ARG","Rank"]]
+        
+        #add rank
+        df_argrank2=pd.merge(df_sarg_type2,df_arg1,left_on="query",right_on="ARG",how="inner")
+        df_argrank2=df_argrank2.drop(["ARG"],axis=1,inplace=False)
+        df_argrank2.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
+        
+        #save
+        df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein60_Result.tsv", sep="\t")
+    # #standardizing format
+    # df_sarg_type1["class"]=df_sarg_type1["Genotype"].str.split("__",expand=True)[1]
+    # df_sarg_type2=df_sarg_type1.drop(['Genotype'], axis=1, inplace=False)
+    # df_sarg_type2=df_sarg_type2[["Contig_ID","query","class","Phenotype"]]
     
-    #processing ARG ranking index
-    #open arg rank index file
-    df_argrank=pd.read_csv(input_argrank, sep="\t", header=0)
+    # #processing ARG ranking index
+    # #open arg rank index file
+    # df_argrank=pd.read_csv(input_argrank, sep="\t", header=0)
     
-    #chose columns
-    df_arg1=df_argrank[["ARG","Rank"]]
+    # #chose columns
+    # df_arg1=df_argrank[["ARG","Rank"]]
     
-    #add rank
-    df_argrank2=pd.merge(df_sarg_type2,df_arg1,left_on="query",right_on="ARG",how="inner")
-    df_argrank2=df_argrank2.drop(["ARG"],axis=1,inplace=False)
-    df_argrank2.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
+    # #add rank
+    # df_argrank2=pd.merge(df_sarg_type2,df_arg1,left_on="query",right_on="ARG",how="inner")
+    # df_argrank2=df_argrank2.drop(["ARG"],axis=1,inplace=False)
+    # df_argrank2.columns=["Contig_ID","query","class","Phenotype","SARG_Rank"]
     
-    #save
-    df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein60_Result.tsv", sep="\t")
+    # #save
+    # df_argrank2.to_csv(output + "/" + filebase +"_SARGrank_Protein60_Result.tsv", sep="\t")
     
 
 if __name__=="__main__":   
