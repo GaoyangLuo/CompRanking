@@ -1,4 +1,4 @@
-# CompRanking: Comprehensively ranking the environmental metagenome samples according to resistome assessment
+# CompRanking: Comprehensively ranking the environmental metagenome samples with resistome assessment
 
 version 1.0
 
