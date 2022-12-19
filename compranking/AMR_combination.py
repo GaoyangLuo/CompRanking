@@ -167,7 +167,7 @@ class AMRCombined():
         
         #determine dvf_pred
         for index, name in df_dvf.iterrows():
-            if (df_dvf["score"][index]>=0.75):
+            if (df_dvf["score"][index]>=0.7):
                 if (df_dvf["pvalue"][index] <= 0.05):
                     df_dvf["dvf_pred"][index]="phage"
         df_dvf=df_dvf[["name","dvf_pred"]]
@@ -212,7 +212,7 @@ class AMRCombined():
         #Write seeker result into dictionary
         dic={} 
         for i, names in seeker_res.iterrows():
-            if  seeker_res[2][i] <= 0.75:
+            if  seeker_res[2][i] <= 0.6:
                 keys=names[0]
                 values="Bacteria"
                 dic[keys]=values
