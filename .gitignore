@@ -160,6 +160,7 @@ submodels/classification-env
 submodels/PlasClass
 #.done
 *.done
+checkdone/
 
 rules/
 <<<<<<< HEAD
