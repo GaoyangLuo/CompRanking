@@ -55,7 +55,7 @@ echo ${INPUT_DIR}
 #VFDB
 source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
-if [ -e ${PREFIX}.VFDB.done ]; then
+if [ -e checkdone/${PREFIX}.VFDB.done ]; then
 	echo "Virulence predition file existed..."
 else
 	echo "Running VFDB prediction..."
@@ -72,14 +72,14 @@ else
 	echo "[TIMESTAMP] $(date) Running VFDB prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running VFDB prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.VFDB.done
+	touch checkdone/${PREFIX}.VFDB.done
 	mv ${INPUT_DIR}/*VFDB.out ${VIR_DIR}/VFDB
 fi
 
 #PATRIC
 source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
-if [ -e ${PREFIX}.PATRIC.done ]; then
+if [ -e checkdone/${PREFIX}.PATRIC.done ]; then
 	echo "Virulence predition file existed..."
 else
 	echo "Running PATRIC prediction..."
@@ -96,7 +96,7 @@ else
 	echo "[TIMESTAMP] $(date) Running PATRIC prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running PATRIC prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.PATRIC.done
+	touch checkdone/${PREFIX}.PATRIC.done
 	mv ${INPUT_DIR}/*PATRIC.out ${VIR_DIR}/PATRIC
 fi
 

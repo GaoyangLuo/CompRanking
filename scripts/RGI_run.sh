@@ -27,7 +27,7 @@ RGI_DIR=$(dirname ${AMR_DIR_tmp})/AMR/RGI
 #run RGI
 source ${CONDA_BIN_PATH}/activate CompRanking_rgi_env
 #input=/lomi_home/gaoyang/microplastic_test/metacompare_data/2_assembly/5M/faa
-if [ -e ${PREFIX}.RGI.done ]; then
+if [ -e checkdone/${PREFIX}.RGI.done ]; then
 	echo "RGI file existed..."
 else
 	#time start
@@ -42,7 +42,7 @@ else
 	echo "[TIMESTAMP] $(date) Running ARG prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.RGI.done
+	touch checkdone/${PREFIX}.RGI.done
 	mv ${INPUT_DIR}/*RGI.out* ${RGI_DIR}
 fi
 

@@ -65,7 +65,7 @@ SARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/ARGranking
 MobileOG_DIR=$(dirname ${AMR_DIR_tmp})/MGE/MobileOG
 
 #blastp mobileOG
-if [ -e ${PREFIX}.MobileOG.done ]; then
+if [ -e checkdone/${PREFIX}.MobileOG.done ]; then
 	echo "MobileOG predition file existed..."
 else
 	echo "Running MobileOG prediction..."
@@ -82,7 +82,7 @@ else
 	echo "[TIMESTAMP] $(date) Running MobileOG prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running MobileOG prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.MobileOG.done
+	touch checkdone/${PREFIX}.MobileOG.done
 	mv ${INPUT_DIR}/*mobileOG_diamond.txt ${MobileOG_DIR}
 fi
 

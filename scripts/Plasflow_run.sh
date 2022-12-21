@@ -45,7 +45,7 @@ done
 #run plasflow2
 source ${CONDA_BIN_PATH}/activate CompRanking_plasflow_env #plasflow
 
-if [ -e ${PREFIX}.PLASFLOW.done ]; then
+if [ -e checkdone/${PREFIX}.PLASFLOW.done ]; then
 	echo "plasflow file existed..."
 else
 	#time start
@@ -75,7 +75,7 @@ else
 	echo "[TIMER] Running plasmid prediction took $(($ENDTIME - $STARTTIME)) sec."
 	
 	# mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*plasflow* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
-	touch ${PREFIX}.PLASFLOW.done
+	touch checkdone/${PREFIX}.PLASFLOW.done
 fi
 conda deactivate
 

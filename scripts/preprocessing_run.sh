@@ -5,15 +5,16 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 CONDA_BIN_PATH=~/miniconda/bin
+FILTERLENTGH=500
 
-
-while getopts "p:i:m:t:o" option; do
+while getopts "p:i:m:t:o:l" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
 		i) INPUT_DIR=${OPTARG};;
 		m) CONDA_BIN_PATH=${OPTARG};;
 		t) THREADS=${OPTARG};; 
         o) OUTPUT_DIR=${OPTARG};;
+		l) FILTERLENTGH=${OPTARG};;
 		*) exit 1;;
 	esac
 done
@@ -42,7 +43,7 @@ mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/Virulence/PATRIC
 
 #### Step2 Filtering contigs ####
 #fiter 5M
-if [ -e ${PREFIX}.5Mfilter.done ]; then
+if [ -e checkdone/${PREFIX}.5Mfilter.done ]; then
 	echo "5M_filetered file existed..."
 else
 	#time start
@@ -52,7 +53,7 @@ else
 	for i in ${INPUT_DIR}/*fa
 	do
 	base=${i%%.f*}
-	seqmagick convert --min-length 500 ${i} ${base}_5M_contigs.fa
+	seqmagick convert --min-length ${FILTERLENTGH} ${i} ${base}_5M_contigs.fa
 	done
 	#finish 5M filtering
 	echo "[TIMESTAMP] $(date) Filtering 5M contigs... Done"
@@ -61,7 +62,7 @@ else
 	mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
     # cp ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 	
-	touch ${PREFIX}.5Mfilter.done
+	touch checkdone/${PREFIX}.5Mfilter.done
 fi
 
 #filter 5M-1K
@@ -87,7 +88,7 @@ fi
 #mv ${INPUT_DIR}/*5M-1K_contigs.fa ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
 #### Step3 Run prodigal ####
-if [ -e ${PREFIX}.ORF_prediction.done ]; then
+if [ -e checkdone/${PREFIX}.ORF_prediction.done ]; then
 	echo "faa file existed..."
 else
 	#time start
@@ -104,7 +105,7 @@ else
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Predicting ORFs with prodigal took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.ORF_prediction.done
+	touch checkdone/${PREFIX}.ORF_prediction.done
 fi
 conda deactivate
 

@@ -27,7 +27,7 @@ DeepARG_DIR=$(dirname ${AMR_DIR_tmp})/AMR/DeepARG
 #run DeepARG
 source ${CONDA_BIN_PATH}/activate CompRanking_deeparg_env
 #input=/lomi_home/gaoyang/microplastic_test/metacompare_data/2_assembly/5M/faa
-if [ -e ${PREFIX}.DeepARG.done ]; then
+if [ -e checkdone/${PREFIX}.DeepARG.done ]; then
 	echo "DeepARG file existed..."
 else
 	#time start
@@ -43,7 +43,7 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running ARG prediction took $(($ENDTIME - $STARTTIME)) sec."
 	mv ${INPUT_DIR}/*DeepARG.out* ${DeepARG_DIR}
-	touch ${PREFIX}.DeepARG.done
+	touch checkdone/${PREFIX}.DeepARG.done
 fi
 
 
