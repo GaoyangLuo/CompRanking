@@ -24,7 +24,7 @@ done
 #run plascad
 source ${CONDA_BIN_PATH}/activate CompRanking_hmmer_env
 
-if [ -e ${PREFIX}.PLASCAD.done ]; then
+if [ -e checkdone/${PREFIX}.PLASCAD.done ]; then
 	echo "plascad file existed..."
 else
 	#time start
@@ -46,7 +46,7 @@ else
 	echo "[TIMESTAMP] $(date) Running plascad prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running plascad prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.PLASCAD.done
+	touch checkdone/${PREFIX}.PLASCAD.done
 fi
 
 rm -rf ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*out

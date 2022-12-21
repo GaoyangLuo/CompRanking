@@ -44,7 +44,7 @@ done
 
 #run DVF
 source ${CONDA_BIN_PATH}/activate CompRanking_dvf_env
-if [ -e ${PREFIX}.DVF.done ]; then
+if [ -e checkdone/${PREFIX}.DVF.done ]; then
 	echo "The first round phage prediction file existed..."
 else
     #time start
@@ -59,7 +59,7 @@ else
 	echo "[TIMESTAMP] $(date) Running the first round phage prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running the first round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch ${PREFIX}.DVF.done
+	touch checkdone/${PREFIX}.DVF.done
 fi
 conda deactivate
 
