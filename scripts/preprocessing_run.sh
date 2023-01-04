@@ -5,16 +5,16 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 CONDA_BIN_PATH=~/miniconda/bin
-FILTERLENTGH=500
+# FILTERLENTGH=0
 
-while getopts "p:i:m:t:o:l" option; do
+while getopts "p:i:m:t:l:o" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
 		i) INPUT_DIR=${OPTARG};;
 		m) CONDA_BIN_PATH=${OPTARG};;
 		t) THREADS=${OPTARG};; 
-        o) OUTPUT_DIR=${OPTARG};;
 		l) FILTERLENTGH=${OPTARG};;
+        o) OUTPUT_DIR=${OPTARG};;
 		*) exit 1;;
 	esac
 done
@@ -33,6 +33,7 @@ mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/DeepARG
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/ARGranking
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/MobileOG
@@ -115,7 +116,7 @@ conda deactivate
 
 
 #### Step5 Building index ####
-if [ -e ${PREFIX}.index_build.done ]; then
+if [ -e checkdone/${PREFIX}.index_build.done ]; then
 	echo "index file existed..."
 else
 	cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
@@ -127,5 +128,5 @@ else
 	sed -i '/^#/d' ${i}
 	cut -f 1,9 ${i} |cut -d';' -f1| sed 's/ID=//' > ${base}.index
 	done
-	touch ${PREFIX}.index_build.done
+	touch checkdone/${PREFIX}.index_build.done
 fi
