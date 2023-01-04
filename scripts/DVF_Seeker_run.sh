@@ -5,13 +5,15 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 CONDA_BIN_PATH=~/miniconda/bin
+# FITERLENGTH=500
 
-while getopts "p:i:m:t:o" option; do
+while getopts "p:i:m:t:l:o" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
 		i) INPUT_DIR=${OPTARG};;
 		m) CONDA_BIN_PATH=${OPTARG};;
 		t) THREADS=${OPTARG};; 
+		l) FITERLENGTH=${OPTARG};;
         o) OUTPUT_DIR=${OPTARG};;
 		*) exit 1;;
 	esac
@@ -53,7 +55,7 @@ else
 	#Running DVF 
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
-    python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF -c ${THREADS} -l 500
+    python submodels/DeepVirFinder/dvf.py -i ${i} -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF -c ${THREADS} -l ${FITERLENGTH}
     done
 	#finish Running DVF
 	echo "[TIMESTAMP] $(date) Running the first round phage prediction... Done"
