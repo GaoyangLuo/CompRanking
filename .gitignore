@@ -160,7 +160,7 @@ submodels/classification-env
 submodels/PlasClass
 #.done
 *.done
-checkdone/
+
 
 rules/
 <<<<<<< HEAD
@@ -188,3 +188,6 @@ MobileOG-db
 PATRIC
 virulence
 deepargdata1.0.2
+
+#testdata
+luogaoyang/
