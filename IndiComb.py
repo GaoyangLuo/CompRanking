@@ -6,11 +6,9 @@
 # date              :20220901
 # version           :1.0
 # usage             :python cpr_run.py -i <input_dir> 
-#                                      -o <output_dir default: [input_dir]> 
-#                                      -t <threads defalut: 24> 
+#                                      -n <input_file_name>
 #                                      -p <project_name default:[CompRanking]> 
-#                                      -c <config_file default:[config.yaml]>
-#                                      -r <default: 1 (restart), 0 means don't restat>
+#                                     
 #example            :python cpr_run.py -i /lomi_home/gaoyang/software/CompRanking/test -p CompRanking -r 0 -t 2
 # required packages :optparse, subprocess 
 # notification: makesure that put PathoFact table in to ./<Project_name>_PathoFact_result 
@@ -70,6 +68,7 @@ seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE
 input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
 input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
 input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
+input_def=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DEF",i+"_5M_contigs.fa_pred_one-hot_hybrid.txt")
 
 #set VF input
 input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
@@ -77,7 +76,7 @@ input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_interme
 input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
 
 #generate sum table without mob ref
-df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
+df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_def,seeker_table,input_mobileOG)
 #generate sum table with mob ref
 df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
 df_AMR_annotate_MOB_refFilter_contig=AMR_combine.refFilter(df_AMR_annotate_MOB_contig)
