@@ -28,7 +28,7 @@ class AMRCombined():
     #     self.virulence_dir=VFInputDir
     #     self.contigIndex=contigIndex
 
-    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG):
+    def AMR_combined(self, input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_def,seeker_table,input_mobileOG):
         #######################Processing deepARG,RGI, SARG###################################
         #open RGI results
         df_RGI=pd.read_csv(input_rgi, sep="\t")
@@ -172,42 +172,81 @@ class AMRCombined():
                     df_dvf["dvf_pred"][index]="phage"
         df_dvf=df_dvf[["name","dvf_pred"]]
         
-        #open df_plasflow
-        df_plasflow=pd.read_csv(input_plasflow,sep="\t",header=0)#index_col=0
-        df_plasflow["label"]=df_plasflow["label"].str.split(".", expand=True)[0]
-        df_plasflow=df_plasflow[["contig_name","label"]]
+        #open df_def
+        #DeepMicrobeFinder
+        df_def=pd.read_csv(input_def,header=0,sep="\t")
+        Eukaryote="Eukaryote"
+        EukaryoteVirus="EukaryoteVirus"
+        Plasmid="Plasmid"
+        Prokaryote="Prokaryote"
+        ProkaryoteVirus="ProkaryoteVirus"
+        #check if empty
+        if len(df_def["Sequence Name"]) == 0:
+            df_def["max_idx"]=[]
+            res=df_def[["Sequence Name","max_idx"]]
+        else:
+            df_def["Sequence Name"]=df_def["Sequence Name"].str.split(" ",expand=True)[0]
+            df_def1=df_def.iloc[:,0:6]
+            df_def1['max_idx']=df_def.iloc[:,1:6].idxmax(axis=1)
+            res=df_def1[df_def1.max_idx == "Plasmid"]
+            res=res[["Sequence Name","max_idx"]]
+        #merge def and dvf
+        df_def_contig=pd.merge(df_contig_ID,res,left_on=0,right_on="Sequence Name",how="left")
+        df_def_contig=df_def_contig.fillna("-")
+        df_def_dvf_contig=pd.merge(df_def_contig,df_dvf,left_on=0,right_on="name",how="left")
+        df_def_dvf_contig=df_def_dvf_contig.fillna("-")
+        df_def_dvf_contig=df_def_dvf_contig.drop(["Sequence Name","name"],axis=1,inplace=False)
+        df_def_dvf_contig["tmp"]="-"
+        df_def_dvf_contig.columns=[0,1,"label","dvf_pred","tmp"]
         
-        #merge plasflow and contigID
-        df_plasflow_contig=pd.merge(df_contig_ID,df_plasflow,left_on=0,right_on="contig_name",how="left")
+        # #open df_plasflow
+        # df_plasflow=pd.read_csv(input_plasflow,sep="\t",header=0)#index_col=0
+        # df_plasflow["label"]=df_plasflow["label"].str.split(".", expand=True)[0]
+        # df_plasflow=df_plasflow[["contig_name","label"]]
+        
+        # #merge plasflow and contigID
+        # df_plasflow_contig=pd.merge(df_contig_ID,df_plasflow,left_on=0,right_on="contig_name",how="left")
 
-        # merge plasflow and dvf
-        df_plasflow_dvf_contig=pd.merge(df_plasflow_contig,df_dvf,left_on=0,right_on="name",how="left")
-        df_plasflow_dvf_contig=df_plasflow_dvf_contig.fillna("-")
-        df_plasflow_dvf_contig=df_plasflow_dvf_contig.drop(["contig_name","name"],axis=1,inplace=False)
-        df_plasflow_dvf_contig["tmp"]="-"
+        # # merge plasflow and dvf
+        # df_plasflow_dvf_contig=pd.merge(df_plasflow_contig,df_dvf,left_on=0,right_on="name",how="left")
+        # df_plasflow_dvf_contig=df_plasflow_dvf_contig.fillna("-")
+        # df_plasflow_dvf_contig=df_plasflow_dvf_contig.drop(["contig_name","name"],axis=1,inplace=False)
+        # df_plasflow_dvf_contig["tmp"]="-"
         
         #Give dvf and plasflow combined prediction
         #ambiguous (plasmid/phage)
-        for i, name in df_plasflow_dvf_contig.iterrows():
-            if df_plasflow_dvf_contig["dvf_pred"][i] == "phage":
-                if df_plasflow_dvf_contig["label"][i] == "unclassified":
-                    df_plasflow_dvf_contig["tmp"][i] = "phage"
-                elif df_plasflow_dvf_contig["label"][i] == "-":
-                    df_plasflow_dvf_contig["tmp"][i] = "phage"
+        # for i, name in df_plasflow_dvf_contig.iterrows():
+        #     if df_plasflow_dvf_contig["dvf_pred"][i] == "phage":
+        #         if df_plasflow_dvf_contig["label"][i] == "unclassified":
+        #             df_plasflow_dvf_contig["tmp"][i] = "phage"
+        #         elif df_plasflow_dvf_contig["label"][i] == "-":
+        #             df_plasflow_dvf_contig["tmp"][i] = "phage"
+        #         else:                
+        #             df_plasflow_dvf_contig["tmp"][i] = "ambiguous " + "(" + df_plasflow_dvf_contig["label"][i] + "/" + "phage" + ")"
+        #     else:
+        #         if df_plasflow_dvf_contig["label"][i] == "-":
+        #             df_plasflow_dvf_contig["tmp"][i] = "unclassified"
+        #         else:
+        #             df_plasflow_dvf_contig["tmp"][i] = df_plasflow_dvf_contig["label"][i]
+        for i, name in df_def_dvf_contig.iterrows():
+            if df_def_dvf_contig["dvf_pred"][i] == "phage":
+                if df_def_dvf_contig["label"][i] == "unclassified":
+                    df_def_dvf_contig["tmp"][i] = "phage"
+                elif df_def_dvf_contig["label"][i] == "-":
+                    df_def_dvf_contig["tmp"][i] = "phage"
                 else:                
-                    df_plasflow_dvf_contig["tmp"][i] = "ambiguous " + "(" + df_plasflow_dvf_contig["label"][i] + "/" + "phage" + ")"
+                    df_def_dvf_contig["tmp"][i] = "ambiguous " + "(" + df_def_dvf_contig["label"][i] + "/" + "phage" + ")"
             else:
-                if df_plasflow_dvf_contig["label"][i] == "-":
-                    df_plasflow_dvf_contig["tmp"][i] = "unclassified"
+                if df_def_dvf_contig["label"][i] == "-":
+                    df_def_dvf_contig["tmp"][i] = "unclassified"
                 else:
-                    df_plasflow_dvf_contig["tmp"][i] = df_plasflow_dvf_contig["label"][i]
-        
+                    df_def_dvf_contig["tmp"][i] = df_def_dvf_contig["label"][i]
         #check results
-        df_plasflow_dvf_contig=df_plasflow_dvf_contig.drop(["label","dvf_pred"],axis=1,inplace=False)
-        df_plasflow_dvf_contig.columns=["Contig", "ORF_ID", "MGE_prediction"]
+        df_def_dvf_contig=df_def_dvf_contig.drop(["label","dvf_pred"],axis=1,inplace=False)
+        df_def_dvf_contig.columns=["Contig", "ORF_ID", "MGE_prediction"]
         
         ##merge seeker results
-        PF_res=df_plasflow_dvf_contig
+        PF_res=df_def_dvf_contig
         seeker_res=pd.read_csv(seeker_table, sep="\t", header=None)
         #Write seeker result into dictionary
         dic={} 
@@ -232,29 +271,29 @@ class AMRCombined():
         #Judge MGE according to peram rules
         peram_MGE_pred=[]
         for c, ult in PF_res.iterrows():
-            if ult["MGE_prediction"] == "ambiguous (plasmid/phage)": 
+            if ult["MGE_prediction"] == "ambiguous (Plasmid/phage)": 
                 if ult["seeker_res"] == "Phage":
                     peram_MGE_pred.append("phage")
                 else:
                     peram_MGE_pred.append("plasmid")
-            elif ult["MGE_prediction"] == "ambiguous (chromosome/phage)":
-                if ult["seeker_res"] == "Phage":
-                    peram_MGE_pred.append("phage")
-                else:
-                    peram_MGE_pred.append("chromosome")
+            # elif ult["MGE_prediction"] == "ambiguous (chromosome/phage)":
+            #     if ult["seeker_res"] == "Phage":
+            #         peram_MGE_pred.append("phage")
+            #     else:
+            #         peram_MGE_pred.append("chromosome")
             elif ult["MGE_prediction"] == "phage":
                 if ult["seeker_res"] == "Phage":
                     peram_MGE_pred.append("phage")
                 else:
                     peram_MGE_pred.append("unclassified")
-            elif ult["MGE_prediction"] == "chromosome":
+            # elif ult["MGE_prediction"] == "chromosome":
+            #     if ult["seeker_res"] == "Phage":
+            #         peram_MGE_pred.append("ambiguous (chromosome/phage)")
+            #     else:
+            #         peram_MGE_pred.append("chromosome")
+            elif ult["MGE_prediction"] == "Plasmid":
                 if ult["seeker_res"] == "Phage":
-                    peram_MGE_pred.append("ambiguous (chromosome/phage)")
-                else:
-                    peram_MGE_pred.append("chromosome")
-            elif ult["MGE_prediction"] == "plasmid":
-                if ult["seeker_res"] == "Phage":
-                    peram_MGE_pred.append("ambiguous (plasmid/phage)")
+                    peram_MGE_pred.append("ambiguous (Plasmid/phage)")
                 else:
                     peram_MGE_pred.append("plasmid")
             elif ult["MGE_prediction"] == "unclassified":
@@ -311,14 +350,14 @@ class AMRCombined():
         #cal identity and cov
         #identity60
         df_MobileOG_concat["coverage"]="-"
-        df_MobileOG_concat_iden60=df_MobileOG_concat[df_MobileOG_concat.identity > 60]    
+        df_MobileOG_concat_iden60=df_MobileOG_concat[df_MobileOG_concat.identity > 65]    
         #cal cov
         empty=[]
         for index, name in df_MobileOG_concat_iden60.iterrows():
             empty.append(df_MobileOG_concat_iden60["alignLen"][index]/mobilOG_structure_dic[df_MobileOG_concat_iden60["mobileOG_ID"][index]])
         df_MobileOG_concat_iden60["coverage"]=empty
         #coverage>0.5
-        df_MobileOG_concat_iden60_cov50=df_MobileOG_concat_iden60[df_MobileOG_concat_iden60.coverage > 0.5]
+        df_MobileOG_concat_iden60_cov50=df_MobileOG_concat_iden60[df_MobileOG_concat_iden60.coverage > 0.95]
         #merge mobileOG 
         df_AMR_annotate_contig=pd.merge(df_AMR_contig,df_MobileOG_concat_iden60_cov50,left_on="ORF_ID",right_on="id",how="left")
         df_AMR_annotate_contig=df_AMR_annotate_contig.drop(["id","identity","alignLen"],axis=1, inplace=False)
@@ -366,7 +405,8 @@ class AMRCombined():
             elif name["MGE_Database"] in Multiple:
                 if name["Taxonomy"] != "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="plasmid"
-                    count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
+                    # count_ref_plasmid.append(df_AMR_annotate_MOB_contig["Contig"][i])
+                    continue
                 elif name["Taxonomy"] == "phage":
                     df_AMR_annotate_MOB_contig["CompRanking_MGE_prediction"][i]="phage"  
                     count_ref_phage.append(df_AMR_annotate_MOB_contig["Contig"][i])
