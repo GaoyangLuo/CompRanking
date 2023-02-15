@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # title             :catGeneCal.py 
-# description       :calculate relative abundance of genes
+# description       :calculate relative abundance of genes and concat all the results
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
