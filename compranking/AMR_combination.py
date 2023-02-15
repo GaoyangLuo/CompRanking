@@ -33,7 +33,7 @@ class AMRCombined():
         #open RGI results
         df_RGI=pd.read_csv(input_rgi, sep="\t")
         df_RGI=df_RGI.fillna("-")
-        df_RGI=df_RGI[df_RGI.Nudged == "-"]
+        # df_RGI=df_RGI[df_RGI.Nudged == "-"]
         df_RGI_tmp=df_RGI.loc[:,["ORF_ID","Best_Hit_ARO","Drug Class","Resistance Mechanism","SNPs_in_Best_Hit_ARO"]]
         df_RGI_tmp["Best_Hit_ARO"]=df_RGI_tmp["Best_Hit_ARO"].str.upper()
         
