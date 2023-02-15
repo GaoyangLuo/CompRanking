@@ -25,6 +25,7 @@ import datetime
 import multiprocessing
 import threading
 import yaml
+import time
 sys.path.append("..")
 from compranking import ARG_ranker
 from compranking import path, summary_all, MOB_concat,Virulence_processing
@@ -45,6 +46,8 @@ parser.add_option("-r", "--restart", action = "store", type = "string", dest = "
 									default='1', help = "restart all the processs")
 parser.add_option("-s", "--splitLength", action = "store", type = "string", dest = "splitLength",
 									default='10000', help = "split length of the input")
+parser.add_option("-l", "--filterLength", action = "store", type = "string", dest = "filterLength",
+									default='500', help = "split length of the input")
 
 (options, args) = parser.parse_args()
 
@@ -57,6 +60,7 @@ threads=options.threads
 config_path=options.config_file
 restart=options.restart
 splitLength=options.splitLength
+filterLength=options.filterLength
 #scrip path
 PREPROCESSING="./scripts/preprocessing_run.sh"
 AMR1_PREDICTION="./scripts/RGI_run.sh"
@@ -66,6 +70,7 @@ MGE1_PREDICTION="./scripts/Plasflow_run.sh"
 MGE2_PREDICTION="./scripts/DVF_Seeker_run.sh"
 MGE3_PREDICTION="./scripts/mobileOG_run.sh"
 MGE4_PREDICTION="./scripts/seeker_run.sh"
+MGE5_PREDICTION="./scripts/def.sh"
 VIRULENCE_PREDICTION="./scripts/Virulence_run.sh"
 PLASCAD_PREDICTION="./scripts/plascad_run.sh"
 #default parameters
@@ -76,7 +81,7 @@ if (options.threads is None):
 if (options.config_file is None):
     config_path = "./test_yaml.yaml"#default config_file path
 if options.restart == "1":
-    os.system("rm " + project_prefix + "*done")
+    os.system("rm checkdone/" + project_prefix + "*done")
 if (options.splitLength is None):
     options.splitLength == "10000"
     
@@ -101,12 +106,15 @@ def MGE1_prediction(): #plasflow
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 def MGE2_prediction(): #dvf
     subprocess.call(["bash", MGE2_PREDICTION, 
-                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])  
+                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-l", filterLength])  
 def MGE3_prediction(): #mobileOG
     subprocess.call(["bash", MGE3_PREDICTION, 
                      "-i", mobileog_input, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 def MGE4_prediction(): #seeker
     subprocess.call(["bash", MGE4_PREDICTION, 
+                     "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str]) 
+def MGE5_prediction(): #def
+    subprocess.call(["bash", MGE5_PREDICTION, 
                      "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])     
 ##Virlence prediction
 def VIR_prediction(): #VF&Pathogen
@@ -140,10 +148,11 @@ if __name__ == '__main__':
     AMR_PRED1 = multiprocessing.Process(target=ARG1_prediction) #rgi
     AMR_PRED2 = multiprocessing.Process(target=ARG2_prediction) #deeparg
     AMR_PRED3 = multiprocessing.Process(target=ARG3_prediction) #sarg
-    MGE1_PRED = multiprocessing.Process(target=MGE1_prediction) #plasflow
+    # MGE1_PRED = multiprocessing.Process(target=MGE1_prediction) #plasflow
     MGE2_PRED = multiprocessing.Process(target=MGE2_prediction) #dvf
     MGE3_PRED = multiprocessing.Process(target=MGE3_prediction) #mobileOG
     MGE4_PRED = multiprocessing.Process(target=MGE4_prediction) #seeker
+    MGE5_PRED = multiprocessing.Process(target=MGE5_prediction) #def
     PLASCAD_PRED = multiprocessing.Process(target=plascad_prediction) #plascad
     VIR_PRED = multiprocessing.Process(target=VIR_prediction) #VFDB&PATH
     
@@ -156,7 +165,7 @@ if __name__ == '__main__':
     start_all = datetime.datetime.now() 
     start_prepro = datetime.datetime.now() #time start
     print("Preprocessing fasta files...")
-    # subprocess.call(["bash", PREPROCESSING, "-i", input_dir, "-p", project_prefix, "-t", threads]) 
+    subprocess.call(["bash", PREPROCESSING, "-i", input_dir, "-p", project_prefix, "-t", threads,"-l",filterLength]) 
     #split files
     # for i in file_name_base:
     #     file_abs_pth_dir=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")
@@ -177,36 +186,39 @@ if __name__ == '__main__':
     #ARG search
     #time start
     start = datetime.datetime.now() 
-    # AMR_PRED1.start()
-    # AMR_PRED2.start()
-    # AMR_PRED3.start()
+    AMR_PRED1.start()
+    AMR_PRED2.start()
+    AMR_PRED3.start()
     #time end
     end = datetime.datetime.now() 
     print("ARG search cost time: {}".format(end-start))
     
     #### VF prediction ####
     start_VF = datetime.datetime.now() #time start
-    # VIR_PRED.start()
+    VIR_PRED.start()
     end_VF = datetime.datetime.now() #time end
     print("VF and Pathogen prediction cost: {}".format(end_VF-start_VF))
     
     #### MGE prediction ####
     start_MGE = datetime.datetime.now() #time start
-    # PLASCAD_PRED.start()
-    # PLASCAD_PRED.join()
-    # MGE4_PRED.start()
-    # MGE3_PRED.start()
+    PLASCAD_PRED.start()
+    PLASCAD_PRED.join()
+    MGE4_PRED.start()
+    MGE3_PRED.start()
+    MGE5_PRED.start()
     
 
     # MGE1_PRED.start()
-    # MGE2_PRED.start()
-    # MGE2_PRED.join()
-    # MGE3_PRED.join()
-    # AMR_PRED1.join()
-    # AMR_PRED2.join()
-    # AMR_PRED3.join()
-    # VIR_PRED.join()
+    MGE2_PRED.start()
+    MGE2_PRED.join()
+    MGE3_PRED.join()
+    AMR_PRED1.join()
+    AMR_PRED2.join()
+    AMR_PRED3.join()
+    VIR_PRED.join()
+    MGE5_PRED.join()
     # MGE1_PRED.join()
+    time.sleep(0.5)
     end_MGE = datetime.datetime.now() #time end
     print("MGE prediction cost: {}".format(end_MGE-start_MGE))
     end_all = datetime.datetime.now() #time end
@@ -221,8 +233,12 @@ if __name__ == '__main__':
     # yt.check_file_completness()
     
     ###################plasflowprocessing########################
-    # try:
-    #     os.system("python treat_plsf_tmp1.py -i "+input_dir+ " -p " + project_prefix)
+    # for i in file_name_base:
+    #     if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/MGE/Plasflow")+"/"+i+"_5M_contigs_plasflow_predictions.tsv"):
+    #         print("{} existed...".format(i))
+    #         continue
+    #     else:
+    #         os.system("python treat_plsf_tmp1.py -i "+input_dir+ " -p " + project_prefix)
     # except:
     #     raise ImportError("Can't stat plasflow input...")
     
@@ -252,18 +268,19 @@ if __name__ == '__main__':
     AMR_combine=AMRCombined()
     
     start_sum = datetime.datetime.now() #time start 
-    for i in file_name_base:
+    for i in file_name_base: #if file large it will be very slow
         #set ARG&MGE input
         input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
         input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
         input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
         input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
-        input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt500bp_dvfpred.txt")
+        input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt"+str(filterLength)+"bp_dvfpred.txt")
         input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
         seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
         input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
         input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
         input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
+        input_def=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DEF",i+"_5M_contigs.fa_pred_one-hot_hybrid.txt")
         
         #set VF input
         input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
@@ -271,7 +288,7 @@ if __name__ == '__main__':
         input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
         
         #generate sum table without mob ref
-        df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_plasflow,seeker_table,input_mobileOG)
+        df_AMR_annotate_contig=AMR_combine.AMR_combined(input_rgi, input_contig_ID, input_deeparg, input_SARG,input_dvf, input_def,seeker_table,input_mobileOG)
         #generate sum table with mob ref
         df_AMR_annotate_MOB_contig=MOB_concat.plasMOB_concat(input_mob_conj,input_mob_unconj,df_AMR_annotate_contig)
         df_AMR_annotate_MOB_refFilter_contig=AMR_combine.refFilter(df_AMR_annotate_MOB_contig)
