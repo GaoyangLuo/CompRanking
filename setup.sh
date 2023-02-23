@@ -10,9 +10,9 @@ conda env create -f envs/deeparg.yaml
 conda env create -f envs/preprocessing.yaml
 conda env create -f envs/seeker.yaml
 conda env create -f envs/dvf.yaml
-conda env create -f envs/PlasFlow.yaml
 conda env create -f envs/rgi.yaml
 conda env create -f envs/hmmer.yaml
+conda env create -f envs/def.yaml
 
 #adjust seeker env
 CONDA_BIN=`cat ${SCRIPT_PATH}/test_yaml.yaml |shyaml get-value CompRanking.abs_path_to_conda_bin`
