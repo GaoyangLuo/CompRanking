@@ -184,10 +184,13 @@ tmp/
 
 #databases
 DEG
-MobileOG-db
-PATRIC
 virulence
+models_and_domains
+##used
+MobileOG-db 
+PATRIC
 deepargdata1.0.2
+
 
 #testdata
 luogaoyang/
