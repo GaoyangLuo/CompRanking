@@ -1,3 +1,0 @@
-#ARG	query-start	query-end	read_id	predicted_ARG-class	best-hit	probability	identity	alignment-length	alignment-bitscore	alignment-evalue	counts
-UGD	1	388	5_2	peptide	AAC75089.1|FEATURES|ugd|peptide|ugd	0.915861636415	72.9	388	592.8	7.0e-170	1
-CAMP-REGULATORY_PROTEIN	6	210	1_2	unclassified	gi:490367208:ref:WP_004246872.1:|FEATURES|cAMP-regulatory_protein|unclassified|cAMP-regulatory_protein	0.995420393787	62.0	208	266.5	6.3e-72	1

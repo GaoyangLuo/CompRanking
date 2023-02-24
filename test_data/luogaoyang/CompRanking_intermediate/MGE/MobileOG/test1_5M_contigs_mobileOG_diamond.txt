@@ -1,3 +1,0 @@
-2_1	mobileOG_000399190|NA:Keyword|WP_002298422.1|replication/recombination/repair|initiation,copy	82.5	246	43	0	1	246	51	296	6.99e-150	422
-3_1	mobileOG_000750092|NA:Keyword|WP_126355952.1|replication/recombination/repair|initiation,copy	91.5	305	26	0	1	305	34	338	1.13e-202	560
-4_1	mobileOG_000415137|NA:Keyword|WP_127824082.1|replication/recombination/repair|initiation,copy	98.3	177	3	0	25	201	8	184	6.91e-129	363

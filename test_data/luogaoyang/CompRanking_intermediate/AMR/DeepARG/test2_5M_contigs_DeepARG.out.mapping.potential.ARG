@@ -1,5 +1,0 @@
-#ARG	query-start	query-end	read_id	predicted_ARG-class	best-hit	probability	identity	alignment-length	alignment-bitscore	alignment-evalue	counts
-TETU	1	70	4_1	peptide	undefined	0.207860996955	83.3	72	110.5	5.4e-25	1
-TETU	1	70	4_1	multidrug	undefined	0.288396548696	83.3	72	110.5	5.4e-25	1
-BACA	12	238	8_2	mupirocin	undefined	0.216767635208	61.7	227	285.0	1.9e-77	1
-BACA	12	238	8_2	multidrug	undefined	0.293534476395	61.7	227	285.0	1.9e-77	1
