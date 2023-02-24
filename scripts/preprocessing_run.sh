@@ -26,12 +26,10 @@ done
 source $CONDA_BIN_PATH/activate CompRanking_preprocessing_env
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/RGI
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/DeepARG
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/ARGranking
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Plasflow
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DVF
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad
