@@ -69,7 +69,7 @@ AMR3_PREDICTION="./scripts/SARG_run.sh"
 MGE1_PREDICTION="./scripts/Plasflow_run.sh"
 MGE2_PREDICTION="./scripts/DVF_Seeker_run.sh"
 MGE3_PREDICTION="./scripts/mobileOG_run.sh"
-MGE4_PREDICTION="./scripts/seeker_run.sh"
+MGE4_PREDICTION="./scripts/seeker_separate.sh"
 MGE5_PREDICTION="./scripts/def.sh"
 VIRULENCE_PREDICTION="./scripts/Virulence_run.sh"
 PLASCAD_PREDICTION="./scripts/plascad_run.sh"
@@ -201,24 +201,29 @@ if __name__ == '__main__':
     
     #### MGE prediction ####
     start_MGE = datetime.datetime.now() #time start
-    PLASCAD_PRED.start()
-    PLASCAD_PRED.join()
-    MGE4_PRED.start()
-    MGE3_PRED.start()
-    MGE5_PRED.start()
+    PLASCAD_PRED.start() #start mobplas
+    PLASCAD_PRED.join() 
+    # MGE4_PRED.start() #start seeker
+    MGE3_PRED.start() #start mog
+    MGE5_PRED.start() #start def
     
 
     # MGE1_PRED.start()
-    MGE2_PRED.start()
+    MGE2_PRED.start() #dvf
     MGE2_PRED.join()
     MGE3_PRED.join()
-    AMR_PRED1.join()
-    AMR_PRED2.join()
-    AMR_PRED3.join()
-    VIR_PRED.join()
+    AMR_PRED1.join() #start rgi 
+    AMR_PRED2.join() #start deeparg 
+    AMR_PRED3.join() #start sarg
+    VIR_PRED.join() #start vf
     MGE5_PRED.join()
     # MGE1_PRED.join()
-    time.sleep(0.5)
+    time.sleep(1)
+    
+    #run phage prediction
+    MGE4_prediction()
+    time.sleep(1)
+    
     end_MGE = datetime.datetime.now() #time end
     print("MGE prediction cost: {}".format(end_MGE-start_MGE))
     end_all = datetime.datetime.now() #time end
