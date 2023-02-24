@@ -34,7 +34,7 @@ else
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*contigs.fa
     do
 	echo ${i}
-    python ${WORK_DIR}/plas_cad/plascad.py -i ${i}
+    python ${WORK_DIR}/submodels/plas_cad/plascad.py -i ${i}
 	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 	rm -rf ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*out
     done
