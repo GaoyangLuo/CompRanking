@@ -20,6 +20,8 @@ CONDA_PATH=$(dirname ${CONDA_BIN})
 SEEKER_DIR=${CONDA_PATH}/envs/CompRanking_seeker_env/lib/python3.7/site-packages/seeker
 rm ${SEEKER_DIR}/command_line.py && cp ${SCRIPT_PATH}/scripts/command_line.py ${SEEKER_DIR}
 
-#check 
+#make checkdone
+mkdir checkdone
+
 
 
