@@ -166,9 +166,7 @@ def AMR_process(file_name_base):
 
 #threads combine
 def AMR_combine_main():
-    # datasource = DataSource('data.txt') 
-    # for i in file_name_base: #if file large it will be very slow
-    openthreads = len(file_name_base) # 开启的线程数，注意：并非越多越快哦
+    openthreads = len(file_name_base) 
     exfiles = []
     for i in range(openthreads):
         # worker = threading.Thread(target=AMR_process,args=([file_name_base[i]]))
