@@ -14,6 +14,7 @@ import os
 import path
 import math
 import optparse
+import multiprocessing
 
 parser = optparse.OptionParser()
 parser.add_option("-i", "--input", action = "store", type = "string", dest = "input_dir", 
@@ -36,15 +37,16 @@ if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
 
     
-#假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
-file_abs_path=path.file_abs_path_list_generation(input_dir)
-sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
-write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary.txt"
-with open(write_file, "w") as f1:
-    f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
+# #假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
+# file_abs_path=path.file_abs_path_list_generation(input_dir)
+# sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
+# write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary.txt"
+# with open(write_file, "w") as f1:
+#     f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
 
-for i in sample_list: #获取sample_name
-    sample_name=i
+def info_sum(sample_list):
+# for i in sample_list: #获取sample_name
+    sample_name=sample_list
     print(sample_name)
     # 获取结果表
     file_path=os.path.join(input_dir,project_prefix,"CompRanking_result/CompRanking_"+ sample_name +"_Summary.tsv")
@@ -117,3 +119,28 @@ for i in sample_list: #获取sample_name
 
     with open(write_file, "a") as f:
         f.write("\n"+ sample_name + "\t" + output)
+
+def multi_info_sum():
+    openthreads = len(sample_list) 
+    exfiles = []
+    for i in range(openthreads):
+        worker = multiprocessing.Process(target=info_sum,args=([sample_list[i]]))
+        worker.start()
+        print("Now processing:{}".format(sample_list[i]))
+        exfiles.append(worker)
+
+    for worker in exfiles:
+        worker.join()  
+
+if __name__ == "__main__":
+    
+    #假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
+    file_abs_path=path.file_abs_path_list_generation(input_dir)
+    sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
+    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary.txt"
+    with open(write_file, "w") as f1:
+        f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
+        
+    #run
+    multi_info_sum()
+    
