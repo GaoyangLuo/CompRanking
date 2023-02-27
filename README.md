@@ -13,3 +13,19 @@ Please firstly set up all the environment by the following commands. These comma
 ```sh
 $ bash setup.sh
 ```
+
+
+## Run gene prediction
+Step 1:Gene prediction can generate contextural information of AMR and pathogen information of the whole metagenome. Run the command line below:
+```sh
+$ python cpr_multiprocess.py -i <input_dir> -t <threads> -r <if_restart> -p <project_name_prefix>
+``` 
+
+Step 2:After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
+```sh
+$ python ./compranking/GeneCal.py -i <input_dir> -p <project_name_prefix>
+```
+Step 3: Generate a risk score and corresponding valuse of each sample. In this step, you can acquire various parameters such as how many ARGs-carried contigs or phage- or plasmids-related contigs in your samples. Please run the command line below:
+```sh
+$ python ./compranking/baseInfoExtra.py -i <input_dir> -p <project_name_prefix>
+```
