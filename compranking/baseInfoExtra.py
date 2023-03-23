@@ -74,8 +74,8 @@ def info_sum(sample_list):
     nPAT_pathogenic_contigs=len(PAT_filter.Contig.unique())
     #nARGs_MGEs_counts
     #RankII_Risk
-    nARGs_MGEs_filter=arg_filter[arg_filter.Pathogenicity!="-"]
-    nARGs_MGEs_filter=nARGs_MGEs_filter[nARGs_MGEs_filter.MGE_prediction!="unclassified"]
+    # nARGs_MGEs_filter=arg_filter[arg_filter.Pathogenicity=="-"]
+    nARGs_MGEs_filter=arg_filter[arg_filter.MGE_prediction!="unclassified"]
     nARGs_MGEs_contigs=len(nARGs_MGEs_filter.Contig.unique())
     #nARGs_MGEs_plasmid_counts
     nARGs_MGEs_plasmid_filter=arg_filter[arg_filter.MGE_prediction=="plasmid"]
@@ -85,7 +85,9 @@ def info_sum(sample_list):
     nARGs_MGEs_phage_contigs=len(nARGs_MGEs_phage_filter.Contig.unique())
     #nARGs_MGEs_PAT(pathogenic)
     #RankI_Risk
-    nARGs_MGEs_PAT_filter=nARGs_MGEs_filter[nARGs_MGEs_filter.Pathogenicity=="Pathogenic"]
+    nARGs_MGEs_PAT_filter=arg_filter[arg_filter.MGE_prediction!="unclassified"]
+    nARGs_MGEs_PAT_filter=nARGs_MGEs_PAT_filter[nARGs_MGEs_PAT_filter.Pathogenicity=="Pathogenic"]
+    # nARGs_MGEs_PAT_filter=nARGs_MGEs_filter[nARGs_MGEs_filter.Pathogenicity=="Pathogenic"]
     nARGs_MGEs_PAT_contigs=len(nARGs_MGEs_PAT_filter.Contig.unique())
     #risk calculation
     # nContigs
