@@ -18,6 +18,7 @@ import path
 import subprocess
 import multiprocessing
 import optparse
+import glob
 from Bio import SeqIO
 
 parser = optparse.OptionParser()
@@ -88,10 +89,30 @@ def get_MobilOG_len(input_mobileOG_structure):
     for i, name in df_mobileOG_structure.iterrows():
         DB_MobileOG_length.setdefault(str(name["mobileOG_ID"]), name["length"])
     return DB_MobileOG_length
+
+def getPrefix(input_AGS_dir):
+    file_prefix=[]
+    file_list=glob.glob(input_AGS_dir+"/*.AGS.txt")
+    for i in file_list:
+        prefix=((os.path.basename(i)).rstrip("AGS.txt"))
+        file_prefix.append(prefix)
     
+    return file_list, file_prefix
+
+def get_genome_len(input_AGS, prefix_list):
+    genome_length_dic={}
+    for index, j in enumerate(input_AGS): 
+        for lines in open(j,'r'):
+                            if lines.startswith('average_genome_size'):
+                                lines_set = lines.split('\n')[0].split('\t')
+                                genome_length = float(lines_set[1])
+                                genome_length_dic.setdefault(prefix_list[index],float(genome_length))
+                                print("The Average Genome Length of file {} is {}".format(prefix_list[index],genome_length ))
+    return genome_length_dic
+
     
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
-                input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,filebase):
+                input_AMR_sum,input_kk2,input_deeparg_sure,input_rgi,input_SARG,filebase,genome_length):
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -103,11 +124,11 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     for i, name in df_AMR_hit1.iterrows():
         Record_db_orf.setdefault(str(name["ORF_ID"]), str(name["db_final"]))
     
-    #calculate 16s copies
+    #calculate average genome length
     #load kk2
     kraken=input_kk2
     copy_16S = 1
-    gene_length = 1550 # 16S
+    gene_length =  genome_length# not 16S
 
     # metagenomes
     for lines in open(kraken,'r'):
@@ -411,6 +432,17 @@ def Calculation(file_name_base):
     except:
         raise SystemError("Can't load reference length, please check the original files...")
     
+    #Find average genome length
+    try:
+        #load AGS
+        input_AGS_dir=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs/AGS")
+        file_list,prefix=getPrefix(input_AGS_dir)
+        genome_length_dic=get_genome_len(file_list,prefix)
+    except:
+        raise ValueError("Can't load AGS file, please check the original files,\
+                         or check the name of your input file and see whether meet our name rules...")
+
     try:
         #load subtype dataframe
         result, \
@@ -425,7 +457,8 @@ def Calculation(file_name_base):
                                         input_deeparg_sure,
                                         input_rgi,
                                         input_SARG,
-                                        i)
+                                        i,
+                                        genome_length_dic[i])
         #output total relative abundance in a list    
         output_abundance="\t".join(map(str, result))
         #save output as tmp file
@@ -450,7 +483,7 @@ def Calculation(file_name_base):
                             i+"_MGE_rpkmAbu_tmp.txt"),
                                 sep="\t",header=False)
         
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_GL.txt"), "a") as f:
             f.write("\n" + i + "\t" + output_abundance)
     except:
         raise ValueError("Write to summary abundacne file failed...")
@@ -647,6 +680,7 @@ if __name__ == "__main__":
             subprocess.call(["bash", kk2_script, 
                 "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
     
+    
     #multiCalculation
     # multiKK2()
     #multiTask
@@ -774,7 +808,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir, project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_Abundance_ARGs_subtypes_GL.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
@@ -815,7 +849,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir,project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_Abundance_MGEs_subtypes_GL.txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:

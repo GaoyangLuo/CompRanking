@@ -172,8 +172,10 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     """
     abundance_arg_16S=0
     abundance_arg_RPKM=0
+    abundance_arg_TPM=0
     RPKM_ARG={}
     TAXO_ARG={}
+    TPM_ARG={}
     num_contigs=len(df_AMR_sum) #totalNumReads
     for orf in Record_db_orf:
         find_db=''
@@ -182,23 +184,30 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             if find_db=="DeepARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
                 abundance_arg_RPKM += 1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_TPM += 1 / (num_contigs / 1000 * DB_deepARG_length_res[orf] / 1000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
                 RPKM_ARG.setdefault(str(orf), float(1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000)))
+                TPM_ARG.setdefault(str(orf), float(1 / (num_contigs / 1000 * DB_deepARG_length_res[orf] / 1000)))
             elif find_db=="RGI":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
                 abundance_arg_RPKM  += 1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_TPM += 1 / (num_contigs / 1000 * DB_CARD_length_res[orf] / 1000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
                 RPKM_ARG.setdefault(str(orf), float(1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000)))
+                TPM_ARG.setdefault(str(orf), float(1 / (num_contigs / 1000 * DB_CARD_length_res[orf] / 1000)))
             elif find_db=="SARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
                 abundance_arg_RPKM  += 1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_TPM += 1 / (num_contigs / 1000 * DB_SARG_length_res[orf] / 1000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_SARG_length_res[orf]))
                 RPKM_ARG.setdefault(str(orf), float(1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000)))
+                TPM_ARG.setdefault(str(orf), float(1 / (num_contigs / 1000 * DB_SARG_length_res[orf] / 1000)))
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
     print("The relative abundance of ARG by 16S is: {}".format(abundance_arg_16S))
     print("The relative abundance of ARG by RPKK is: {}".format(abundance_arg_RPKM))
+    print("The relative abundance of ARG by TPM is: {}".format(abundance_arg_TPM))
     
     #cal ARG subtype
     """
@@ -210,9 +219,11 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     """
     abundance_ARG_subtype_16S={}
     abundance_ARG_subtype_RPKM={}
+    abundance_ARG_subtype_TPM={}
     for i, name in df_AMR_hit.iterrows():
         tmp_16s=0
         tmp_rpkm=0
+        tmp_tpm=0
         #16s
         if abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")):
             tmp_16s=abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + TAXO_ARG[name["ORF_ID"]]
@@ -225,7 +236,12 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             abundance_ARG_subtype_RPKM[name["ARG_class"].split("/")[0].split(":")[0].strip(";")] = tmp_rpkm    
         else:
             abundance_ARG_subtype_RPKM.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(RPKM_ARG[name["ORF_ID"]]))   
-    
+        #tpm
+        if abundance_ARG_subtype_TPM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")):
+            tmp_tpm=abundance_ARG_subtype_TPM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + TPM_ARG[name["ORF_ID"]]
+            abundance_ARG_subtype_TPM[name["ARG_class"].split("/")[0].split(":")[0].strip(";")] = tmp_tpm    
+        else:
+            abundance_ARG_subtype_TPM.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(TPM_ARG[name["ORF_ID"]]))   
     ###################### MGE relative abundance calculation####################
     #get DB_mobile_OG_len_dic
     df_mobileOG_structure=pd.read_csv(input_mobileOG_structure,sep="\t", header=0)
@@ -363,10 +379,11 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
     df_ARG_subtype_16S = pd.DataFrame(pd.Series(abundance_ARG_subtype_16S))
     df_ARG_subtype_RPKM = pd.DataFrame(pd.Series(abundance_ARG_subtype_RPKM))
+    df_ARG_subtype_TPM = pd.DataFrame(pd.Series(abundance_ARG_subtype_TPM))
     df_MGE_subtype_16S = pd.DataFrame(pd.Series(abundance_MGE_subtype_16S))
     df_MGE_subtype_RPKM = pd.DataFrame(pd.Series(abundance_MGE_subtype_RPKM))
     
-    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM, df_MGE_subtype_16S, df_MGE_subtype_RPKM
+    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM, df_ARG_subtype_TPM,df_MGE_subtype_16S, df_MGE_subtype_RPKM
 
 def kk2(file_name_base):
     #run kranken2
@@ -784,7 +801,7 @@ if __name__ == "__main__":
                         sep="\t", header=None)
     df_main.columns=["type",name_list_rpkm[0]]
     for i,name in enumerate(name_list_rpkm):
-        if i < len(name_list_16S)-1:
+        if i < len(name_list_rpkm)-1:
             init+=1
             if name_list_rpkm[init]:
                 df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[init]),
@@ -796,6 +813,28 @@ if __name__ == "__main__":
                     input_dir,project_prefix,
                         "CompRanking_result",
                             project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
+    
+    #cal tpm
+    name_list_tpm=[]
+    for i in file_name_base:
+        name_list_rpkm.append(i+"_ARG_tpmAbu_tmp.txt")
+    init=0
+    df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_tpm[0]),
+                        sep="\t", header=None)
+    df_main.columns=["type",name_list_tpm[0]]
+    for i,name in enumerate(name_list_tpm):
+        if i < len(name_list_tpm)-1:
+            init+=1
+            if name_list_tpm[init]:
+                df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_tpm[init]),
+                                 sep="\t", header=None)
+                df_2.columns=["type",name_list_tpm[init]]
+                df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
+    #save rpkm subtype abu
+    df_main.to_csv(os.path.join(
+                    input_dir,project_prefix,
+                        "CompRanking_result",
+                            project_prefix+"_Abundance_ARGs_subtypes_tpm.txt"),sep="\t",index=None)
     #concat MGE result
     #concat 16S
     name_list_16S=[]

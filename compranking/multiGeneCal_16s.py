@@ -54,7 +54,7 @@ if (options.threads is None):
 if (options.config_file is None):
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml") #"../test_yaml.yaml" default config_file path
 if (options.database is None):
-    database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
+    database = "/lomi_home/gaoyang/db/kraken2/greengenes"#default config_file path
 if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
 
@@ -396,7 +396,7 @@ def Calculation(file_name_base):
                                     i+"_5M_contigs_DeepARG.out.mapping.ARG")
         input_kk2=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
-                                    i+"_report_kk2_mpaStyle.txt")
+                                    i+"_report_kk2_mpaStyle_16S.txt")
         input_AMR_sum=os.path.join(input_dir,project_prefix,
                                 "CompRanking_result",
                                     "CompRanking_"+i+"_AMR_MOB_prediction.tsv")
@@ -599,7 +599,7 @@ if __name__ == "__main__":
     # project_prefix="CompRanking"
     # database="/lomi_home/gaoyang/db/kraken2/202203"
     # threads="24"
-    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single.sh")
+    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single_16S.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
@@ -638,12 +638,12 @@ if __name__ == "__main__":
     
     #run kranken2
     for i in file_name_base:
-        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"):
             print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
             continue
         else:
             print("KK2 mpaStyle output don't exist... {}".\
-                format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
+                format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
             subprocess.call(["bash", kk2_script, 
                 "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
     
