@@ -51,3 +51,13 @@ def file_base_acquire(file_abs_path): #get names of all the sample files
     except:
         raise IndexError("Faile to acquire base name of samples...")
     return base_list
+
+#get AGS file abs path and extract prefix
+def getPrefix(input_AGS_dir):
+    file_prefix=[]
+    file_list=glob.glob(input_AGS_dir+"/*.AGS.txt")
+    for i in file_list:
+        prefix=((os.path.basename(i)).rstrip("AGS.txt"))
+        file_prefix.append(prefix)
+    
+    return file_list, file_prefix
