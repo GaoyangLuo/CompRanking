@@ -186,6 +186,7 @@ tmp/
 DEG
 virulence
 models_and_domains
+genomad_db
 ##used
 MobileOG-db
 PATRIC
