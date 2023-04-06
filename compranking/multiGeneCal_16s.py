@@ -115,7 +115,15 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         if 'Bacteria' in lines:
             copy_16S = float(content[1]) # pair end
             break
-        
+    
+    # amplicon sequencing
+    df_amp=pd.read_csv(os.path.join("/lomi_home/gaoyang/software/CompRanking/tmp_DSR", "amplicon_2.txt"), header=0,sep="\t")
+    amplicon_dic={}
+    for i, name in df_amp.iterrows():
+        amplicon_dic.setdefault(str(name["ID"].split("_")[0]+".contigs"), int(name["copy"]))
+    copy_16S=amplicon_dic[os.path.basename(kraken).split("_")[0]]
+    
+    
     #load deeparg
     df_deeparg_sure=pd.read_csv(input_deeparg_sure, sep="\t")
     #load rgi

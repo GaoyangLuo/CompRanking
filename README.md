@@ -8,12 +8,16 @@ Metagenomic samples resistome assessment and risk ranking pipeline, also known a
 ![图片](/image/CompRanking.png)
 
 # How to use
-## First step
+## Environment settings
 Please firstly set up all the environment by the following commands. These commands will help to config all the environment needed and a modified seeker command_line.py file.
 ```sh
 $ bash setup.sh
 ```
 
+## Databse download
+```py
+
+```
 
 ## Run gene prediction
 Step 1:Gene prediction can generate contextural information of AMR and pathogen information of the whole metagenome. Run the command line below:
