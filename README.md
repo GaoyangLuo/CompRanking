@@ -5,7 +5,7 @@ version 1.0
 Metagenomic samples resistome assessment and risk ranking pipeline, also known as m3Rs. It's a pipeline for comprehensively ranking the environmental metagenome samples by virtue of assessing their resistome profiles. Generally giving results derived from three features as the co-occurrance of ARGs and MGEs on one contigs and the globle statement of the enrichment of virulence factors.
 
 # workflow
-![图片](/image/CompRanking.png)
+<!-- ![图片](/image/CompRanking.png) -->
 
 # How to use
 ## Environment settings
@@ -16,7 +16,7 @@ $ bash setup.sh
 
 ## Databse download
 ```py
-
+Please wait...
 ```
 
 ## Run gene prediction
