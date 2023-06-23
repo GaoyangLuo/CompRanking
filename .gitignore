@@ -183,6 +183,7 @@ benchmarking
 tmp/
 
 #databases
+databases
 DEG
 virulence
 models_and_domains
@@ -191,6 +192,7 @@ genomad_db
 MobileOG-db
 PATRIC
 deepargdata1.0.2
+
 
 
 #testdata
