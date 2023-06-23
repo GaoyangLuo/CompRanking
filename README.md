@@ -25,7 +25,15 @@ You can download the databases from the location: `https://doi.org/10.5281/zenod
 ```sh
 $ wget https://zenodo.org/record/8073486/files/CompRanking_database_v1.tar.gz?download=1
 $ wget https://zenodo.org/record/8073486/files/localDB.zip?download=1
+$ tar -zxvf CompRanking_database_v1.tar.gz && mv CompRanking_database_v1.tar.gz databases
+$ unzip localDB.zip
 ```
+
+## Demo test
+We provided a set of data for test.
+```sh
+$ python cpr_multiprocess.py -i test_data -t 12 -r 1 -p test_demo
+``` 
 
 ## Run gene prediction
 **Step 1:** Gene prediction can generate contextural information of AMR and pathogen information of the whole metagenome. Run the command line below:
