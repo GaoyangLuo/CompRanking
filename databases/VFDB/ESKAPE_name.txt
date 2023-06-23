@@ -1,6 +1,0 @@
-Enterococcus faecium 
-Staphylococcus aureus
-Klebsiella pneumoniae
-Acinetobacter baumannii
-Pseudomonas aeruginosa 
-Enterobacter
