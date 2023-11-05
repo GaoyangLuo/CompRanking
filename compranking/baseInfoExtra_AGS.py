@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # title             :baseInfoExtra.py -> baseInfoExtra.ipynb
-# description       :calculate relative abundance of genes
+# description       :This script is for benchmarking using average genome size as normalization bases to gener
+#                    generate risk score
 # author            :Gaoyang Luo
 # date              :202201119
 # version           :1.0
