@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # title             :baseInfoExtra.py -> baseInfoExtra.ipynb
-# description       :calculate relative abundance of genes
+# description       :For summary basic information of the sample (using contigs as normalization base)
 # author            :Gaoyang Luo
 # date              :202201119
 # version           :1.0
