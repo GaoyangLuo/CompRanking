@@ -1,0 +1,366 @@
+rm: cannot remove ‘checkdone/TGL*done’: No such file or directory
+[TIMESTAMP] Sat Nov 11 07:15:37 CST 2023 Filtering 5M contigs...
+rm: 无法删除"checkdone/CompRanking*done": 没有那个文件或目录
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:39 CST Filtering 5M contigs...
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/bin/seqmagick", line 10, in <module>
+    sys.exit(main())
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/site-packages/seqmagick/scripts/cli.py", line 12, in main
+    action, arguments = parse_arguments(argv)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/site-packages/seqmagick/scripts/cli.py", line 64, in parse_arguments
+    arguments = parser.parse_args(argv)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1826, in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1859, in parse_known_args
+    namespace, args = self._parse_known_args(args, namespace)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2050, in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2027, in consume_positionals
+    take_action(action, args)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1936, in take_action
+    action(self, namespace, argument_values, option_string)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1214, in __call__
+    subnamespace, arg_strings = parser.parse_known_args(arg_strings, None)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1859, in parse_known_args
+    namespace, args = self._parse_known_args(args, namespace)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2071, in _parse_known_args
+    stop_index = consume_positionals(start_index)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2027, in consume_positionals
+    take_action(action, args)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 1920, in take_action
+    argument_values = self._get_values(action, argument_strings)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2451, in _get_values
+    value = self._get_value(action, arg_string)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/argparse.py", line 2484, in _get_value
+    result = type_func(arg_string)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/site-packages/seqmagick/subcommands/common.py", line 238, in __call__
+    return self._get_handle(string)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_preprocessing_env/lib/python3.10/site-packages/seqmagick/subcommands/common.py", line 227, in _get_handle
+    return self.ext_map.get(ext, open)(file_path, self.mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'top/*fa'
+/lomi_home/gaoyang/software/CompRanking/./test_yaml.yaml
+The absolute path to conda bin is:/lomi_home/gaoyang/miniconda/bin
+Preprocessing fasta files...
+Step Preprocessing cost time: 0:00:06.102624
+ARG search cost time: 0:00:00.007771
+VF and Pathogen prediction cost: 0:00:00.002223
+/lomi_home/gaoyang/miniconda/bin
+top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:45 CST Running ARG prediction...
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:45 CST Running plascad prediction...
+top/CompRanking/CompRanking_intermediate/preprocessing/ori_file/*contigs.fa
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:45 CST Running DeepARG prediction...
+Running VFDB prediction...
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:45 CST Running VFDB prediction...
+Running ARG_ranking prediction...
+[TIMESTAMP] 2023年 11月 11日 星期六 07:15:45 CST Running ARG_ranking prediction...
+diamond v2.0.13.151 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+diamond#CPU threads: 32
+ v2.0.13.151 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 32
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Temporary directory: Temporary directory: top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs
+#Target sequences to report alignments for: 1
+Opening the database... top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs
+#Target sequences to report alignments for: 1
+Opening the database... No such file or directory
+ [0s]
+Error: Error calling stat on file /lomi_home/gaoyang/software/CompRanking/databases/SARG/SARG.db.fasta.dmnd
+No such file or directory
+ [0s]
+Error: Error calling stat on file /lomi_home/gaoyang/software/CompRanking/databases/VFDB/VFDB_setB_pro.fas.dmnd
+Traceback (most recent call last):
+  File "cpr_multiprocess.py", line 255, in <module>
+    PLASCAD_PRED.join() 
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/popen_fork.py", line 47, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/popen_fork.py", line 27, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+KeyboardInterrupt
+Process Process-1:
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "cpr_multiprocess.py", line 95, in ARG1_prediction
+    subprocess.call(["bash", AMR1_PREDICTION,
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 342, in call
+    return p.wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1806, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1764, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
+Process Process-8:
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "cpr_multiprocess.py", line 125, in plascad_prediction
+    subprocess.call(["bash", PLASCAD_PREDICTION,
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 342, in call
+    return p.wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1806, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1764, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
+Process Process-2:
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "cpr_multiprocess.py", line 98, in ARG2_prediction
+    subprocess.call(["bash", AMR2_PREDICTION,
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 342, in call
+    return p.wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1806, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/lomi_home/gaoyang/miniconda/envs/cpr/lib/python3.8/subprocess.py", line 1764, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+
+Error: Failed to open sequence file *contigs.faa for reading
+
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/MOB_parser.py", line 85, in <module>
+    MOB_parsing(str(args.i) + "_MOBB.hmm_domtblout", args.cMOBB)
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/MOB_parser.py", line 46, in MOB_parsing
+    for line in open(in_domtblout, "r"):
+FileNotFoundError: [Errno 2] No such file or directory: '*contigs_MOBB.hmm_domtblout'
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+
+Error: Failed to open sequence file *contigs_MOB_temp_mob.faa for reading
+
+cat: *ATPase.hmm_domtblout_parsed_out: 没有那个文件或目录
+cat: *T4CP*_domtblout_parsed_out: 没有那个文件或目录
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/MPF_hmm_parser.py", line 98, in <module>
+    MPFF_parsed_result(str(args.i) + '_ATPase_temp_out', str(args.i) + "_MOB_temp_mob.faa")
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/MPF_hmm_parser.py", line 71, in MPFF_parsed_result
+    for record in SeqIO.parse(open(faa, "r"), "fasta"):
+FileNotFoundError: [Errno 2] No such file or directory: '*contigs_MOB_temp_mob.faa'
+cat: *contigs_T4CP_temp_parsed_result_out: 没有那个文件或目录
+cat: *contigs*MPFF*_result_out: 没有那个文件或目录
+cat: *contigs_T4CP_temp_parsed_result_out: 没有那个文件或目录
+cat: *contigs*MPFG*_result_out: 没有那个文件或目录
+cat: *contigs_T4CP_temp_parsed_result_out: 没有那个文件或目录
+cat: *contigs*MPFI*_result_out: 没有那个文件或目录
+cat: *contigs_T4CP_temp_parsed_result_out: 没有那个文件或目录
+cat: *contigs*MPFT*_result_out: 没有那个文件或目录
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/Conj_mob_classification.py", line 56, in <module>
+    Conj_mob_classification(str(args.i) + "_Conj_out", str(args.i) + "_MOB_temp_parsed_result_out")    
+  File "/lomi_home/gaoyang/software/CompRanking/submodels/plas_cad/scripts/Conj_mob_classification.py", line 25, in Conj_mob_classification
+    for line in open(mob_in, "r"):
+FileNotFoundError: [Errno 2] No such file or directory: '*contigs_MOB_temp_parsed_result_out'
+/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/theano/tensor/signal/downsample.py:6: UserWarning: downsample module has been moved to the theano.tensor.signal.pool module.
+  "downsample module has been moved to the theano.tensor.signal.pool module.")
+/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/sklearn/cross_validation.py:41: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
+  "This module will be removed in 0.20.", DeprecationWarning)
+INFO:root:DIAMOND blastp alignment
+INFO:root:Running: diamond  blastp -q top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*.faa -d databases/deepargdata1.0.2/database/v2/features -k 1000 --id 50 --sensitive -e 1e-10 -a /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align
+diamond v0.9.24.125 | by Benjamin Buchfink <buchfink@gmail.com>
+Licensed under the GNU GPL <https://www.gnu.org/licenses/gpl.txt>
+Check http://github.com/bbuchfink/diamond for updates.
+
+#CPU threads: 32
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Temporary directory: No such file or directory
+Error: Error opening temporary file /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/diamond-tmp-wwzrVB
+INFO:root:Input:top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*.faa output:/top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out model: deepARG_LS, Input type: blastp
+INFO:root:parsing output file diamond view -a /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align.daa -o /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align.daa.tsv
+diamond v0.9.24.125 | by Benjamin Buchfink <buchfink@gmail.com>
+Licensed under the GNU GPL <https://www.gnu.org/licenses/gpl.txt>
+Check http://github.com/bbuchfink/diamond for updates.
+
+#CPU threads: 32
+Loading subject IDs... No such file or directory
+ [6.6e-05s]
+Error: Error opening file /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align.daa
+INFO:root:Loading deep learning model ...
+ERROR 2023-11-11 07:16:06,564 : input file does not exist: /lomi_home/gaoyang/software/CompRanking/top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*.faa
+[TIMESTAMP] Sat Nov 11 07:16:13 CST 2023 Filtering 5M contigs... Done
+[TIMER] Filtering 5M contigs took 36 sec.
+[TIMESTAMP] Sat Nov 11 07:16:13 CST 2023 Predicting ORFs with prodigal...
+INFO:root:loading gene lengths
+INFO:root:Loading sample to analyze
+Loaded parameters to layer 'dense1' (shape 12279x2000).
+Loaded parameters to layer 'dense1' (shape 2000).
+Loaded parameters to layer 'dense3' (shape 2000x1000).
+Loaded parameters to layer 'dense3' (shape 1000).
+Loaded parameters to layer 'dense5' (shape 1000x500).
+Loaded parameters to layer 'dense5' (shape 500).
+Loaded parameters to layer 'dense7' (shape 500x100).
+Loaded parameters to layer 'dense7' (shape 100).
+Loaded parameters to layer 'dense8' (shape 100x32).
+Loaded parameters to layer 'dense8' (shape 32).
+[50, 1e-10, 0.7, True, 'genes']
+traversing input file /top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align.daa.tsv ...
+Traceback (most recent call last):
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/bin/deeparg", line 8, in <module>
+    sys.exit(main())
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/deeparg/entry.py", line 184, in main
+    args.func(args)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/deeparg/entry.py", line 57, in predict
+    '.mapping', args.arg_alignment_identity, mdl, args.arg_alignment_evalue, args.min_prob, args.arg_alignment_overlap, pipeline, args.model_version, args)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/deeparg/predict/bin/deepARG.py", line 132, in process
+    fi, iden=iden, eval=evalue, coverage=minCoverage, BitScore=True, Features=deepL['features'], glen=glen, pipeline=pipeline)
+  File "/lomi_home/gaoyang/miniconda/envs/CompRanking_deeparg_env/lib/python2.7/site-packages/deeparg/predict/bin/process_blast.py", line 21, in make_alignments_json
+    for i in tqdm(open(fname), unit="reads"):
+IOError: [Errno 2] No such file or directory: '/top/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/*_DeepARG.out.align.daa.tsv'
