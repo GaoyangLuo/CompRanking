@@ -52,7 +52,10 @@ dependencies:
     - pyyaml==6.0
     - scipy==1.4.1
     - six==1.16.0
+<<<<<<< HEAD
     - scikit-learn
+=======
+>>>>>>> newbranch
     - tensorboard==1.15.0
     - tensorflow==1.15.0
     - tensorflow-estimator==1.15.1
