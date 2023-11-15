@@ -5,7 +5,7 @@ set -m
 # default parameters
 PREFIX="CompRanking"
 THREADS=16
-# CONDA_BIN_PATH=~/miniconda/bin
+CONDA_BIN_PATH=~/miniconda/bin
 SCRIPT=$(readlink -f $0)
 SCRIPT_PATH=$(dirname ${SCRIPT})
 WORK_DIR=$(dirname ${SCRIPT_PATH})
