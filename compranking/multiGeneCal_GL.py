@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # title             :multiGenecal.py -> Gene_cal.ipynb
-# description       :calculate relative abundance of genes
+# description       :calculate relative abundance of genes. (beta version)
+#                    This version uses cell number method
+#                    as normalization to calculate ARG abundance (refer to Zhang et al. NC)
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
