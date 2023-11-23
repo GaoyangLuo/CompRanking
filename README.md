@@ -10,12 +10,27 @@ git clone https://github.com/GaoyangLuo/CompRanking
 ```
 
 ## Environment settings
+### Create environment
 Please firstly set up all the environment by the following commands. These commands will help to config all the environment needed.
 ```sh
 $ cd CompRanking
 $ conda env create -f CompRanking.yaml
 $ bash setup.sh
 ```
+### Setting conda path
+CompRanking relies on multi conda environments. Before run the demo test, conda bin path should be pre-requisit. Please set your **absolute bin path** of miniconda. For example, your absolute bin path is `/home/username/miniconda3/bin`.
+
+How to set your absolute conda bin path:\
+Vim your `test_yaml.yaml` file
+```sh
+$ vi test_yaml.yaml
+```
+Re-write the real path of `miniconda/bin`
+```yaml
+CompRanking:
+  abs_path_to_conda_bin: /your_real_path/miniconda/bin #don't use "~" or "./", please use absolute path
+```
+**Pleast note that don't use relative path, do not use "~" or "./"**
 
 ## Databse download
 You can download the databases from the location: `https://doi.org/10.5281/zenodo.8073486`. Or run the command lines below.
