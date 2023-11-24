@@ -2,6 +2,7 @@
 # title             :multiGenecal.py -> Gene_cal.ipynb
 # description       :calculate relative abundance of genes
 #                    This version is used to calculate rpkm abundance (beta version)
+#                    for 16s-rRNA-based method, we used kk2 to generate bateria copies.
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
@@ -31,7 +32,7 @@ parser.add_option("-o", "--output", action = "store", type = "string", dest = "o
 parser.add_option("-t", "--threads", action = "store", type = "string", dest = "threads",
 				 help = "how many cpus you want use")      
 parser.add_option("-c", "--config_file", action = "store", type = "string", dest = "config_file", 
-                  help = "file contains basic configeration information")           
+                  help = "file contains basic configeration information, defult: test_yaml.yaml")           
 parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
 				  help = "The path to Kranken2 database")
 # parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
@@ -377,9 +378,25 @@ def kk2(file_name_base):
         pass
     else:
         print("KK2 mpaStyle output don't exist... {}".\
-            format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
+            format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
         subprocess.call(["bash", kk2_script, 
             "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+        
+def cov_rpkm(file_name_base):
+    #run cov_rpkm_calculation
+    i=file_name_base
+    if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".rpkm"):
+        print("It seems that we have already done the {} rpkm files...".format(i))
+        pass
+    if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".cov"):
+        print("It seems that we have already done the {} cov files...".format(i))
+        pass
+    else:
+        print("KK2 mpaStyle output don't exist... {}".\
+            format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+        subprocess.call(["bash", cov_rpkm_script, 
+            "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
+
 
 def Calculation(file_name_base):
     #calculate relative abundance of functional genes
@@ -601,6 +618,7 @@ if __name__ == "__main__":
     # database="/lomi_home/gaoyang/db/kraken2/202203"
     # threads="24"
     kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single_16S.sh")
+    cov_rpkm_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/cov_rpkm_calculation.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)
     yaml_path=os.path.join(os.path.dirname(os.path.abspath(__file__)),config_path)
@@ -644,10 +662,24 @@ if __name__ == "__main__":
             continue
         else:
             print("KK2 mpaStyle output don't exist... {}".\
-                format(os.path.join(input_dir, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
             subprocess.call(["bash", kk2_script, 
                 "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
     
+    #run cov_rpkm
+    for i in file_name_base:
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".rpkm"):
+            print("It seems that we have already done the {} rpkm files...".format(i))
+            continue
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".cov"):
+            print("It seems that we have already done the {} cov files...".format(i))
+            continue
+        else:
+            print("KK2 mpaStyle output don't exist... {}".\
+                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+            subprocess.call(["bash", cov_rpkm_script, 
+                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
+    #cov_rpkm_calculation.sh
     #multiCalculation
     # multiKK2()
     #multiTask
