@@ -26,6 +26,7 @@ done
 source $CONDA_BIN_PATH/activate CompRanking_preprocessing_env
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/RGI
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/DeepARG
