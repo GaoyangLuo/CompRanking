@@ -38,7 +38,7 @@ You can download the databases from the location: `https://doi.org/10.5281/zenod
 ```sh
 $ wget https://zenodo.org/record/8073486/files/CompRanking_database_v1.tar.gz?download=1
 $ wget https://zenodo.org/record/8073486/files/localDB.zip?download=1
-$ tar -zxvf CompRanking_database_v1.tar.gz && mv CompRanking_database_v1.tar.gz databases
+$ tar -zxvf CompRanking_database_v1.tar.gz && mv CompRanking_database_v1 databases
 $ unzip localDB.zip
 ```
 
