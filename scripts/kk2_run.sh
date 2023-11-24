@@ -27,12 +27,12 @@ done
 source ${CONDA_BIN_PATH}/activate CompRanking_alignment_env
 
 if [ -e ${PREFIX}.Kraken2.done ]; then
-	echo "plascad file existed..."
+	echo "kraken2 file existed..."
 else
 	#time start
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running Kraken2 prediction..."	
-	#Running plascad
+	#Running kraken2
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
 	echo ${i}
@@ -42,7 +42,7 @@ else
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_mob_unconj_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
 #     mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_unmob_plasmids_id_out ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
     #   mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/*_id_* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/plascad/
-	#finish Running plascad
+	#finish Running kraken2
 	echo "[TIMESTAMP] $(date) Running Kraken2 prediction... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running Kraken2 prediction took $(($ENDTIME - $STARTTIME)) sec."
