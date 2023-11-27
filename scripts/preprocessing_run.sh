@@ -98,8 +98,8 @@ else
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
 	do
 	base=${i%%.f*}
-	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -f gff -p meta -q
-	mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/${base} #ERR.contigs_5M_contigs
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -d ${base}.fna -f gff -p meta -q
+	# mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/${base} #ERR.contigs_5M_contigs
 	done
 	#finish ORFs prediction
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
