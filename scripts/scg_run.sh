@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 set -m
-
+#bash scripts/scg_run.sh -i xxx/CompRanking_intermediate/preprocessing/5M_contigs -p  -t 
 # default parameters
 PREFIX="CompRanking"
 THREADS=16
