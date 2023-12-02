@@ -119,7 +119,7 @@ if [ -e checkdone/${PREFIX}.index_build.done ]; then
 	echo "index file existed..."
 else
 	cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-	cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+	ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 	sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*gff
 	do
