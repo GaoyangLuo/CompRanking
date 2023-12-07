@@ -309,7 +309,7 @@ if __name__ == '__main__':
     #arg rank processing
     for i in file_name_base:
         input_sarg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking", i+"_5M_contigs_SARG_Protein_diamond.txt")
-        if os.path.getsize(input_sarg) != 0:
+        if not os.path.getsize(input_sarg) != 0:
             ARG_ranker.arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, SARG_output)
         else:
             continue
