@@ -6,10 +6,10 @@
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
-# usage             :python mulitGenecal.py -i <input_dir> 
-#                                       -p <project_prefix>
-#                                       -t <threads>
-#                                       -d <pth2KK2db>
+# usage             :python mulitGenecal_metagenome_rpkm.py -i <input_dir>
+#                                                           -p <project_prefix>
+#                                                           -t <threads>
+#                                                           -d <pth2KK2db>
 # required packages :Bio, pandas, os
 # notification: enjoy yourself
 #==============================================================================
@@ -57,7 +57,7 @@ if (options.threads is None):
 if (options.config_file is None):
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml") #"../test_yaml.yaml" default config_file path
 if (options.database is None):
-    database = "/lomi_home/gaoyang/db/kraken2/greengenes"#default config_file path
+    database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
 if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
 
@@ -95,7 +95,7 @@ def get_MobilOG_len(input_mobileOG_structure):
     
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
                 input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,filebase):
+                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,filebase):   
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -136,7 +136,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     num_scg=len(df_scg_bit50)
     
     #load rpkm alinged reads number and mapped reads number
-    input_rpkm="/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov/S0PCL_clean.sorted_filtered.rpkm"
+    # input_rpkm="/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov/S0PCL_clean.sorted_filtered.rpkm"
     #get reads numbers
     for lines in open(input_rpkm,'r'):
         #content = lines.split('\n')[0].split('\t')
@@ -149,9 +149,19 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     array=np.array(df_rpkm)
     array=array.tolist()
     #write aligned reads into dic
+    """
+    refer rpkm_dic by using contig_orf
+    """
     rpkm_dic={}
     for i in array:
         rpkm_dic.setdefault(str(i[0]),float(i[4]))
+    #change orf id to contigs id
+    df_index=pd.read_csv(input_indexFile,sep="\t",header=None)
+    array_indexFile=np.array(df_index)
+    array_indexFile=array_indexFile.tolist()
+    index_dic={}
+    for i in array_indexFile:
+        index_dic.setdefault(str(i[1]),str(i[0]))
         
     
     #load deeparg
@@ -200,9 +210,9 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     RPKM - reads per kilo base per million mapped reads
     RPKM = numReads / ( geneLength/1,000 * totalNumReads/1,000,000 )
 
-        numReads        - number of ORFs mapped to a gene sequence
+        numReads        - number of reads mapped to a gene sequence
         geneLength      - length of the gene sequence
-        totalNumReads   - total number of mapped ORFs of a sample
+        totalNumReads   - total number of mapped reads of a sample
     """
     abundance_arg_16S=0
     abundance_arg_RPKM=0
@@ -212,28 +222,36 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     num_mapped_reads= mapped_reads
     for orf in Record_db_orf:
         find_db=''
+        contig_orf=index_dic[orf]
+        print("The orf {0} corresponding contig number is {1}: ".format(
+            orf, index_dic[orf]))
         if Record_db_orf[orf]:
             find_db=Record_db_orf[orf]
+            
+            if contig_orf in rpkm_dic:
+                mapped_reads=rpkm_dic[contig_orf]
+            else:
+                mapped_reads=1
             if find_db=="DeepARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
-                abundance_arg_RPKM += 1 / (DB_deepARG_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(rpkm_dic[orf] / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000)))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
             elif find_db=="RGI":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
-                abundance_arg_RPKM  += 1 / (DB_CARD_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(rpkm_dic[orf] / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000)))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
             elif find_db=="SARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
-                abundance_arg_RPKM  += 1 / (DB_SARG_length_res[orf] / 1000 * num_contigs / 1000)
+                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_SARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(rpkm_dic[orf] / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000)))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
     print("The relative abundance of ARG by 16S is: {}".format(abundance_arg_16S))
-    print("The relative abundance of ARG by RPKK is: {}".format(abundance_arg_RPKM))
+    print("The relative abundance of ARG by RPKM is: {}".format(abundance_arg_RPKM))
     
     #cal ARG subtype
     """
@@ -276,20 +294,28 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]),DB_MobileOG_length[name["mobileOG_ID"]])
     
     
-    #cal MGEs relative abundance 16S
+    #cal MGEs relative abundance 
     abundance_MGE_16S=0
     abundance_MGE_RPKM=0
     RPKM_MGE={}
     TAXO_MGE={}
     for orf_MGE in DB_MobileOG_length_res:
+        contig_orf=index_dic[orf_MGE]
+        print("The orf {0} corresponding contig number is {1}: ".format(
+            orf_MGE, index_dic[orf_MGE]))
+        mapped_reads=rpkm_dic[contig_orf]
+        if contig_orf in rpkm_dic:
+            mapped_reads=rpkm_dic[contig_orf]
+        else:
+            mapped_reads=1
         abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
-        abundance_MGE_RPKM += 1 / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_contigs / 1000)
+        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)
         TAXO_MGE.setdefault(str(orf_MGE),float((gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])))
-        RPKM_MGE.setdefault(str(orf_MGE),float(rpkm_dic[orf] / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000)))
+        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)))
         
     
     print("The relative abundance of MGE by 16S is: {}".format(abundance_MGE_16S))
-    print("The relative abundance of MGE by RPKK is: {}".format(abundance_MGE_RPKM))
+    print("The relative abundance of MGE by RPKM is: {}".format(abundance_MGE_RPKM))
     print(TAXO_MGE)
     print(RPKM_MGE)
     #cal MGE subtype
@@ -435,7 +461,7 @@ def Calculation(file_name_base):
     #calculate relative abundance of functional genes
     i=file_name_base
     try:
-        #load ARGs result
+        #load ARGs result and relative files
         input_rgi=os.path.join(input_dir,project_prefix,
                             "CompRanking_intermediate/AMR/RGI",
                                     i+"_5M_contigs.RGI.out.txt")
@@ -457,6 +483,9 @@ def Calculation(file_name_base):
         input_rpkm=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs/cov",
                                     i+"_5M_contigs_gene.rpkm")
+        input_indexFile=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                    i+"_5M_contigs.fna2faa.index")
     except:
         raise ValueError("Missing the output...")
     
@@ -484,6 +513,7 @@ def Calculation(file_name_base):
                                         input_SARG,
                                         input_scg,
                                         input_rpkm,
+                                        input_indexFile,
                                         i)
         #output total relative abundance in a list    
         output_abundance="\t".join(map(str, result))
@@ -698,26 +728,23 @@ if __name__ == "__main__":
     
     #run kranken2
     for i in file_name_base:
-        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"):
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
             print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
             continue
         else:
             print("KK2 mpaStyle output don't exist... {}".\
-                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
             subprocess.call(["bash", kk2_script, 
                 "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
     
     #run cov_rpkm
     for i in file_name_base:
-        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".rpkm"):
+        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+"_5M_contigs_gene.rpkm"):
             print("It seems that we have already done the {} rpkm files...".format(i))
             continue
-        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+".cov"):
-            print("It seems that we have already done the {} cov files...".format(i))
-            continue
         else:
-            print("KK2 mpaStyle output don't exist... {}".\
-                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+            print("reads alignment file don't exist... {}".\
+                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+"_5M_contigs_gene.rpkm"))
             subprocess.call(["bash", cov_rpkm_script, 
                 "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
     #cov_rpkm_calculation.sh
