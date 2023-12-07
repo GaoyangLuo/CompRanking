@@ -41,14 +41,19 @@ def orf2contig(sample_list):
     contig_orf_dic={}
     for i in array:
         tmp=i[0].split("_")[0:-1]
-        contig_orf_dic.setdefault(str(tmp[0]+"_"+tmp[1]),str(i[1]))
-        
+        contig_orf_dic.setdefault(str(i[1]),str(tmp[0]+"_"+tmp[1]))
+    
     df_contig_orf = pd.DataFrame(pd.Series(contig_orf_dic))
+    df_contig_orf.reset_index(inplace=True)
+
+    df_contig_orf.columns=["orf", "contigs"]
+    df_contig_orf=df_contig_orf[["contigs","orf"]]
+    
     df_contig_orf.to_csv(os.path.join(
                         input_dir,project_prefix,
                             "CompRanking_intermediate/preprocessing/5M_contigs",
                                 sample_name +"_5M_contigs.index"),
-                                    sep="\t",header=False)
+                                    sep="\t",header=False, index=None)
 
 
 def multi_info_sum():
@@ -70,3 +75,4 @@ if __name__ == "__main__":
     multi_info_sum()
     
     # for i in *gff; do base=${i%%.gf*}; sed -i '/^#/d' ${i}; cut -f 1,9 ${i} |cut -d';' -f1| sed 's/ID=//' > ${base}.fna2faa.index; done
+    # for i in *index; do base=${i/.index/}; mv ${i} ${base}.fna2faa.index; done
