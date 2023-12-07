@@ -33,13 +33,13 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Running cov..."	
 	#Running cov prediction
-    if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa`" = "" ]; then 
-        echo "No fasta files"
-        ln -s ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    else 
-        echo "clean old fasta record..."
-        rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
-    fi
+    # if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa`" = "" ]; then 
+    #     echo "No fasta files"
+    #     ln -s ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
+    # else 
+    #     echo "clean old fasta record..."
+    #     rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
+    # fi
 
     if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq`" = "" ]; then 
         echo "No fastq files"
@@ -47,6 +47,7 @@ else
     else 
         echo "clean old fastq record..."
         rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq
+        ln -s ${INPUT_DIR}/*fq ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
     fi
 
     if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna`" = "" ]; then 
@@ -55,6 +56,7 @@ else
     else 
         echo "clean old fna record..."
         rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
+        ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
     fi
     
 
@@ -68,9 +70,9 @@ else
     # ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
 
     #write a for circle to run all the files in the cov dir
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
     do
-    base=${i/.fa/}
+    base=${i/.fna/}
 
     #run bowtie2
     bowtie2-build ${base}_5M_contigs.fna ${base}_5M_contigs.fna_bwt
@@ -87,7 +89,7 @@ else
     
     #run bamm
     echo "[TIMESTAMP] $(date) Running bamm..."
-    bamm filter -b ${base}.sorted.bam -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov --percentage_id 0.99 --percentage_aln 0.9
+    bamm filter -b ${base}.sorted.bam -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov --percentage_id 0.95 --percentage_aln 0.95
 
     #run bbmap
     echo "[TIMESTAMP] $(date) Running bbmap..."
@@ -106,76 +108,3 @@ else
 fi
 
 ##################################
-# source ~/miniconda/bin/activate CompRanking_abundance_env
-# workdir=/lomi_home/gaoyang/software/CompRanking/tmp_NPSW/NPSW/CompRanking_intermediate/preprocessing/5M_contigs/cov
-# workdir=`pwd`
-# cd $workdir
-
-# bowtie2-build bowtie2-build ${1} ${1}_bwt
-
-# for i in *_1.f*
-# do
-# bowtie2 --very-sensitive --no-unal  -x ${1}_bwt -1 $i -2 ${i/_1/_2} -S ${i/_1.f*}.sam -p 32
-# done
-
-# for i in *sam
-# do
-# samtools view -bS $i > ${i/.sam/}.bam
-# samtools sort ${i/.sam/}.bam -o ${i/.sam/}.sorted.bam
-# done
-
-# for i in *sorted.bam
-# do
-# bamm filter -b $i --percentage_id 0.99 --percentage_aln 0.9
-# done
-
-# for i in *filtered.bam
-# do
-# pileup.sh in=$i out=${i/.bam/}.cov rpkm=${i/.bam/}.rpkm overwrite=true
-# done
-
-
-
-#################################################
-# module load miniconda3
-# workdir=/lomi_home/gaoyang/software/CompRanking/tmp_NPSW/NPSW/CompRanking_intermediate/preprocessing/5M_contigs/cov
-# workdir=`pwd`
-# cd $workdir
-
-# source activate bowtie2
-
-# bowtie2-build ${1} ${1}_bwt
-
-# for i in *_1.f*
-# do
-# bowtie2 --very-sensitive --no-unal  -x ${1}_bwt -1 $i -2 ${i/_1/_2} -S ${i/_1.f*}.sam -p 32
-# done
-
-# conda deactivate
-
-# source activate samtools
-# for i in *sam
-# do
-# samtools view -bS $i > ${i/.sam/}.bam
-# samtools sort ${i/.sam/}.bam -o ${i/.sam/}.sorted.bam
-# done
-
-# conda deactivate
-
-# #对比对结果相似度进行筛选
-# source activate bamm
-# for i in *sorted.bam
-# do
-# bamm filter -b $i --percentage_id 0.99 --percentage_aln 0.9
-# done
-
-# conda deactivate
-
-# #统计每个样品的比对结果
-# source activate bbmap
-# for i in *filtered.bam
-# do
-# pileup.sh in=$i out=${i/.bam/}.cov rpkm=${i/.bam/}.rpkm overwrite=true
-# done
-
-# conda deactivate
