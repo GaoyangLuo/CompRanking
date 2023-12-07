@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # title             :baseInfoExtra.py -> baseInfoExtra.ipynb
-# description       :For summary basic information of the sample (using contigs as normalization base)
+# description       :For summary basic information of the sample 
+#                   (using protein-coding or mRNA contgis as normalization base)
 # author            :Gaoyang Luo
 # date              :202201119
 # version           :1.0

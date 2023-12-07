@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# title             :baseInfoExtra.py -> baseInfoExtra.ipynb
+# title             :baseInfoExtra_nContigs.py -> baseInfoExtra.ipynb
 # description       :For summary basic information of the sample (using contigs as normalization base)
 # author            :Gaoyang Luo
-# date              :202201119
+# date              :202301206
 # version           :1.0
-# usage             :python baseInfoExtra.py -i <input_dir> -p <project_prefix>
+# usage             :python baseInfoExtra_nContigs.py -i <input_dir> -p <project_prefix>
 # required packages :Bio, pandas, os
 # notification: enjoy yourself
 #==============================================================================
