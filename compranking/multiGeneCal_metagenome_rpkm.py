@@ -8,6 +8,7 @@
 # version           :1.0
 # usage             :python mulitGenecal_metagenome_rpkm.py -i <input_dir>
 #                                                           -p <project_prefix>
+#                                                           -n <normalization_base> #AGS or 16S
 #                                                           -t <threads>
 #                                                           -d <pth2KK2db>
 # required packages :Bio, pandas, os
@@ -21,6 +22,7 @@ import path
 import subprocess
 import multiprocessing
 import optparse
+import glob
 from Bio import SeqIO
 
 parser = optparse.OptionParser()
@@ -31,7 +33,9 @@ parser.add_option("-p", "--prefix", action = "store", type = "string", dest = "p
 parser.add_option("-o", "--output", action = "store", type = "string", dest = "output_dir",
 				 help = "director tontained output files")
 parser.add_option("-t", "--threads", action = "store", type = "string", dest = "threads",
-				 help = "how many cpus you want use")      
+				 help = "how many cpus you want use")   
+parser.add_option("-n", "--normalization_base", action = "store", type = "string", dest = "normalization_base",
+				 help = "16S length 1550bp or average genome length")   
 parser.add_option("-c", "--config_file", action = "store", type = "string", dest = "config_file", 
                   help = "file contains basic configeration information, defult: test_yaml.yaml")           
 parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
@@ -46,6 +50,7 @@ input_dir=options.input_dir
 project_prefix=options.project_prefix
 output=options.output_dir
 threads=options.threads
+normalization_base=options.normalization_base
 config_path=options.config_file
 database=options.database
 output=os.path.join(input_dir,project_prefix,"CompRanking_result")
@@ -58,8 +63,14 @@ if (options.config_file is None):
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml") #"../test_yaml.yaml" default config_file path
 if (options.database is None):
     database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
+if (options.normalization_base is None):
+    normalization_base = "AGS"
 if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
+if options.normalization_base =="AGS":
+    cell_suffix="Cell"
+elif options.normalization_base =="16S":
+    cell_suffix="16S"
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -92,10 +103,29 @@ def get_MobilOG_len(input_mobileOG_structure):
         DB_MobileOG_length.setdefault(str(name["mobileOG_ID"]), name["length"])
     return DB_MobileOG_length
     
+def getPrefix(input_AGS_dir):
+    file_prefix=[]
+    file_list=glob.glob(input_AGS_dir+"/*.AGS.txt")
+    for i in file_list:
+        prefix=((os.path.basename(i)).rstrip("AGS.txt"))
+        file_prefix.append(prefix)
     
+    return file_list, file_prefix
+
+def get_genome_len(input_AGS, prefix_list):
+    genome_length_dic={}
+    for index, j in enumerate(input_AGS): 
+        for lines in open(j,'r'):
+                            if lines.startswith('average_genome_size'):
+                                lines_set = lines.split('\n')[0].split('\t')
+                                genome_length = float(lines_set[1])
+                                genome_length_dic.setdefault(prefix_list[index],float(genome_length))
+                                print("The Average Genome Length of file {} is {}".format(prefix_list[index],genome_length ))
+    return genome_length_dic  
+
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
                 input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,filebase):   
+                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):   
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -107,12 +137,15 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     for i, name in df_AMR_hit1.iterrows():
         Record_db_orf.setdefault(str(name["ORF_ID"]), str(name["db_final"]))
     
-    #calculate 16s copies
+    #Load normalization base 16s or AGS
     #load kk2
     kraken=input_kk2
     scg=input_scg
     copy_16S = 1
-    gene_length = 1550 # 16S
+    if normalization_base == "AGS":
+        gene_length = genome_length
+    else:
+        gene_length = 1550
 
     #metagenomes_kk2_16s_bases
     for lines in open(kraken,'r'):
@@ -250,7 +283,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
-    print("The relative abundance of ARG by 16S is: {}".format(abundance_arg_16S))
+    print(f"The relative abundance of ARG by {cell_suffix} is: {abundance_arg_16S}")
     print("The relative abundance of ARG by RPKM is: {}".format(abundance_arg_RPKM))
     
     #cal ARG subtype
@@ -314,7 +347,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)))
         
     
-    print("The relative abundance of MGE by 16S is: {}".format(abundance_MGE_16S))
+    print(f"The relative abundance of MGE by {cell_suffix} is: {abundance_MGE_16S}")
     print("The relative abundance of MGE by RPKM is: {}".format(abundance_MGE_RPKM))
     print(TAXO_MGE)
     print(RPKM_MGE)
@@ -460,6 +493,7 @@ def cov_rpkm(file_name_base):
 def Calculation(file_name_base):
     #calculate relative abundance of functional genes
     i=file_name_base
+    global cell_suffix
     try:
         #load ARGs result and relative files
         input_rgi=os.path.join(input_dir,project_prefix,
@@ -471,9 +505,16 @@ def Calculation(file_name_base):
         input_deeparg_sure=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/AMR/DeepARG", 
                                     i+"_5M_contigs_DeepARG.out.mapping.ARG")
-        input_kk2=os.path.join(input_dir,project_prefix,
+        if normalization_base == "AGS":
+            input_kk2=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                    i+"_report_kk2_mpaStyle.txt")
+        elif normalization_base == "16S":
+            input_kk2=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
                                     i+"_report_kk2_mpaStyle_16S.txt")
+        else:
+            raise ImportError("No potinted normalization type")
         input_AMR_sum=os.path.join(input_dir,project_prefix,
                                 "CompRanking_result",
                                     "CompRanking_"+i+"_AMR_MOB_prediction.tsv")
@@ -497,6 +538,17 @@ def Calculation(file_name_base):
     except:
         raise SystemError("Can't load reference length, please check the original files...")
     
+    #Find average genome length
+    try:
+        #load AGS
+        input_AGS_dir=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs/AGS")
+        file_list,prefix=getPrefix(input_AGS_dir)
+        genome_length_dic=get_genome_len(file_list,prefix)
+    except:
+        raise ValueError("Can't load AGS file, please check the original files,\
+                         or check the name of your input file and see whether meet our name rules...")
+    
     try:
         #load subtype dataframe
         result, \
@@ -514,6 +566,7 @@ def Calculation(file_name_base):
                                         input_scg,
                                         input_rpkm,
                                         input_indexFile,
+                                        genome_length_dic[i],
                                         i)
         #output total relative abundance in a list    
         output_abundance="\t".join(map(str, result))
@@ -521,7 +574,7 @@ def Calculation(file_name_base):
         df_ARG_subtype_16S.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            i+"_ARG_16sAbu_tmp.txt"),
+                            i+"_ARG_"+cell_suffix+"Abu_tmp.txt"),
                                 sep="\t",header=False)
         df_ARG_subtype_RPKM.to_csv(os.path.join(
                     input_dir,project_prefix,
@@ -531,7 +584,7 @@ def Calculation(file_name_base):
         df_MGE_subtype_16S.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            i+"_MGE_16sAbu_tmp.txt"),
+                            i+"_MGE_"+cell_suffix+"Abu_tmp.txt"),
                                 sep="\t",header=False)
         df_MGE_subtype_RPKM.to_csv(os.path.join(
                     input_dir,project_prefix,
@@ -539,7 +592,7 @@ def Calculation(file_name_base):
                             i+"_MGE_rpkmAbu_tmp.txt"),
                                 sep="\t",header=False)
         
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_Cell.txt"), "a") as f:
             f.write("\n" + i + "\t" + output_abundance)
     except:
         raise ValueError("Write to summary abundacne file failed...")
@@ -547,7 +600,7 @@ def Calculation(file_name_base):
     #check abu tmp files
     check_point_list=[]
     try:
-        if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_16sAbu_tmp.txt")):
+        if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_"+cell_suffix+"Abu_tmp.txt")):
             pass
         else:
             print("ARG subtype abundance 16s cal file doesn't exit...")
@@ -557,7 +610,7 @@ def Calculation(file_name_base):
         else:
             print("ARG subtype abundance rpkm cal file doesn't exit...")
             exit(1)
-        if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_16sAbu_tmp.txt")):
+        if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_"+cell_suffix+"Abu_tmp.txt")):
             pass
         else:
             print("MGE subtype abundance 16s cal file doesn't exit...")
@@ -727,16 +780,27 @@ if __name__ == "__main__":
     # input_SARG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_SARGrank_Protein60_Result.tsv"
     
     #run kranken2
-    for i in file_name_base:
-        if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
-            print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
-            continue
-        else:
-            print("KK2 mpaStyle output don't exist... {}".\
-                format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
-            subprocess.call(["bash", kk2_script, 
-                "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
-    
+    if normalization_base == "AGS":
+        for i in file_name_base:
+            if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
+                print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
+                continue
+            else:
+                print("KK2 mpaStyle output don't exist... {}".\
+                    format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
+                subprocess.call(["bash", kk2_script, 
+                    "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+    else:
+        for i in file_name_base:
+            if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"):
+                print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
+                continue
+            else:
+                print("KK2 mpaStyle output don't exist... {}".\
+                    format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+                subprocess.call(["bash", kk2_script, 
+                    "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+        
     #run cov_rpkm
     for i in file_name_base:
         if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs/cov")+"/"+i+"_5M_contigs_gene.rpkm"):
@@ -858,9 +922,14 @@ if __name__ == "__main__":
     # #########concat all the abu result############
     #concat ARG result
     #concat 16S
+    if normalization_base =="AGS":
+        cell_suffix="Cell"
+    elif normalization_base =="16S":
+        cell_suffix="16S"
+        
     name_list_16S=[]
     for i in file_name_base:
-        name_list_16S.append(i+"_ARG_16sAbu_tmp.txt")
+        name_list_16S.append(i+"_ARG_"+cell_suffix+"Abu_tmp.txt")
     init=0
     df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
     df_main.columns=["type",name_list_16S[0]]
@@ -875,7 +944,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir, project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_Abundance_ARGs_subtypes_"+cell_suffix+".txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
@@ -901,7 +970,7 @@ if __name__ == "__main__":
     #concat 16S
     name_list_16S=[]
     for i in file_name_base:
-        name_list_16S.append(i+"_MGE_16sAbu_tmp.txt")
+        name_list_16S.append(i+"_MGE_"+cell_suffix+"Abu_tmp.txt")
     init=0
     df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
     df_main.columns=["type",name_list_16S[0]]
@@ -916,7 +985,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                 input_dir,project_prefix,
                     "CompRanking_result",
-                        project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
+                        project_prefix+"_Abundance_MGEs_subtypes_"+cell_suffix+".txt"),sep="\t",index=None)
     #cal rpkm
     name_list_rpkm=[]
     for i in file_name_base:
