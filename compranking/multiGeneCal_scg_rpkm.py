@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # title             :multiGenecal.py -> Gene_cal.ipynb
 # description       :calculate relative abundance of genes
-#                    This version is used to calculate rpkm abundance (beta version)
-#                    for 16s-rRNA-based method, we used kk2 to generate bateria copies.
+#                    This is to cal ARGs abundance using cell method
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
@@ -71,6 +70,8 @@ if options.normalization_base =="AGS":
     cell_suffix="Cell"
 elif options.normalization_base =="16S":
     cell_suffix="16S"
+elif normalization_base =="scg":
+        cell_suffix="scg"
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -125,11 +126,13 @@ def get_genome_len(input_AGS, prefix_list):
 
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
                 input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):   
+                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):
     if normalization_base =="AGS":
         cell_suffix="Cell"
     elif normalization_base =="16S":
-        cell_suffix="16S"
+        cell_suffix="16S"  
+    elif normalization_base =="scg":
+        cell_suffix="scg" 
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -148,10 +151,12 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     copy_16S = 1
     if normalization_base == "AGS":
         gene_length = genome_length
+    elif normalization_base == "scg":
+        gene_length = genome_length
     else:
         gene_length = 1550
 
-    #metagenomes_kk2_standard_bases
+    #metagenomes_kk2_16s_bases
     for lines in open(kraken,'r'):
         content = lines.split('\n')[0].split('\t')
         if 'Bacteria' in lines:
@@ -170,7 +175,6 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     ##filter out bit larger than 50
     df_scg_bit50 = df_scg_len[df_scg_len.bit > 50]
     
-    num_scg=len(df_scg_bit50)
     
     #load rpkm alinged reads number and mapped reads number
     # input_rpkm="/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov/S0PCL_clean.sorted_filtered.rpkm"
@@ -192,6 +196,10 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     rpkm_dic={}
     for i in array:
         rpkm_dic.setdefault(str(i[0]),float(i[4]))
+    #calculate mrna length
+    gene_Length_dic={}
+    for i in array:
+        gene_Length_dic.setdefault(str(i[0]),float(i[1]))
     #change orf id to contigs id
     df_index=pd.read_csv(input_indexFile,sep="\t",header=None)
     array_indexFile=np.array(df_index)
@@ -199,7 +207,18 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     index_dic={}
     for i in array_indexFile:
         index_dic.setdefault(str(i[1]),str(i[0]))
-        
+    
+    
+    #calculate scg base for cell number normalization 
+    array_scg=np.array(df_scg_bit50)
+    array_scg=array_scg.tolist()
+    scg_sum=0
+    for i in array_scg:
+        print(i[0])
+        contig_orf=index_dic[i[0]]
+        scg_sum+=(rpkm_dic[contig_orf] / gene_Length_dic[contig_orf])
+    num_scg=float(scg_sum / 16)
+    
     
     #load deeparg
     df_deeparg_sure=pd.read_csv(input_deeparg_sure, sep="\t")
@@ -270,20 +289,20 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             else:
                 mapped_reads=1
             if find_db=="DeepARG":
-                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
-                abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
-                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                abundance_arg_16S += (mapped_reads / DB_deepARG_length_res[orf]) / num_scg
+                abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)#rpkm
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))#rpkm
             elif find_db=="RGI":
-                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
-                abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)
-                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg
+                abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)#rpkm
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)))#rpkm
             elif find_db=="SARG":
-                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
-                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
-                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_SARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg
+                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)#rpkm
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))#rpkm
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
@@ -345,10 +364,10 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             mapped_reads=rpkm_dic[contig_orf]
         else:
             mapped_reads=1
-        abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
-        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)
-        TAXO_MGE.setdefault(str(orf_MGE),float((gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])))
-        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)))
+        abundance_MGE_16S += (mapped_reads / DB_MobileOG_length_res[orf_MGE]) / num_scg
+        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)#rpkm
+        TAXO_MGE.setdefault(str(orf_MGE),float((mapped_reads / DB_MobileOG_length_res[orf_MGE]) / num_scg))
+        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)))#rpkscg
         
     
     print(f"The relative abundance of MGE by {cell_suffix} is: {abundance_MGE_16S}")
@@ -489,7 +508,7 @@ def cov_rpkm(file_name_base):
         pass
     else:
         print("KK2 mpaStyle output don't exist... {}".\
-            format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+            format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
         subprocess.call(["bash", cov_rpkm_script, 
             "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str])
 
@@ -500,7 +519,9 @@ def Calculation(file_name_base):
     if normalization_base =="AGS":
         cell_suffix="Cell"
     elif normalization_base =="16S":
-        cell_suffix="16S"
+        cell_suffix="16S" 
+    elif normalization_base =="scg":
+        cell_suffix="scg"
     try:
         #load ARGs result and relative files
         input_rgi=os.path.join(input_dir,project_prefix,
@@ -520,6 +541,10 @@ def Calculation(file_name_base):
             input_kk2=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
                                     i+"_report_kk2_mpaStyle_16S.txt")
+        elif normalization_base == "scg":
+            input_kk2=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                    i+"_report_kk2_mpaStyle_16S.txt")    
         else:
             raise ImportError("No potinted normalization type")
         input_AMR_sum=os.path.join(input_dir,project_prefix,
@@ -933,6 +958,8 @@ if __name__ == "__main__":
         cell_suffix="Cell"
     elif normalization_base =="16S":
         cell_suffix="16S"
+    elif normalization_base =="scg":
+        cell_suffix="scg"
         
     name_list_16S=[]
     for i in file_name_base:

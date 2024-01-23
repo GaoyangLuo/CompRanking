@@ -116,7 +116,7 @@ def get_genome_len(input_AGS, prefix_list):
     genome_length_dic={}
     for index, j in enumerate(input_AGS): 
         for lines in open(j,'r'):
-                            if lines.startswith('average_genome_size'):
+                            if lines.startswith('genome_equivalents'):
                                 lines_set = lines.split('\n')[0].split('\t')
                                 genome_length = float(lines_set[1])
                                 genome_length_dic.setdefault(prefix_list[index],float(genome_length))
@@ -125,11 +125,11 @@ def get_genome_len(input_AGS, prefix_list):
 
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
                 input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):   
+                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):
     if normalization_base =="AGS":
         cell_suffix="Cell"
     elif normalization_base =="16S":
-        cell_suffix="16S"
+        cell_suffix="16S"   
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
@@ -151,7 +151,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     else:
         gene_length = 1550
 
-    #metagenomes_kk2_standard_bases
+    #metagenomes_kk2_16s_bases
     for lines in open(kraken,'r'):
         content = lines.split('\n')[0].split('\t')
         if 'Bacteria' in lines:
@@ -270,20 +270,28 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             else:
                 mapped_reads=1
             if find_db=="DeepARG":
-                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
-                abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
-                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                # abundance_arg_16S += (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf])
+                # abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)#rpkg
+                # TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_deepARG_length_res[orf]))
+                # RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))) #rpkg
+                abundance_arg_16S += 0
+                abundance_arg_RPKM += 0
+                TAXO_ARG.setdefault(str(orf), float(0))
+                RPKM_ARG.setdefault(str(orf), float(0)) #rpkg
             elif find_db=="RGI":
-                abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
-                abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)
-                TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                # abundance_arg_16S += (gene_length/copy_16S)*(1/DB_CARD_length_res[orf])
+                # abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
+                # TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_CARD_length_res[orf]))
+                # RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
+                abundance_arg_16S += 0
+                abundance_arg_RPKM += 0
+                TAXO_ARG.setdefault(str(orf), float(0))
+                RPKM_ARG.setdefault(str(orf), float(0)) #rpkg
             elif find_db=="SARG":
                 abundance_arg_16S += (gene_length/copy_16S)*(1/DB_SARG_length_res[orf])
-                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)
+                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), (gene_length/copy_16S)*(1/DB_SARG_length_res[orf]))
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * num_mapped_reads / 1000000)))
+                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
@@ -346,9 +354,9 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         else:
             mapped_reads=1
         abundance_MGE_16S += (gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])
-        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)
+        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * gene_length)#rpkg
         TAXO_MGE.setdefault(str(orf_MGE),float((gene_length/copy_16S)*(1/DB_MobileOG_length_res[orf_MGE])))
-        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * num_mapped_reads / 1000000)))
+        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * gene_length)))#rpkg
         
     
     print(f"The relative abundance of MGE by {cell_suffix} is: {abundance_MGE_16S}")
@@ -500,7 +508,7 @@ def Calculation(file_name_base):
     if normalization_base =="AGS":
         cell_suffix="Cell"
     elif normalization_base =="16S":
-        cell_suffix="16S"
+        cell_suffix="16S" 
     try:
         #load ARGs result and relative files
         input_rgi=os.path.join(input_dir,project_prefix,
@@ -599,7 +607,7 @@ def Calculation(file_name_base):
                             i+"_MGE_rpkmAbu_tmp.txt"),
                                 sep="\t",header=False)
         
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_Cell.txt"), "a") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_rpkg_SARG.txt"), "a") as f:
             f.write("\n" + i + "\t" + output_abundance)
     except:
         raise ValueError("Write to summary abundacne file failed...")
@@ -972,7 +980,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
+                            project_prefix+"_Abundance_ARGs_subtypes_rpkg_SARG.txt"),sep="\t",index=None)
     #concat MGE result
     #concat 16S
     name_list_16S=[]
@@ -1013,7 +1021,7 @@ if __name__ == "__main__":
     df_main.to_csv(os.path.join(
                     input_dir,project_prefix,
                         "CompRanking_result",
-                            project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
+                            project_prefix+"_Abundance_MGEs_subtypes_rpkg_SARG.txt"),sep="\t",index=None)
     
     os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 

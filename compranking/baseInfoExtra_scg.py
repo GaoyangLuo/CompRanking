@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # title             :baseInfoExtra.py -> baseInfoExtra.ipynb
-# description       :This script is for benchmarking using 16s copies as normalization bases to gener
-#                    generate risk score
+# description       :This script is for benchmarking using single copy gene (scg) copies 
+#                    as normalization bases to generate risk score
 # author            :Gaoyang Luo
 # date              :202201119
 # version           :1.0
@@ -11,6 +11,7 @@
 #==============================================================================
 #import modules
 import pandas as pd
+import numpy as np
 import os
 import path
 import math
@@ -112,9 +113,10 @@ def info_sum(sample_list, copy_scg):
     fARG_MGE_PAT= float(nARGs_MGEs_PAT_contigs)/nContigs
     #caclulate distance between sample of interest and theriotic point
     # distance_all = math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE)**2 + (0.01 - fARG_MGE_allPAT)**2)
-    distance_pathogenic = math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE)**2 + (0.01 - fARG_MGE_PAT)**2)
-    distance_phage=math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE_phage)**2 + (0.01 - fARG_MGE_PAT)**2)
-    distance_plasmid= math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE_plasmid)**2 + (0.01 - fARG_MGE_PAT)**2)
+    hazard_point=float(0.01)
+    distance_pathogenic = math.sqrt((hazard_point - fARG)**2 + (hazard_point - fARG_MGE)**2 + (hazard_point - fARG_MGE_PAT)**2)
+    distance_phage=math.sqrt((hazard_point - fARG)**2 + (hazard_point - fARG_MGE_phage)**2 + (hazard_point - fARG_MGE_PAT)**2)
+    distance_plasmid= math.sqrt((hazard_point - fARG)**2 + (hazard_point - fARG_MGE_plasmid)**2 + (hazard_point - fARG_MGE_PAT)**2)
     #calculate risk score
     # score_all = 1.0 / ( (2 + math.log10(distance_all))**2 )
     score_pathogenic= 1.0 / ( (2 + math.log10(distance_pathogenic))**2 )
@@ -156,6 +158,12 @@ def multi_info_sum():
         input_scg=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs/cov", 
                                     sample_list[i]+"_5M_contigs_scg_Protein_dimond.txt") 
+        input_rpkm=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs/cov",
+                                    sample_list[i]+"_5M_contigs_gene.rpkm")
+        input_indexFile=os.path.join(input_dir,project_prefix,
+                                "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                    sample_list[i]+"_5M_contigs.fna2faa.index")
         # metagenomes
         df_scg=pd.read_csv(input_scg, sep="\t",header=None)
         df_scg.columns = ['id', 'sub_id', 'identity', 'alignLen', 'mismat', 'gapOpens', 'qStart', 'qEnd', 'sStart', 'sEnd', 'eval', 'bit']
@@ -165,10 +173,50 @@ def multi_info_sum():
         df_scg_len = df_scg_iden50[df_scg_iden50.alignLen > 0]
         # filter out bit larger than 50
         df_scg_bit50 = df_scg_len[df_scg_len.bit > 50]
-
-        copy_scg=len(df_scg_bit50)
         
-        worker = multiprocessing.Process(target=info_sum,args=([sample_list[i],copy_scg]))
+        #load rpkm alinged reads number and mapped reads number
+        # input_rpkm="/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov/S0PCL_clean.sorted_filtered.rpkm"
+        #get reads numbers
+        for lines in open(input_rpkm,'r'):
+            #content = lines.split('\n')[0].split('\t')
+            content = lines.split('\t')
+            if '#Mapped' in lines:
+                mapped_reads = float(content[1]) # pair end total num of mapped reads
+                break
+        #load rpkm table
+        df_rpkm=pd.read_csv(input_rpkm,sep="\t",header=4)
+        array=np.array(df_rpkm)
+        array=array.tolist()
+        #write aligned reads into dic
+        """
+        refer rpkm_dic by using contig_orf
+        """
+        rpkm_dic={}
+        for j in array:
+            rpkm_dic.setdefault(str(j[0]),float(j[4]))
+        #calculate mrna length
+        gene_Length_dic={}
+        for j in array:
+            gene_Length_dic.setdefault(str(j[0]),float(j[1]))
+        #change orf id to contigs id
+        df_index=pd.read_csv(input_indexFile,sep="\t",header=None)
+        array_indexFile=np.array(df_index)
+        array_indexFile=array_indexFile.tolist()
+        index_dic={}
+        for j in array_indexFile:
+            index_dic.setdefault(str(j[1]),str(j[0]))
+        #calculate scg base for cell number normalization 
+        array_scg=np.array(df_scg_bit50)
+        array_scg=array_scg.tolist()
+        scg_sum=0
+        for j in array_scg:
+            print(j[0])
+            contig_orf=index_dic[j[0]]
+            scg_sum+=(rpkm_dic[contig_orf] / gene_Length_dic[contig_orf])
+        num_scg=float(scg_sum / 16 * 10000)
+        # print("The sample ID {0} and number of scg {1} are under calculated...".format(sample_list[i],num_scg))
+        
+        worker = multiprocessing.Process(target=info_sum,args=([sample_list[i],num_scg]))
         worker.start()
         print("Now processing:{}".format(sample_list[i]))
         exfiles.append(worker)
@@ -183,7 +231,7 @@ if __name__ == "__main__":
     #假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
-    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_scg.txt"
+    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_fna2faa_scg.txt"
     with open(write_file, "w") as f1:
         f1.write("sample_name/index\tnSCG_Base\tnContigs_num\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
     

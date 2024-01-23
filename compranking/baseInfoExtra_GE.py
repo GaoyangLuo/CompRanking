@@ -169,7 +169,7 @@ if __name__ == "__main__":
     sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
     write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_GE.txt"
     with open(write_file, "w") as f1:
-        f1.write("sample_name/index\tnContigs\tnContigs_num\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
+        f1.write("sample_name/index\tnGenome_equivalents\tnContigs_num\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
     
     #load AGS
     input_AGS_dir=os.path.join(input_dir,project_prefix,

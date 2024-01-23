@@ -60,7 +60,7 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Filtering 5M contigs took $(($ENDTIME - $STARTTIME)) sec."
 	mv ${INPUT_DIR}/*5M_contigs.fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
-    # cp ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+    ln -s ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 	
 	touch checkdone/${PREFIX}.5Mfilter.done
 fi

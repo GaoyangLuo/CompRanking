@@ -140,7 +140,7 @@ if __name__ == "__main__":
     #假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
-    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary.txt"
+    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_contigs.txt"
     with open(write_file, "w") as f1:
         f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
         
