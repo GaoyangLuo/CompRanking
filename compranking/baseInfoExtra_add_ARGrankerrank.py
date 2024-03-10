@@ -90,6 +90,20 @@ def info_sum(sample_list):
     nARGs_MGEs_PAT_filter=nARGs_MGEs_PAT_filter[nARGs_MGEs_PAT_filter.Pathogenicity=="Pathogenic"]
     # nARGs_MGEs_PAT_filter=nARGs_MGEs_filter[nARGs_MGEs_filter.Pathogenicity=="Pathogenic"]
     nARGs_MGEs_PAT_contigs=len(nARGs_MGEs_PAT_filter.Contig.unique())
+    
+    #ARG_ranker summary
+    nUnassessed=len(df[df.ARG_rank == "Unassessed"])
+    nIV=len(df[df.ARG_rank == "IV"])
+    nIII=len(df[df.ARG_rank == "III"])
+    nII=len(df[df.ARG_rank == "II"])
+    nI=len(df[df.ARG_rank == "I"])
+    
+    fnUnassessed=float(nUnassessed)/nContigs
+    fnIV=float(nIV)/nContigs
+    fnIII=float(nIII)/nContigs
+    fnII=float(nII)/nContigs
+    fnI=float(nI)/nContigs
+    
     #risk calculation
     # nContigs
     # nARGs_contigs
@@ -106,18 +120,23 @@ def info_sum(sample_list):
     fARG_MGE_plasmid=float(nARGs_MGEs_plasmid_contigs)/nContigs
     fARG_MGE_phage=float(nARGs_MGEs_phage_contigs)/nContigs
     fARG_MGE_PAT= float(nARGs_MGEs_PAT_contigs)/nContigs
+    
+   
+    
     #caclulate distance between sample of interest and theriotic point
     # distance_all = math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE)**2 + (0.01 - fARG_MGE_allPAT)**2)
     distance_pathogenic = math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE)**2 + (0.01 - fARG_MGE_PAT)**2)
     distance_phage=math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE_phage)**2 + (0.01 - fARG_MGE_PAT)**2)
     distance_plasmid= math.sqrt((0.01 - fARG)**2 + (0.01 - fARG_MGE_plasmid)**2 + (0.01 - fARG_MGE_PAT)**2)
+    distance_argranker=math.sqrt((0.01 - fnIII)**2 + (0.01 - fnII)**2 + (0.01 - fnI)**2)
     #calculate risk score
     # score_all = 1.0 / ( (2 + math.log10(distance_all))**2 )
     score_pathogenic= 1.0 / ( (2 + math.log10(distance_pathogenic))**2 )
     score_phage= 1.0 / ( (2 + math.log10(distance_phage))**2 )
     score_plasmid= 1.0 / ( (2 + math.log10(distance_plasmid))**2 )
+    score_argranker= 1.0 / ( (2 + math.log10(distance_argranker))**2 )
 
-    result=[nContigs, nARGs_contigs, nMGEs_contigs,nMGEs_plasmid_contigs,nMGEs_phage_contigs, nPAT_pathogenic_contigs, nARGs_MGEs_contigs,nARGs_MGEs_plasmid_contigs, nARGs_MGEs_phage_contigs,nARGs_MGEs_PAT_contigs, fARG, fMGE,fMGE_plasmid,fMGE_phage, fPAT_pathogenic, fARG_MGE, fARG_MGE_plasmid,fARG_MGE_phage,fARG_MGE_PAT,score_pathogenic,score_phage,score_plasmid]
+    result=[nContigs, nARGs_contigs, nMGEs_contigs,nMGEs_plasmid_contigs,nMGEs_phage_contigs, nPAT_pathogenic_contigs, nARGs_MGEs_contigs,nARGs_MGEs_plasmid_contigs, nARGs_MGEs_phage_contigs,nARGs_MGEs_PAT_contigs, fARG, fMGE,fMGE_plasmid,fMGE_phage, fPAT_pathogenic, fARG_MGE, fARG_MGE_plasmid,fARG_MGE_phage,fARG_MGE_PAT,fnUnassessed, fnIV, fnIII, fnII, fnI, score_pathogenic,score_phage,score_plasmid, score_argranker]
     output="\t".join(map(str, result))
 
     with open(write_file, "a") as f:
@@ -140,9 +159,9 @@ if __name__ == "__main__":
     #假设输入文件为示例文件，放在for循环的开头第一层 for i = samle_name
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     sample_list= path.file_base_acquire(file_abs_path) #sample name without suffix .fa
-    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_contigs.txt"
+    write_file=output + "/CompRanking_"+ project_prefix + "_Contigs_Risk_Summary_contigs_with_ARGranker.txt"
     with open(write_file, "w") as f1:
-        f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tscore_pathogenic\tscore_phage\tscore_plasmid")
+        f1.write("sample_name/index\tnContigs\tnARGs_contigs\tnMGEs_contig\tnMGEs_plasmid_contig\tnMGEs_phage_contigs\tnPAT_contigs\tnARGs_MGEs_contig\tnARGs_MGEs_plasmid_contigs\tnARGs_MGEs_phage_contigs\tnARGs_MGEs_PAT_contigs\tfARG\tfMGE\tfMGE_plasmid\tfMGE_phage\tfPAT\tfARG_MGE\tfARG_MGE_plasmid\tfARG_MGE_phage\tfARG_MGE_PAT\tfnUnassessed\tfnIV\tfnIII\tfnII\tfnI\tscore_pathogenic\tscore_phage\tscore_plasmid\tscore_argranker")
         
     #run
     multi_info_sum()
