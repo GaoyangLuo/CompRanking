@@ -1,0 +1,3 @@
+Error: could not open /CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/*fa_5M_contigs.fa
+Error: Encountered internal Bowtie 2 exception (#1)
+Command: /lomi_home/gaoyang/miniconda/envs/CompRanking_abundance_env/bin/bowtie2-build-s --wrapper basic-0 /CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/*fa_5M_contigs.fa /CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/*fa_5M_contigs.fa_bwt 

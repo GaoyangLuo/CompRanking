@@ -1,0 +1,185 @@
+[TIMESTAMP] Sun Mar 10 14:41:58 CST 2024 Running cov...
+Settings:
+  Output files: "/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa_bwt.*.bt2"
+  Line rate: 6 (line is 64 bytes)
+  Lines per side: 1 (side is 64 bytes)
+  Offset rate: 4 (one in 16)
+  FTable chars: 10
+  Strings: unpacked
+  Max bucket size: default
+  Max bucket size, sqrt multiplier: default
+  Max bucket size, len divisor: 4
+  Difference-cover sample period: 1024
+  Endianness: little
+  Actual local endianness: little
+  Sanity checking: disabled
+  Assertions: disabled
+  Random seed: 0
+  Sizeofs: void*:8, int:4, long:8, size_t:8
+Input files DNA, FASTA:
+  /lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa
+Reading reference sizes
+  Time reading reference sizes: 00:00:06
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences
+  Time to join reference sequences: 00:00:04
+bmax according to bmaxDivN setting: 187937033
+Using parameters --bmax 140952775 --dcv 1024
+  Doing ahead-of-time memory usage test
+  Passed!  Constructing with these parameters: --bmax 140952775 --dcv 1024
+Constructing suffix-array element generator
+Building DifferenceCoverSample
+  Building sPrime
+  Building sPrimeOrder
+  V-Sorting samples
+  V-Sorting samples time: 00:00:13
+  Allocating rank array
+  Ranking v-sort output
+  Ranking v-sort output time: 00:00:04
+  Invoking Larsson-Sadakane on ranks
+  Invoking Larsson-Sadakane on ranks time: 00:00:08
+  Sanity-checking and returning
+Building samples
+Reserving space for 12 sample suffixes
+Generating random suffixes
+QSorting 12 sample offsets, eliminating duplicates
+QSorting sample offsets, eliminating duplicates time: 00:00:00
+Multikey QSorting 12 samples
+  (Using difference cover)
+  Multikey QSorting samples time: 00:00:00
+Calculating bucket sizes
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Avg bucket size: 7.51748e+08 (target: 140952774)
+Converting suffix-array elements to index image
+Allocating ftab, absorbFtab
+Entering Ebwt loop
+Getting block 1 of 1
+  No samples; assembling all-inclusive block
+  Sorting block of length 751748134 for bucket 1
+  (Using difference cover)
+  Sorting block time: 00:03:36
+Returning block of 751748135 for bucket 1
+Exited Ebwt loop
+fchr[A]: 0
+fchr[C]: 132458483
+fchr[G]: 377539012
+fchr[T]: 621189915
+fchr[$]: 751748134
+Exiting Ebwt::buildToDisk()
+Returning from initFromVector
+Wrote 301219196 bytes to primary EBWT file: /lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa_bwt.1.bt2
+Wrote 187937040 bytes to secondary EBWT file: /lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa_bwt.2.bt2
+Re-opening _in1 and _in2 as input streams
+Returning from Ebwt constructor
+Headers:
+    len: 751748134
+    bwtLen: 751748135
+    sz: 187937034
+    bwtSz: 187937034
+    lineRate: 6
+    offRate: 4
+    offMask: 0xfffffff0
+    ftabChars: 10
+    eftabLen: 20
+    eftabSz: 80
+    ftabLen: 1048577
+    ftabSz: 4194308
+    offsLen: 46984259
+    offsSz: 187937036
+    lineSz: 64
+    sideSz: 64
+    sideBwtSz: 48
+    sideBwtLen: 192
+    numSides: 3915355
+    numLines: 3915355
+    ebwtTotLen: 250582720
+    ebwtTotSz: 250582720
+    color: 0
+    reverse: 0
+Total time for call to driver() for forward index: 00:05:10
+Reading reference sizes
+  Time reading reference sizes: 00:00:04
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences
+  Time to join reference sequences: 00:00:04
+  Time to reverse reference sequence: 00:00:01
+bmax according to bmaxDivN setting: 187937033
+Using parameters --bmax 140952775 --dcv 1024
+  Doing ahead-of-time memory usage test
+  Passed!  Constructing with these parameters: --bmax 140952775 --dcv 1024
+Constructing suffix-array element generator
+Building DifferenceCoverSample
+  Building sPrime
+  Building sPrimeOrder
+  V-Sorting samples
+  V-Sorting samples time: 00:00:13
+  Allocating rank array
+  Ranking v-sort output
+  Ranking v-sort output time: 00:00:04
+  Invoking Larsson-Sadakane on ranks
+  Invoking Larsson-Sadakane on ranks time: 00:00:08
+  Sanity-checking and returning
+Building samples
+Reserving space for 12 sample suffixes
+Generating random suffixes
+QSorting 12 sample offsets, eliminating duplicates
+QSorting sample offsets, eliminating duplicates time: 00:00:00
+Multikey QSorting 12 samples
+  (Using difference cover)
+  Multikey QSorting samples time: 00:00:00
+Calculating bucket sizes
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Avg bucket size: 7.51748e+08 (target: 140952774)
+Converting suffix-array elements to index image
+Allocating ftab, absorbFtab
+Entering Ebwt loop
+Getting block 1 of 1
+  No samples; assembling all-inclusive block
+  Sorting block of length 751748134 for bucket 1
+  (Using difference cover)
+  Sorting block time: 00:03:21
+Returning block of 751748135 for bucket 1
+Exited Ebwt loop
+fchr[A]: 0
+fchr[C]: 132458483
+fchr[G]: 377539012
+fchr[T]: 621189915
+fchr[$]: 751748134
+Exiting Ebwt::buildToDisk()
+Returning from initFromVector
+Wrote 301219196 bytes to primary EBWT file: /lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa_bwt.rev.1.bt2
+Wrote 187937040 bytes to secondary EBWT file: /lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S1WOOD.contigs_5M_contigs.fa_bwt.rev.2.bt2
+Re-opening _in1 and _in2 as input streams
+Returning from Ebwt constructor
+Headers:
+    len: 751748134
+    bwtLen: 751748135
+    sz: 187937034
+    bwtSz: 187937034
+    lineRate: 6
+    offRate: 4
+    offMask: 0xfffffff0
+    ftabChars: 10
+    eftabLen: 20
+    eftabSz: 80
+    ftabLen: 1048577
+    ftabSz: 4194308
+    offsLen: 46984259
+    offsSz: 187937036
+    lineSz: 64
+    sideSz: 64
+    sideBwtSz: 48
+    sideBwtLen: 192
+    numSides: 3915355
+    numLines: 3915355
+    ebwtTotLen: 250582720
+    ebwtTotSz: 250582720
+    color: 0
+    reverse: 1
+Total time for backward call to driver() for mirror index: 00:04:47

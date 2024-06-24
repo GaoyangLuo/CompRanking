@@ -75,7 +75,10 @@ class AMRCombined():
                     df_RGI_deeparg["Database"][index]="RGI" # #ARG:deepARG  Best_Hit_ARO:RGI
                     df_RGI_deeparg["orf_final"][index]=df_RGI_deeparg["ORF_ID"][index]
                     df_RGI_deeparg["ARG_prediction"][index]=df_RGI_deeparg["Best_Hit_ARO"][index]
-                    df_RGI_deeparg["predicted_ARG-class"][index]=df_RGI_deeparg["Drug Class"][index].split(" ")[0].strip(";")
+                    if len(df_RGI_deeparg["Drug Class"][index].split(";")) > 1: # more than one Drug class in RGI defined as multidrug
+                        df_RGI_deeparg["predicted_ARG-class"][index]= "multidrug"
+                    else:
+                        df_RGI_deeparg["predicted_ARG-class"][index]=df_RGI_deeparg["Drug Class"][index].split(" ")[0].strip(";")
             #when DeepARG found   
             if df_RGI_deeparg["read_id"][index]!="-": 
                 #but RGI not found
