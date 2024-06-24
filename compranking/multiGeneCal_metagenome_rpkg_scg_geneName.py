@@ -6,7 +6,7 @@
 # author            :Gaoyang Luo
 # date              :20240624
 # version           :1.0
-# usage             :python mulitGenecal_metagenome_rpkg_subtype.py -i <input_dir>
+# usage             :python multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
 #                                                                   -p <project_prefix>
 #                                                                   -n <normalization_base> #AGS or scg
 #                                                                   -t <threads>
@@ -69,8 +69,8 @@ if (options.output_dir is None):
     output = os.path.join(input_dir,project_prefix,"CompRanking_result") #default output directory
 if options.normalization_base =="AGS":
     cell_suffix="Cell" #genome equivalents = sample size / AGS
-elif options.normalization_base =="scg":
-    cell_suffix="scg" 
+elif options.normalization_base =="16S":
+    cell_suffix="16S" 
 
 def get_DB_DeepARG_len(input_deeparg_length):
     #load_Deeparg_structure
@@ -128,12 +128,12 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
                 input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):
     if normalization_base =="AGS":
         cell_suffix="Cell"
-    elif normalization_base =="scg":
-        cell_suffix="scg"   
+    elif normalization_base =="16S":
+        cell_suffix="16S"   
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
-    df_AMR_hit1=df_AMR_hit[["ORF_ID","ARG_prediction","Database"]]
+    df_AMR_hit1=df_AMR_hit[["ORF_ID","ARG_prediction","ARG_class","Database"]]
     df_AMR_hit1["db_final"]=df_AMR_hit1["Database"].str.split("/", expand=True)[0]
     
     #record hit database and orf_id
@@ -277,6 +277,14 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             find_db=Record_db_orf[orf]
             ARG_name=Record_ARG_name_orf[orf][0]
             ARG_class=Record_ARG_name_orf[orf][1]
+            if ARG_name:
+                print(ARG_name)
+            else:
+                print("No ARG name")
+            if ARG_class:
+                print(ARG_class)
+            else:
+                print("No ARG class")
             
             if contig_orf in rpkm_dic:
                 mapped_reads=rpkm_dic[contig_orf]
@@ -293,18 +301,19 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
                 abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg))
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))]) #rpkg
+                print([str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))])
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))]) #rpkg
             elif find_db=="SARG":
                 abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg
                 abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg))
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length))]) #rpkg
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
-    print(f"The relative abundance of ARG by {cell_suffix} is: {abundance_arg_16S}")
-    print("The relative abundance of ARG by RPKM is: {}".format(abundance_arg_RPKM))
+    print(f"The relative abundance of ARG by {cell_suffix}(AGS) is: {abundance_arg_16S}")
+    print("The relative abundance of ARG by RPKG is: {}".format(abundance_arg_RPKM))
     
     #Transfer RPKG_ARG_NAME to {ARG: [class, abundance]}
     # Initialize new dictionary
@@ -642,7 +651,7 @@ def Calculation(file_name_base):
         # Convert RPKG_ARG_NAME to {orf: [ARG, class, abundance]}
         RPKG_ARG_NAME_tsv_data = "orf\tARG_name\tARG_class\tvalue\n"  # Add header
         for orf, values in RPKG_ARG_NAME.items():
-            tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" # 0ARG 1class 2abundance
+            RPKG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" # 0ARG 1class 2abundance
         # Optionally, write to a file
         with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
             f.write(RPKG_ARG_NAME_tsv_data)
@@ -650,11 +659,11 @@ def Calculation(file_name_base):
         # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
         RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tValue\n" # Add header
         # Traverse the new dictionary and append data to TSV string
-        for arg, values in new_dict.items():
-            RPKG_ARG_NAME_abundance_tsv += f"{arg}\t{values[0]}\t{values[1]}\n" # 0class 1abundance
+        for arg, values in RPKG_ARG_NAME_abundance.items():
+            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[1]}\n" # 0class 1abundance
         # Optionally, write the TSV data to a file
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_geneName_class_Cell(GE).txt")) as f:
-            f.write(RPKG_ARG_NAME_abundance_tsv)
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_geneName_class_Cell(GE).txt"), "w") as f:
+            f.write(RPKG_ARG_NAME_abundance_tsv_data)
         
     except:
         raise ValueError("Write to summary abundacne file failed...")
@@ -986,8 +995,8 @@ if __name__ == "__main__":
     #concat scg
     if normalization_base =="AGS":
         cell_suffix="Cell"
-    elif normalization_base =="scg":
-        cell_suffix="scg"
+    elif normalization_base =="16S":
+        cell_suffix="16S"
         
     name_list_16S=[]
     for i in file_name_base:

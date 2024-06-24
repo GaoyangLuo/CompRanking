@@ -1,5 +1,0 @@
-Building a SMALL index
-stat: Bad file descriptor
-Warning: Could not open read file "/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov_fa_nofiltered/S3PCL.contigs_2.fq" for reading; skipping...
-Error: No input read files were valid
-(ERR): bowtie2-align exited with value 1
