@@ -295,20 +295,19 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
                 abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))) #rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
             elif find_db=="RGI":
                 abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
-                print([str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))])
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
             elif find_db=="SARG":
                 abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length))]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
@@ -324,13 +323,14 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         arg_name = values[0]
         arg_class = values[1]
         value = values[2]
+        find_db= values[3]
         
         if arg_name in RPKG_ARG_NAME_abundance:
             # If ARG already exists, accumulate the value
             RPKG_ARG_NAME_abundance[arg_name][1] += value
         else:
             # If ARG does not exist, create a new entry
-            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value]
+            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value, find_db]
     
     #cal ARG subtype
     """
@@ -657,10 +657,10 @@ def Calculation(file_name_base):
             f.write(RPKG_ARG_NAME_tsv_data)
         
         # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
-        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tValue\n" # Add header
+        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tfind_db\tValue\n" # Add header
         # Traverse the new dictionary and append data to TSV string
         for arg, values in RPKG_ARG_NAME_abundance.items():
-            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[1]}\n" # 0class 1abundance
+            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[1]}\n" # 0class 1abundance
         # Optionally, write the TSV data to a file
         with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
             f.write(RPKG_ARG_NAME_abundance_tsv_data)
@@ -908,7 +908,7 @@ if __name__ == "__main__":
 
     # 创建一个字典来保存 ARG_name 到 Class 的映射
     arg_class_mapping = {}
-    
+    find_db_mapping= {}
     # 创建一个空的 DataFrame 来存放合并后的数据
     merged_df = pd.DataFrame()
 
@@ -920,13 +920,18 @@ if __name__ == "__main__":
         sample_df = pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",sample_file), sep='\t')
         
         # 检查列名
-        if 'ARG_name' not in sample_df.columns or 'Class' not in sample_df.columns or 'Value' not in sample_df.columns:
-            raise ValueError(f"File {sample_file} does not contain the required columns: 'ARG_name', 'Class', 'Value'")
+        if 'ARG_name' not in sample_df.columns or 'Class' not in sample_df.columns or 'Value' not in sample_df.columns or 'find_db' not in sample_df.columns:
+            raise ValueError(f"File {sample_file} does not contain the required columns: 'ARG_name', 'Class', 'find_db', 'Value'")
         
         # 更新字典 arg_class_mapping
         for _, row in sample_df.iterrows():
             if row['ARG_name'] not in arg_class_mapping:
                 arg_class_mapping[row['ARG_name']] = row['Class']
+        
+        # 更新字典 find_db_mapping
+        for _, row in sample_df.iterrows():
+            if row['ARG_name'] not in find_db_mapping:
+                find_db_mapping[row['ARG_name']] = row['find_db']
         
         # 将当前样本的值加入到新的列中
         sample_value_df = sample_df[['ARG_name', 'Value']]
@@ -944,15 +949,16 @@ if __name__ == "__main__":
     # 合并后重新添加 Class 列
     merged_df.reset_index(inplace=True)
     merged_df['Class'] = merged_df['ARG_name'].map(arg_class_mapping)
+    merged_df['Database'] = merged_df['ARG_name'].map(find_db_mapping)
    
     # 调整列顺序
-    merged_df = merged_df[['ARG_name', 'Class'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class']]]
+    merged_df = merged_df[['ARG_name', 'Class','Database'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class','Database']]]
         
     # 重置索引并保存到新的 TSV 文件
     merged_df.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class.tsv'), sep='\t', index=False)    
     print("合并后的文件已保存为 merged_samples.tsv")    
     
-    os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
+    # os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
     
 #python Genecal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test -p DSR -t 20
