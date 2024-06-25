@@ -7,10 +7,10 @@
 # date              :20240624
 # version           :1.0
 # usage             :python multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
-#                                                                   -p <project_prefix>
-#                                                                   -n <normalization_base> #AGS or scg
-#                                                                   -t <threads>
-#                                                                   -d <pth2KK2db>
+    #                                                                   -p <project_prefix>
+    #                                                                   -n <normalization_base> #AGS or scg
+    #                                                                   -t <threads>
+    #                                                                   -d <pth2KK2db>
 # required packages :Bio, pandas, os
 # notification: enjoy yourself
 #==============================================================================
@@ -275,8 +275,8 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             orf, index_dic[orf]))
         if Record_db_orf[orf]:
             find_db=Record_db_orf[orf]
-            ARG_name=Record_ARG_name_orf[orf][0]
-            ARG_class=Record_ARG_name_orf[orf][1]
+            ARG_name=Record_ARG_name_orf[orf][0].split("/")[0]
+            ARG_class=Record_ARG_name_orf[orf][1].split("/")[0]
             if ARG_name:
                 print(ARG_name)
             else:
@@ -291,22 +291,22 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             else:
                 mapped_reads=1
             if find_db=="DeepARG":
-                abundance_arg_16S += (mapped_reads / DB_deepARG_length_res[orf]) / num_scg
+                abundance_arg_16S += (mapped_reads / DB_deepARG_length_res[orf]) / num_scg #scg
                 abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg))
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))) #rpkg
                 RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))]) #rpkg
             elif find_db=="RGI":
-                abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg
+                abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg))
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
                 print([str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))])
                 RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length))]) #rpkg
             elif find_db=="SARG":
-                abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg
+                abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg))
+                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
                 RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length))]) #rpkg
             else:
@@ -645,7 +645,7 @@ def Calculation(file_name_base):
                             i+"_MGE_rpkmAbu_tmp.txt"),
                                 sep="\t",header=False)
         
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_Cell-scg.txt"), "a") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_scg-rpkg.txt"), "a") as f:
             f.write("\n" + i + "\t" + output_abundance)
         
         # Convert RPKG_ARG_NAME to {orf: [ARG, class, abundance]}
@@ -653,7 +653,7 @@ def Calculation(file_name_base):
         for orf, values in RPKG_ARG_NAME.items():
             RPKG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" # 0ARG 1class 2abundance
         # Optionally, write to a file
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result","Abundance_orf_gene",i+"_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
             f.write(RPKG_ARG_NAME_tsv_data)
         
         # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
@@ -662,7 +662,7 @@ def Calculation(file_name_base):
         for arg, values in RPKG_ARG_NAME_abundance.items():
             RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[1]}\n" # 0class 1abundance
         # Optionally, write the TSV data to a file
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_geneName_class_Cell(GE).txt"), "w") as f:
+        with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
             f.write(RPKG_ARG_NAME_abundance_tsv_data)
         
     except:
@@ -674,108 +674,30 @@ def Calculation(file_name_base):
         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_"+cell_suffix+"Abu_tmp.txt")):
             pass
         else:
-            print("ARG subtype abundance 16s cal file doesn't exit...")
+            print("ARG subtype abundance scg cal file doesn't exit...")
             exit(1)
         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_rpkmAbu_tmp.txt")):
             pass
         else:
-            print("ARG subtype abundance rpkm cal file doesn't exit...")
+            print("ARG subtype abundance rpkg cal file doesn't exit...")
             exit(1)
         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_"+cell_suffix+"Abu_tmp.txt")):
             pass
         else:
-            print("MGE subtype abundance 16s cal file doesn't exit...")
+            print("MGE subtype abundance scg cal file doesn't exit...")
             exit(1)
         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_rpkmAbu_tmp.txt")):
             pass
         else:
-            print("MGE subtype abundance rpkm cal file doesn't exit...")
+            print("MGE subtype abundance rpkg cal file doesn't exit...")
+            exit(1)
+        if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt")):
+            pass
+        else:
+            print("geneName file doesn't exit...")
             exit(1)
     except:
         raise FileNotFoundError("subtype tmp cal file miss...")
-    
-    
-    #########concat all the abu result############
-    # #concat ARG result
-    # #concat 16S
-    # name_list_16S=[]
-    # name_list_16S.append(i+"_ARG_16sAbu_tmp.txt")
-    # init=0
-    # df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
-    # df_main.columns=["type",name_list_16S[0]]
-    # for i,name in enumerate(name_list_16S):
-    #     if i < len(name_list_16S)-1:
-    #         init+=1
-    #         if name_list_16S[init]:
-    #             df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[init]),sep="\t", header=None)
-    #             df_2.columns=["type",name_list_16S[init]]
-    #             df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
-    # #save 16s subtype abu
-    # df_main.to_csv(os.path.join(
-    #             input_dir, project_prefix,
-    #                 "CompRanking_result",
-    #                     project_prefix+"_Abundance_ARGs_subtypes_16S.txt"),sep="\t",index=None)
-    # #cal rpkm
-    # name_list_rpkm=[]
-    # name_list_rpkm.append(i+"_ARG_rpkmAbu_tmp.txt")
-    # init=0
-    # df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[0]),
-    #                     sep="\t", header=None)
-    # df_main.columns=["type",name_list_rpkm[0]]
-    # for i,name in enumerate(name_list_rpkm):
-    #     if i < len(name_list_16S)-1:
-    #         init+=1
-    #         if name_list_rpkm[init]:
-    #             df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[init]),
-    #                              sep="\t", header=None)
-    #             df_2.columns=["type",name_list_rpkm[init]]
-    #             df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
-    # #save rpkm subtype abu
-    # df_main.to_csv(os.path.join(
-    #                 input_dir,project_prefix,
-    #                     "CompRanking_result",
-    #                         project_prefix+"_Abundance_ARGs_subtypes_rpkm.txt"),sep="\t",index=None)
-    # #concat MGE result
-    # #concat 16S
-    # name_list_16S=[]
-    # name_list_16S.append(i+"_MGE_16sAbu_tmp.txt")
-    # init=0
-    # df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[0]),sep="\t", header=None)
-    # df_main.columns=["type",name_list_16S[0]]
-    # for i,name in enumerate(name_list_16S):
-    #     if i < len(name_list_16S)-1:
-    #         init+=1
-    #         if name_list_16S[init]:
-    #             df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_16S[init]),sep="\t", header=None)
-    #             df_2.columns=["type",name_list_16S[init]]
-    #             df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
-    # #save 16s subtype abu
-    # df_main.to_csv(os.path.join(
-    #             input_dir,project_prefix,
-    #                 "CompRanking_result",
-    #                     project_prefix+"_Abundance_MGEs_subtypes_16S.txt"),sep="\t",index=None)
-    # #cal rpkm
-    # name_list_rpkm=[]
-    # name_list_rpkm.append(i+"_MGE_rpkmAbu_tmp.txt")
-    # init=0
-    # df_main=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[0]),
-    #                     sep="\t", header=None)
-    # df_main.columns=["type",name_list_rpkm[0]]
-    # for i,name in enumerate(name_list_rpkm):
-    #     if i < len(name_list_16S)-1:
-    #         init+=1
-    #         if name_list_rpkm[init]:
-    #             df_2=pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",name_list_rpkm[init]),
-    #                              sep="\t", header=None)
-    #             df_2.columns=["type",name_list_rpkm[init]]
-    #             df_main=pd.merge(df_main,df_2,left_on="type",right_on="type",how="outer")
-    # #save rpkm subtype abu
-    # df_main.to_csv(os.path.join(
-    #                 input_dir,project_prefix,
-    #                     "CompRanking_result",
-    #                         project_prefix+"_Abundance_MGEs_subtypes_rpkm.txt"),sep="\t",index=None)
-    
-    # os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
 def multiKK2():    
     openthreads = len(file_name_base) 
@@ -886,115 +808,13 @@ if __name__ == "__main__":
     #multiCalculation
     # multiKK2()
     #multiTask
-    multiCalculation()
-            
-    # #calculate relative abundance of functional genes
-    # for i in file_name_base:
-    #     try:
-    #         #load ARGs result
-    #         input_rgi=os.path.join(input_dir,project_prefix,
-    #                             "CompRanking_intermediate/AMR/RGI",
-    #                                     i+"_5M_contigs.RGI.out.txt")
-    #         input_SARG=os.path.join(input_dir,project_prefix,
-    #                                 "CompRanking_intermediate/AMR/ARGranking",
-    #                                     i+"_SARGrank_Protein60_Result.tsv")
-    #         input_deeparg_sure=os.path.join(input_dir,project_prefix,
-    #                                 "CompRanking_intermediate/AMR/DeepARG", 
-    #                                     i+"_5M_contigs_DeepARG.out.mapping.ARG")
-    #         input_kk2=os.path.join(input_dir,project_prefix,
-    #                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
-    #                                     i+"_report_kk2_mpaStyle.txt")
-    #         input_AMR_sum=os.path.join(input_dir,project_prefix,
-    #                                 "CompRanking_result",
-    #                                     "CompRanking_"+i+"_AMR_MOB_prediction.tsv")
-    #     except:
-    #         raise ValueError("Missing the output...")
-        
-    #     try:
-    #         #load reference length
-    #         DB_deepARG_length = get_DB_DeepARG_len(input_deeparg_length)
-    #         DB_SARG_length =get_DB_SARG_len(input_sarg_structure)
-    #         DB_MobileOG_length=get_MobilOG_len(input_mobileOG_structure)
-    #     except:
-    #         raise SystemError("Can't load reference length, please check the original files...")
-        
-    #     try:
-    #         #load subtype dataframe
-    #         result, \
-    #         df_ARG_subtype_16S, \
-    #         df_ARG_subtype_RPKM, \
-    #         df_MGE_subtype_16S, \
-    #         df_MGE_subtype_RPKM = RB_gene_sum(DB_deepARG_length,
-    #                                         DB_SARG_length, 
-    #                                         DB_MobileOG_length, 
-    #                                         input_AMR_sum,
-    #                                         input_kk2,
-    #                                         input_deeparg_sure,
-    #                                         input_rgi,
-    #                                         input_SARG,
-    #                                         i)
-    #         #output total relative abundance in a list    
-    #         output_abundance="\t".join(map(str, result))
-    #         #save output as tmp file
-    #         df_ARG_subtype_16S.to_csv(os.path.join(
-    #                     input_dir,project_prefix,
-    #                         "CompRanking_result",
-    #                             i+"_ARG_16sAbu_tmp.txt"),
-    #                                 sep="\t",header=False)
-    #         df_ARG_subtype_RPKM.to_csv(os.path.join(
-    #                     input_dir,project_prefix,
-    #                         "CompRanking_result",
-    #                             i+"_ARG_rpkmAbu_tmp.txt"),
-    #                                 sep="\t",header=False)
-    #         df_MGE_subtype_16S.to_csv(os.path.join(
-    #                     input_dir,project_prefix,
-    #                         "CompRanking_result",
-    #                             i+"_MGE_16sAbu_tmp.txt"),
-    #                                 sep="\t",header=False)
-    #         df_MGE_subtype_RPKM.to_csv(os.path.join(
-    #                     input_dir,project_prefix,
-    #                         "CompRanking_result",
-    #                             i+"_MGE_rpkmAbu_tmp.txt"),
-    #                                 sep="\t",header=False)
-            
-    #         with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum.txt"), "a") as f:
-    #             f.write("\n" + i + "\t" + output_abundance)
-    #     except:
-    #         raise ValueError("Write to summary abundacne file failed...")
-    
-    # #check abu tmp files
-    # check_point_list=[]
-    # for i in file_name_base:
-    #     try:
-    #         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_16sAbu_tmp.txt")):
-    #             pass
-    #         else:
-    #             print("ARG subtype abundance 16s cal file doesn't exit...")
-    #             break
-    #         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_ARG_rpkmAbu_tmp.txt")):
-    #             pass
-    #         else:
-    #             print("ARG subtype abundance rpkm cal file doesn't exit...")
-    #             break
-    #         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_16sAbu_tmp.txt")):
-    #             pass
-    #         else:
-    #             print("MGE subtype abundance 16s cal file doesn't exit...")
-    #             break
-    #         if os.path.exists(os.path.join(input_dir,project_prefix,"CompRanking_result",i +"_MGE_rpkmAbu_tmp.txt")):
-    #             pass
-    #         else:
-    #             print("MGE subtype abundance rpkm cal file doesn't exit...")
-    #             break
-    #     except:
-    #         raise FileNotFoundError("subtype tmp cal file miss...")
-    
+    multiCalculation() 
     
     # #########concat all the abu result############
     #concat ARG result
     #concat scg
     if normalization_base =="AGS":
-        cell_suffix="Cell"
+        cell_suffix="Cell" #scg+rpkg
     elif normalization_base =="16S":
         cell_suffix="16S"
         
@@ -1078,6 +898,59 @@ if __name__ == "__main__":
                     input_dir,project_prefix,
                         "CompRanking_result",
                             project_prefix+"_Abundance_MGEs_subtypes_rpkg.txt"),sep="\t",index=None)
+    
+    
+    #concat Sub ARG Name result
+    #os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"
+    # 假设样本文件存放在当前目录下
+    directory = os.path.join(input_dir,project_prefix,"CompRanking_result")
+    sample_files = [f for f in os.listdir(directory) if f.endswith('_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt')]
+
+    # 创建一个字典来保存 ARG_name 到 Class 的映射
+    arg_class_mapping = {}
+    
+    # 创建一个空的 DataFrame 来存放合并后的数据
+    merged_df = pd.DataFrame()
+
+    for sample_file in sample_files:
+        # 获取样本名
+        sample_name = sample_file.split('_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt')[0]
+        
+        # 读取当前样本的 TSV 文件
+        sample_df = pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",sample_file), sep='\t')
+        
+        # 检查列名
+        if 'ARG_name' not in sample_df.columns or 'Class' not in sample_df.columns or 'Value' not in sample_df.columns:
+            raise ValueError(f"File {sample_file} does not contain the required columns: 'ARG_name', 'Class', 'Value'")
+        
+        # 更新字典 arg_class_mapping
+        for _, row in sample_df.iterrows():
+            if row['ARG_name'] not in arg_class_mapping:
+                arg_class_mapping[row['ARG_name']] = row['Class']
+        
+        # 将当前样本的值加入到新的列中
+        sample_value_df = sample_df[['ARG_name', 'Value']]
+        sample_value_df.columns = ['ARG_name', sample_name]
+        
+        # 设置 ARG_name 为索引以便合并
+        sample_value_df.set_index('ARG_name', inplace=True)
+        
+        # 合并数据
+        if merged_df.empty:
+            merged_df = sample_value_df
+        else:
+            merged_df = merged_df.join(sample_value_df, how='outer')
+        
+    # 合并后重新添加 Class 列
+    merged_df.reset_index(inplace=True)
+    merged_df['Class'] = merged_df['ARG_name'].map(arg_class_mapping)
+   
+    # 调整列顺序
+    merged_df = merged_df[['ARG_name', 'Class'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class']]]
+        
+    # 重置索引并保存到新的 TSV 文件
+    merged_df.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class.tsv'), sep='\t', index=False)    
+    print("合并后的文件已保存为 merged_samples.tsv")    
     
     os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
