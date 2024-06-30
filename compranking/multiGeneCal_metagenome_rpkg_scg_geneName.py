@@ -7,10 +7,11 @@
 # date              :20240624
 # version           :1.0
 # usage             :python multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
-    #                                                                   -p <project_prefix>
-    #                                                                   -n <normalization_base> #AGS or scg
-    #                                                                   -t <threads>
-    #                                                                   -d <pth2KK2db>
+#                                                                        -p <project_prefix>
+#                                                                        -n <normalization_base> #AGS or scg
+#                                                                        -t <threads>
+#                                                                        -d <pth2KK2db>
+#python compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py -i /lomi_home/gaoyang/software/CompRanking/tmp_DSR -n AGS -p DSR
 # required packages :Bio, pandas, os
 # notification: enjoy yourself
 #==============================================================================
@@ -133,7 +134,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     #load final output
     df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
     df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
-    df_AMR_hit1=df_AMR_hit[["ORF_ID","ARG_prediction","ARG_class","Database"]]
+    df_AMR_hit1=df_AMR_hit[["ORF_ID","ARG_prediction","ARG_class","Database","CompRanking_MGE_prediction"]]
     df_AMR_hit1["db_final"]=df_AMR_hit1["Database"].str.split("/", expand=True)[0]
     
     #record hit database and orf_id
@@ -141,7 +142,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     Record_ARG_name_orf={}
     for i, name in df_AMR_hit1.iterrows():
         Record_db_orf.setdefault(str(name["ORF_ID"]), str(name["db_final"]))
-        Record_ARG_name_orf.setdefault(str(name["ORF_ID"]), [str(name["ARG_prediction"]), str(name["ARG_class"])])
+        Record_ARG_name_orf.setdefault(str(name["ORF_ID"]), [str(name["ARG_prediction"]), str(name["ARG_class"]),str(name["CompRanking_MGE_prediction"])])
     #Load normalization base 16s or AGS
     #load kk2
     kraken=input_kk2
@@ -277,6 +278,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
             find_db=Record_db_orf[orf]
             ARG_name=Record_ARG_name_orf[orf][0].split("/")[0]
             ARG_class=Record_ARG_name_orf[orf][1].split("/")[0]
+            MGE_type=Record_ARG_name_orf[orf][2]
             if ARG_name:
                 print(ARG_name)
             else:
@@ -295,19 +297,19 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
                 abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))) #rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
             elif find_db=="RGI":
                 abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
             elif find_db=="SARG":
                 abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg #scg
                 abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
                 TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg)) #scg
                 RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)), str(find_db)]) #rpkg
+                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
             else:
                 continue
     # print(abundance_arg_16S, abundance_arg_RPKM)   
@@ -323,14 +325,15 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
         arg_name = values[0]
         arg_class = values[1]
         value = values[2]
-        find_db= values[3]
+        find_db = values[3]
+        mge_type = values[4]
         
         if arg_name in RPKG_ARG_NAME_abundance:
             # If ARG already exists, accumulate the value
             RPKG_ARG_NAME_abundance[arg_name][1] += value
         else:
             # If ARG does not exist, create a new entry
-            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value, find_db]
+            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value, find_db, mge_type]
     
     #cal ARG subtype
     """
@@ -657,10 +660,10 @@ def Calculation(file_name_base):
             f.write(RPKG_ARG_NAME_tsv_data)
         
         # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
-        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tfind_db\tValue\n" # Add header
+        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tfind_db\tMGE_type\tValue\n" # Add header
         # Traverse the new dictionary and append data to TSV string
         for arg, values in RPKG_ARG_NAME_abundance.items():
-            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[1]}\n" # 0class 1abundance
+            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[3]}\t{values[1]}\n" # 0class 1abundance
         # Optionally, write the TSV data to a file
         with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
             f.write(RPKG_ARG_NAME_abundance_tsv_data)
@@ -909,6 +912,7 @@ if __name__ == "__main__":
     # 创建一个字典来保存 ARG_name 到 Class 的映射
     arg_class_mapping = {}
     find_db_mapping= {}
+    mge_type_mapping= {}
     # 创建一个空的 DataFrame 来存放合并后的数据
     merged_df = pd.DataFrame()
 
@@ -933,6 +937,17 @@ if __name__ == "__main__":
             if row['ARG_name'] not in find_db_mapping:
                 find_db_mapping[row['ARG_name']] = row['find_db']
         
+        # 更新字典 mge_type_mapping
+        for _, row in sample_df.iterrows():
+            if not row['MGE_type'].startswith("ambiguous") and not row['MGE_type'].startswith("unclassified"):
+                if row['ARG_name'] not in mge_type_mapping :
+                    mge_type_mapping[row['ARG_name']] = row['MGE_type']
+                else:
+                    if row['MGE_type'] in mge_type_mapping[row['ARG_name']]:
+                        continue
+                    else:
+                        mge_type_mapping[row['ARG_name']] = mge_type_mapping[row['ARG_name']]+"/"+row['MGE_type']
+        
         # 将当前样本的值加入到新的列中
         sample_value_df = sample_df[['ARG_name', 'Value']]
         sample_value_df.columns = ['ARG_name', sample_name]
@@ -945,17 +960,29 @@ if __name__ == "__main__":
             merged_df = sample_value_df
         else:
             merged_df = merged_df.join(sample_value_df, how='outer')
-        
+    
+    # 对 mge_type_mapping 中的值进行排序
+    for arg_name in mge_type_mapping:
+        if pd.isna(mge_type_mapping[arg_name]) or mge_type_mapping[arg_name] == '':
+            mge_type_mapping[arg_name] = '-'
+        else:
+            mge_types = mge_type_mapping[arg_name].split('/')
+            mge_type_mapping[arg_name] = '/'.join(sorted(mge_types))
+            
     # 合并后重新添加 Class 列
     merged_df.reset_index(inplace=True)
     merged_df['Class'] = merged_df['ARG_name'].map(arg_class_mapping)
     merged_df['Database'] = merged_df['ARG_name'].map(find_db_mapping)
+    merged_df['MGE_type'] = merged_df['ARG_name'].map(mge_type_mapping)
    
     # 调整列顺序
-    merged_df = merged_df[['ARG_name', 'Class','Database'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class','Database']]]
-        
+    merged_df = merged_df[['ARG_name', 'Class','Database', 'MGE_type'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class','Database', 'MGE_type']]]
+    merged_df_fillZero=merged_df.copy()
+    merged_df_fillZero['MGE_type'].fillna('Unknown', inplace=True)
+    merged_df_fillZero.fillna(0, inplace=True)
     # 重置索引并保存到新的 TSV 文件
     merged_df.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class.tsv'), sep='\t', index=False)    
+    merged_df_fillZero.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class_fillZero.tsv'), sep='\t', index=False)
     print("合并后的文件已保存为 merged_samples.tsv")    
     
     # os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
