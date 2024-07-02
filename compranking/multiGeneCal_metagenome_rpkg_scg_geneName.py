@@ -6,7 +6,7 @@
 # author            :Gaoyang Luo
 # date              :20240624
 # version           :1.0
-# usage             :python multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
+# usage             :python compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
 #                                                                        -p <project_prefix>
 #                                                                        -n <normalization_base> #AGS or scg
 #                                                                        -t <threads>
@@ -338,7 +338,7 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     #cal ARG subtype
     """
     subtypes including:
-        All, multigrug, beta-lactam, aminoglycoside,
+        All, multidrug, beta-lactam, aminoglycoside,
         tetracycline, sulfonamide, MLS, bacitracin,
         chloramphenicol, quinlone, fosmidomycin, trimethoprim,
         kasugamycin, vancomycin, rifamycin, fosfomycin, belomycin, unclassified...
@@ -985,7 +985,7 @@ if __name__ == "__main__":
     merged_df_fillZero.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class_fillZero.tsv'), sep='\t', index=False)
     print("合并后的文件已保存为 merged_samples.tsv")    
     
-    # os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
+    os.system("rm " + os.path.join(input_dir,project_prefix,"CompRanking_result/*tmp*"))
 
     
 #python Genecal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test -p DSR -t 20

@@ -2,15 +2,14 @@
 # title             :AMR_combined.py
 # description       :combine AMR output
 # author            :Gaoyang Luo
-# date              :202209017
+# date              :202209017: v1; 20240630:v2
 # version           :1.0
 # usage             :import AMRcombined
-# required packages :re, pandas, numpy 
+# required packages :pandas, numpy 
 # notification: enjoy yourself
 #==============================================================================
 #import modules
 import pandas as pd
-# import re
 import os
 # import MOB_concat
 # import Virulence_processing
@@ -491,8 +490,8 @@ if __name__ == "__main__":
     end = datetime.datetime.now() #time end
     print(end-start)
     
-    #calculate
-    start = datetime.datetime.now() #time start
+    # #calculate
+    # start = datetime.datetime.now() #time start
     
     
     

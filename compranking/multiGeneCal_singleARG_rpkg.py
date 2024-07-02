@@ -6,7 +6,7 @@
 # author            :Gaoyang Luo
 # date              :202201101
 # version           :1.0
-# usage             :python mulitGenecal_metagenome_rpkm.py -i <input_dir>
+# usage             :python compranking/multiGeneCal_singleARG_rpkg.py -i <input_dir>
 #                                                           -p <project_prefix>
 #                                                           -n <normalization_base> #AGS or 16S
 #                                                           -t <threads>
