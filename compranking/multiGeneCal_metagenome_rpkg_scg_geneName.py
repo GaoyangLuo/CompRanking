@@ -4,7 +4,7 @@
 #                    This version is used to calculate rpkg abundance (beta version)
 #                    and single copy gene (cell copy)
 # author            :Gaoyang Luo
-# date              :20240624
+# date              :20240701
 # version           :1.0
 # usage             :python compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py -i <input_dir>
 #                                                                        -p <project_prefix>
