@@ -73,3 +73,14 @@ $ python ./compranking/GeneCal.py -i <input_dir> -p <project_name_prefix>
 ```sh
 $ python ./compranking/baseInfoExtra.py -i <input_dir> -p <project_name_prefix>
 ```
+
+## How to calculate each ARG class and their carriers counts
+
+Use the jupyter notebook `MGE_carried_ARGs_type_count.ipynb` to calculate. The metadata record the number of five types of elements that co-exist with ARGs: plasmid, phage, unclassified (can be any type of sequences, including chromosome or other unknown or unidentified MGEs), IS (Insertion Sequence), IE (Integrated Elements) 
+```sh
+sampleName_x: #plasmid
+sampleName_y: #phage
+sampleName_z: #unclassified
+sampleName_m: #IS
+sampleName_n: #IS
+```
