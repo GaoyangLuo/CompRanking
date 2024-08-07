@@ -69,7 +69,7 @@ $ python ./compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py
         -p <project_prefix> 
         -n AGS
         -t 16
-        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_cellkk2_argranker.py
+        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_16s.py
 ```
 
 ---
