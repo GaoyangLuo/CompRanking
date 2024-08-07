@@ -905,39 +905,39 @@ if __name__ == "__main__":
     
     #concat Sub ARG Name result
     #os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"
-    # 假设样本文件存放在当前目录下
+    # Assume sample files are stored in the current directory
     directory = os.path.join(input_dir,project_prefix,"CompRanking_result")
     sample_files = [f for f in os.listdir(directory) if f.endswith('_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt')]
 
-    # 创建一个字典来保存 ARG_name 到 Class 的映射
+    # Create a dictionary to save the mapping from ARG_name to Class
     arg_class_mapping = {}
     find_db_mapping= {}
     mge_type_mapping= {}
-    # 创建一个空的 DataFrame 来存放合并后的数据
+    # Create an empty DataFrame to store merged data
     merged_df = pd.DataFrame()
 
     for sample_file in sample_files:
-        # 获取样本名
+        # Get sample name
         sample_name = sample_file.split('_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt')[0]
         
-        # 读取当前样本的 TSV 文件
+        # Read the TSV file of the current sample
         sample_df = pd.read_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",sample_file), sep='\t')
         
-        # 检查列名
+        # Check column names
         if 'ARG_name' not in sample_df.columns or 'Class' not in sample_df.columns or 'Value' not in sample_df.columns or 'find_db' not in sample_df.columns:
             raise ValueError(f"File {sample_file} does not contain the required columns: 'ARG_name', 'Class', 'find_db', 'Value'")
         
-        # 更新字典 arg_class_mapping
+        # Update dictionary arg_class_mapping
         for _, row in sample_df.iterrows():
             if row['ARG_name'] not in arg_class_mapping:
                 arg_class_mapping[row['ARG_name']] = row['Class']
         
-        # 更新字典 find_db_mapping
+        # Update dictionary find_db_mapping
         for _, row in sample_df.iterrows():
             if row['ARG_name'] not in find_db_mapping:
                 find_db_mapping[row['ARG_name']] = row['find_db']
         
-        # 更新字典 mge_type_mapping
+        # Update dictionary mge_type_mapping
         for _, row in sample_df.iterrows():
             if not row['MGE_type'].startswith("ambiguous") and not row['MGE_type'].startswith("unclassified"):
                 if row['ARG_name'] not in mge_type_mapping :
@@ -948,20 +948,20 @@ if __name__ == "__main__":
                     else:
                         mge_type_mapping[row['ARG_name']] = mge_type_mapping[row['ARG_name']]+"/"+row['MGE_type']
         
-        # 将当前样本的值加入到新的列中
+        # Add the current sample's values to a new column
         sample_value_df = sample_df[['ARG_name', 'Value']]
         sample_value_df.columns = ['ARG_name', sample_name]
         
-        # 设置 ARG_name 为索引以便合并
+        # Set ARG_name as index for merging
         sample_value_df.set_index('ARG_name', inplace=True)
         
-        # 合并数据
+        # Merge data
         if merged_df.empty:
             merged_df = sample_value_df
         else:
             merged_df = merged_df.join(sample_value_df, how='outer')
     
-    # 对 mge_type_mapping 中的值进行排序
+    # Sort values in mge_type_mapping
     for arg_name in mge_type_mapping:
         if pd.isna(mge_type_mapping[arg_name]) or mge_type_mapping[arg_name] == '':
             mge_type_mapping[arg_name] = '-'
@@ -969,18 +969,18 @@ if __name__ == "__main__":
             mge_types = mge_type_mapping[arg_name].split('/')
             mge_type_mapping[arg_name] = '/'.join(sorted(mge_types))
             
-    # 合并后重新添加 Class 列
+    # Re-add Class column after merging
     merged_df.reset_index(inplace=True)
     merged_df['Class'] = merged_df['ARG_name'].map(arg_class_mapping)
     merged_df['Database'] = merged_df['ARG_name'].map(find_db_mapping)
     merged_df['MGE_type'] = merged_df['ARG_name'].map(mge_type_mapping)
    
-    # 调整列顺序
+    # Adjust column order
     merged_df = merged_df[['ARG_name', 'Class','Database', 'MGE_type'] + [col for col in merged_df.columns if col not in ['ARG_name', 'Class','Database', 'MGE_type']]]
     merged_df_fillZero=merged_df.copy()
     merged_df_fillZero['MGE_type'].fillna('Unknown', inplace=True)
     merged_df_fillZero.fillna(0, inplace=True)
-    # 重置索引并保存到新的 TSV 文件
+    # Reset index and save to a new TSV file
     merged_df.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class.tsv'), sep='\t', index=False)    
     merged_df_fillZero.to_csv(os.path.join(input_dir,project_prefix,"CompRanking_result",project_prefix+'_merged_samples_with_class_fillZero.tsv'), sep='\t', index=False)
     print("合并后的文件已保存为 merged_samples.tsv")    

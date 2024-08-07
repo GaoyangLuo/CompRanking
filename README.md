@@ -64,14 +64,19 @@ Parameters:
 
 **Step 2:** After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
 ```sh
-$ python ./compranking/GeneCal.py -i <input_dir> -p <project_name_prefix>
+$ python ./compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py 
+        -i <input_dir> 
+        -p <project_prefix> 
+        -n AGS
+        -t 16
+        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_cellkk2_argranker.py
 ```
 
 ---
 
 **Step 3:** Generate a risk score and corresponding valuse of each sample. In this step, you can acquire various parameters such as how many ARGs-carried contigs or phage- or plasmids-related contigs in your samples. Please run the command line below:
 ```sh
-$ python ./compranking/baseInfoExtra.py -i <input_dir> -p <project_name_prefix>
+$ python ./compranking/baseInfoExtra_nContigs.py -i <input_dir> -p <project_name_prefix>
 ```
 
 ## How to calculate each ARG class and their carriers counts
@@ -84,3 +89,6 @@ sampleName_z: #unclassified
 sampleName_m: #IS
 sampleName_n: #IS
 ```
+
+## Re-running if pipeline halted
+Every process will generte a checkpointing file in the repo checkdone, with file name like `<Your_Project_Name>.index_build.done`. If you want to re-run the pipeline from the last broken step, you can set the parameter `-r` as `0`, which means don't re-run from the beginning. If you set `1`, means you want to re-run from the beginning. You can also delete the `.done` file if you want to re-run the speicific step. We make this pipeline able to identify which step you have run and which one is not completed.
