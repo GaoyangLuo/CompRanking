@@ -87,7 +87,7 @@ sampleName_x: #plasmid
 sampleName_y: #phage
 sampleName_z: #unclassified
 sampleName_m: #IS
-sampleName_n: #IS
+sampleName_n: #IE
 ```
 
 ## Re-running if pipeline halted
