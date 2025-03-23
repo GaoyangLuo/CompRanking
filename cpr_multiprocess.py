@@ -130,20 +130,24 @@ def plascad_prediction(): #plascad
 def AMR_process(file_name_base):
     i=file_name_base
     #set ARG&MGE input
-    input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
-    input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
+    # input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.RGI.out.txt")
+    input_rgi=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/RGI",i+"_5M_contigs.fna2faa.RGI.out.txt")
+    # input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs_DeepARG.out.mapping.ARG")
+    input_deeparg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/DeepARG",i+"_5M_contigs.fna2faa_DeepARG.out.mapping.ARG")
     input_SARG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking",i+"_SARGrank_Protein60_Result.tsv")
-    input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+    # input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+    input_contig_ID=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.fna2faa.index")
     input_dvf=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DVF",i+"_5M_contigs.fa_gt"+str(filterLength)+"bp_dvfpred.txt")
     # input_plasflow=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Plasflow",i+"_5M_contigs_plasflow_predictions.tsv")
     seeker_table=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/Seeker","seeker_"+i+"_5M_contigs_output.txt")
     input_mobileOG=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/MobileOG",i+"_5M_contigs_mobileOG_diamond.txt")
     input_mob_conj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_Conj_plasmids_id_out")
     input_mob_unconj=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/plascad",i+"_5M_contigs_mob_unconj_plasmids_id_out")
-    input_def=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DEF",i+"_5M_contigs.fa_pred_one-hot_hybrid.txt")
+    input_def=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/MGE/DEF",i+"_5M_contigs.fa_pred_onehot_hybrid.tsv")
     
     #set VF input
-    input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+    # input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.index")
+    input_contig=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs",i+"_5M_contigs.fna2faa.index")
     input_ERR_VFDB_output=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/VFDB",i+"_5M_contigs_VFDB.out")
     input_patric=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/Virulence/PATRIC",i+"_5M_contigs_PATRIC.out")
     
@@ -239,6 +243,9 @@ if __name__ == '__main__':
     AMR_PRED1.start()
     AMR_PRED2.start()
     AMR_PRED3.start()
+    AMR_PRED1.join() #start rgi 
+    AMR_PRED2.join() #start deeparg 
+    AMR_PRED3.join() #start sarg
     #time end
     end = datetime.datetime.now() 
     print("ARG search cost time: {}".format(end-start))
@@ -246,6 +253,7 @@ if __name__ == '__main__':
     #### VF prediction ####
     start_VF = datetime.datetime.now() #time start
     VIR_PRED.start()
+    VIR_PRED.join() #start vf
     end_VF = datetime.datetime.now() #time end
     print("VF and Pathogen prediction cost: {}".format(end_VF-start_VF))
     
@@ -256,17 +264,15 @@ if __name__ == '__main__':
     # MGE4_PRED.start() #start seeker
     MGE3_PRED.start() #start mog
     MGE5_PRED.start() #start def
+    MGE5_PRED.join()
+    MGE3_PRED.join()
+  
     
-
+    
     # MGE1_PRED.start()
     MGE2_PRED.start() #dvf
     MGE2_PRED.join()
-    MGE3_PRED.join()
-    AMR_PRED1.join() #start rgi 
-    AMR_PRED2.join() #start deeparg 
-    AMR_PRED3.join() #start sarg
-    VIR_PRED.join() #start vf
-    MGE5_PRED.join()
+    
     # MGE1_PRED.join()
     time.sleep(0.5)
     
@@ -287,16 +293,6 @@ if __name__ == '__main__':
     # print(base_list)
     # yt.check_file_completness()
     
-    ###################plasflowprocessing########################
-    # for i in file_name_base:
-    #     if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/MGE/Plasflow")+"/"+i+"_5M_contigs_plasflow_predictions.tsv"):
-    #         print("{} existed...".format(i))
-    #         continue
-    #     else:
-    #         os.system("python treat_plsf_tmp1.py -i "+input_dir+ " -p " + project_prefix)
-    # except:
-    #     raise ImportError("Can't stat plasflow input...")
-    
     ###################rankARG########################
     ##fixed settings
     input_argrank="databases/SARG/ARG_rank.txt"
@@ -306,14 +302,44 @@ if __name__ == '__main__':
     file_abs_path=path.file_abs_path_list_generation(input_dir) #fixed path
     file_name_base = path.file_base_acquire(file_abs_path) #fixed path
     
-    #arg rank processing
-    for i in file_name_base:
-        input_sarg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking", i+"_5M_contigs_SARG_Protein_diamond.txt")
-        if not os.path.getsize(input_sarg) != 0:
-            ARG_ranker.arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, SARG_output)
-        else:
-            continue
+    # #arg rank processing
+    # for i in file_name_base:
+    #     input_sarg=os.path.join(input_dir,project_prefix,"CompRanking_intermediate/AMR/ARGranking", i+"_5M_contigs_SARG_Protein_diamond.txt")
+    #     print(i)
+    #     if not os.path.getsize(input_sarg) != 0:
+    #         # print(f"[DEBUG] Running ARG_ranker on {input_sarg} ...")
+    #         ARG_ranker.arg_rank(input_sarg, input_sarg_length,input_sarg_structure, input_argrank,i, SARG_output)
+    #         # print(f"[DEBUG] Finished ARG_ranker on {input_sarg}.")
+    #     else:
+    #         print(f"[WARNING] Skipping {input_sarg} because it does not exist or is empty.")
+    #         continue
     
+    
+    # ARG rank processing
+for i in file_name_base:
+    input_sarg = os.path.join(input_dir, project_prefix, "CompRanking_intermediate/AMR/ARGranking", i + "_5M_contigs_SARG_Protein_diamond.txt")
+    print(f"[DEBUG] Processing: {input_sarg}")
+
+    # 先检查文件是否存在
+    if os.path.exists(input_sarg):
+        try:
+            # 尝试打开文件并读取第一行，确保不是空文件
+            with open(input_sarg, "r") as f:
+                first_line = f.readline().strip()
+
+            if first_line:  # 如果第一行有内容，则执行 ARG_ranker
+                print(f"[DEBUG] Running ARG_ranker on {input_sarg} ...")
+                ARG_ranker.arg_rank(input_sarg, input_sarg_length, input_sarg_structure, input_argrank, i, SARG_output)
+                print(f"[DEBUG] Finished ARG_ranker on {input_sarg}.")
+            else:
+                print(f"[WARNING] Skipping {input_sarg} because it is empty (no content).")
+        
+        except Exception as e:
+            print(f"[ERROR] Failed to read {input_sarg}: {e}")
+    else:
+        print(f"[ERROR] {input_sarg} does not exist. Skipping ARG ranking.")
+        
+        
     ###################Combine AMR########################
     #gloab settings
     input_cpr_VF_sum="../databases/CompRanking_VirulenceDB/CompRanking_Virulence_Summary.csv" #fixed

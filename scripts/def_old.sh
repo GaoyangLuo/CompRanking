@@ -4,28 +4,7 @@ set -m
 # default parameters
 PREFIX="CompRanking"
 THREADS=16
-# CONDA_BIN_PATH=~/miniconda/bin
-# 获取当前脚本所在目录的上一级目录
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(dirname "$SCRIPT_DIR")"
-
-# 读取 YAML 文件中的 conda bin 路径
-YAML_FILE="$PARENT_DIR/test_yaml.yaml"
-
-# 使用 Python 解析 YAML
-CONDA_BIN_PATH=$(python3 -c "
-import yaml
-with open('$YAML_FILE', 'r') as f:
-    data = yaml.safe_load(f)
-print(data['CompRanking']['abs_path_to_conda_bin'])
-")
-
-# 确保获取到路径
-if [[ -z "$CONDA_BIN_PATH" ]]; then
-    echo "Error: Failed to get Conda bin path from $YAML_FILE"
-    exit 1
-fi
-
+CONDA_BIN_PATH=~/miniconda/bin
 # FITERLENGTH=500
 
 while getopts "p:i:m:t:l:o" option; do
@@ -43,7 +22,7 @@ done
 
 
 #run DEF
-source ${CONDA_BIN_PATH}/activate CompRanking_def_env
+source ${CONDA_BIN_PATH}/activate def
 if [ -e checkdone/${PREFIX}.DEF.done ]; then
 	echo "The DEF file existed..."
 else
@@ -53,7 +32,7 @@ else
 	#Running DVF 
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
-    DeepMicroClass predict -i ${i} -e onehot -md hybrid --cpu_thread $THREADS -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF 
+    python submodels/DeepMicrobeFinder/predict.py -i ${i} -e one-hot -d submodels/DeepMicrobeFinder/models/one-hot-models/ -m hybrid -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF 
     done
 	#finish Running DVF
 	echo "[TIMESTAMP] $(date) Running the DEF prediction... Done"

@@ -7,6 +7,28 @@ THREADS=16
 SCRIPT=$(readlink -f $0)
 SCRIPT_PATH=$(dirname ${SCRIPT})
 WORK_DIR=$(dirname ${SCRIPT_PATH})
+
+# get parent dir
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# read YAML conda bin path
+YAML_FILE="$PARENT_DIR/test_yaml.yaml"
+
+# read YAML using python
+CONDA_BIN_PATH=$(python3 -c "
+import yaml
+with open('$YAML_FILE', 'r') as f:
+    data = yaml.safe_load(f)
+print(data['CompRanking']['abs_path_to_conda_bin'])
+")
+
+# make sure get path
+if [[ -z "$CONDA_BIN_PATH" ]]; then
+    echo "Error: Failed to get Conda bin path from $YAML_FILE"
+    exit 1
+fi
+
 # echo ${SCRIPT_PATH}
 # echo ${WORK_DIR}
 
