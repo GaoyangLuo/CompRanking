@@ -16,6 +16,8 @@ Please firstly set up all the environment by the following commands. These comma
 $ cd CompRanking
 $ conda env create -f CompRanking.yaml
 $ bash setup.sh
+$ conda activate CompRanking
+$ pip install MicrobeCensus
 ```
 ### Setting conda path
 CompRanking relies on multi conda environments. Before run the demo test, conda bin path should be pre-requisit. Please set your **absolute bin path** of miniconda. For example, your absolute bin path is `/home/username/miniconda3/bin`.
@@ -45,7 +47,7 @@ $ unzip localDB.zip
 ## Demo test
 We provided a set of data for test.
 ```sh
-$ python cpr_multiprocess.py -i test_data -t 12 -r 1 -p test_demo
+$ python cpr_multiprocess.py -i test_data -t 4 -r 1 -p test_demo
 ``` 
 
 ## Run gene prediction
@@ -60,6 +62,16 @@ Parameters:
 - -r, <if_restart> 0 or 1. 0 means continue to run after the last break up point. 1 means re-start from the begeining.
 - -p, <project_name_prefix> You should
 
+---
+
+**Step 1.5: Calculating scg and AGS** Before Step2 we, we need to generate AGS and scg files.
+
+To generate AGS files, following the command lines below
+```sh
+cd $PATH_TO_CompRanking
+vi $PATH_TO_CompRanking/scripts/AGS.sh #change your input_dir in the workdir
+bash $PATH_TO_CompRanking/scripts/AGS.sh
+```
 ---
 
 **Step 2:** After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
