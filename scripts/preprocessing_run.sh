@@ -184,7 +184,7 @@ else
     # 判断目标目录下是否已有 .faa 文件，若不存在才执行 cp
     if [ ! -e "${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/$(basename ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fna2faa.faa)" ]; then
         cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fna2faa.faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-		bash ${SCRIPT_DIR}/a_process_orifile.bash -i ${INPUT_DIR} -p ${PREFIX}
+		bash ${SCRIPT_DIR}/a_process_orifile.sh -i ${INPUT_DIR} -p ${PREFIX}
     else
         echo "FAA files already exist, skipping cp..."
     fi

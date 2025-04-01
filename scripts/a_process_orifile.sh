@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-while getopts "p:i" option; do
+while getopts "p:i:" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
 		i) INPUT_DIR=${OPTARG};;
