@@ -5,7 +5,6 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 # CONDA_BIN_PATH=~/miniconda/bin
-
 # get parent dir
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"

@@ -6,14 +6,14 @@ PREFIX="CompRanking"
 THREADS=16
 # CONDA_BIN_PATH=~/miniconda/bin
 
-# get parent dir
+# 获取当前脚本所在目录的上一级目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# read YAML conda bin path
+# 读取 YAML 文件中的 conda bin 路径
 YAML_FILE="$PARENT_DIR/test_yaml.yaml"
 
-# read YAML using python
+# 使用 Python 解析 YAML
 CONDA_BIN_PATH=$(python3 -c "
 import yaml
 with open('$YAML_FILE', 'r') as f:
@@ -21,12 +21,11 @@ with open('$YAML_FILE', 'r') as f:
 print(data['CompRanking']['abs_path_to_conda_bin'])
 ")
 
-# make sure get path
+# 确保获取到路径
 if [[ -z "$CONDA_BIN_PATH" ]]; then
     echo "Error: Failed to get Conda bin path from $YAML_FILE"
     exit 1
 fi
-
 
 while getopts "p:i:m:t:o" option; do
 	case "${option}" in
@@ -110,23 +109,23 @@ fi
 
 
 
-#run Seeker
-source ${CONDA_BIN_PATH}/activate CompRanking_seeker_env
-if [ -e checkdone/${PREFIX}.SEEKER.done ]; then
-	echo "The second round phage prediction file existed..."
-else
-	#time start
-	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running the second round phage prediction..."	
-	#Running Seeker
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fa
-    do
-    predict-metagenome ${i}
-    done
-	#finish Running Seeker
-	echo "[TIMESTAMP] $(date) Running the second round phage prediction... Done"
-	ENDTIME=$(date +%s)
-	echo "[TIMER] Running the second round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
-	touch checkdone/${PREFIX}.SEEKER.done
-	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
-fi
+# #run Seeker
+# source ${CONDA_BIN_PATH}/activate CompRanking_seeker_env
+# if [ -e checkdone/${PREFIX}.SEEKER.done ]; then
+# 	echo "The second round phage prediction file existed..."
+# else
+# 	#time start
+# 	STARTTIME=$(date +%s)
+# 	echo "[TIMESTAMP] $(date) Running the second round phage prediction..."	
+# 	#Running Seeker
+# 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fa
+#     do
+#     predict-metagenome ${i}
+#     done
+# 	#finish Running Seeker
+# 	echo "[TIMESTAMP] $(date) Running the second round phage prediction... Done"
+# 	ENDTIME=$(date +%s)
+# 	echo "[TIMER] Running the second round phage prediction took $(($ENDTIME - $STARTTIME)) sec."
+# 	touch checkdone/${PREFIX}.SEEKER.done
+# 	mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/seeker* ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/Seeker
+# fi

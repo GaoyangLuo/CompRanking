@@ -5,16 +5,15 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 # CONDA_BIN_PATH=~/miniconda/bin
-# FILTERLENTGH=0
 
-# get parent dir
+# 获取当前脚本所在目录的上一级目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# read YAML conda bin path
+# 读取 YAML 文件中的 conda bin 路径
 YAML_FILE="$PARENT_DIR/test_yaml.yaml"
 
-# read YAML using python
+# 使用 Python 解析 YAML
 CONDA_BIN_PATH=$(python3 -c "
 import yaml
 with open('$YAML_FILE', 'r') as f:
@@ -22,11 +21,13 @@ with open('$YAML_FILE', 'r') as f:
 print(data['CompRanking']['abs_path_to_conda_bin'])
 ")
 
-# make sure get path
+# 确保获取到路径
 if [[ -z "$CONDA_BIN_PATH" ]]; then
     echo "Error: Failed to get Conda bin path from $YAML_FILE"
     exit 1
 fi
+
+# FILTERLENTGH=0
 
 while getopts "p:i:m:t:l:o" option; do
 	case "${option}" in
