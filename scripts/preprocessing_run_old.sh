@@ -5,15 +5,16 @@ set -m
 PREFIX="CompRanking"
 THREADS=16
 # CONDA_BIN_PATH=~/miniconda/bin
+# FILTERLENTGH=0
 
-# 获取当前脚本所在目录的上一级目录
+# get parent dir
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# 读取 YAML 文件中的 conda bin 路径
+# read YAML conda bin path
 YAML_FILE="$PARENT_DIR/test_yaml.yaml"
 
-# 使用 Python 解析 YAML
+# read YAML using python
 CONDA_BIN_PATH=$(python3 -c "
 import yaml
 with open('$YAML_FILE', 'r') as f:
@@ -21,13 +22,11 @@ with open('$YAML_FILE', 'r') as f:
 print(data['CompRanking']['abs_path_to_conda_bin'])
 ")
 
-# 确保获取到路径
+# make sure get path
 if [[ -z "$CONDA_BIN_PATH" ]]; then
     echo "Error: Failed to get Conda bin path from $YAML_FILE"
     exit 1
 fi
-
-# FILTERLENTGH=0
 
 while getopts "p:i:m:t:l:o" option; do
 	case "${option}" in
@@ -47,7 +46,7 @@ done
 #### STEP1 Ativate preprocessing env ####
 source $CONDA_BIN_PATH/activate CompRanking_preprocessing_env
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_result
-mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/fa2faa_
+mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/AMR/RGI
@@ -109,7 +108,7 @@ fi
 #mv filtered files
 #mv ${INPUT_DIR}/*5M-1K_contigs.fa ${INPUT_DIR}/preprocessing/5M-1K_contigs
 
-#### Step3 Run prodigal1 ####
+#### Step3 Run prodigal ####
 if [ -e checkdone/${PREFIX}.ORF_prediction.done ]; then
 	echo "faa file existed..."
 else
@@ -117,12 +116,10 @@ else
 	STARTTIME=$(date +%s)
 	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal..."
 	#predict ORFs with prodigal
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*_5M_contigs.fa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
 	do
 	base=${i%%.f*}
-	prodigal -i ${i} -d ${base}.fna -p meta -q
-	# mv ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/fa2faa_
-	# cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/fa2faa_/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
+	prodigal -i ${i} -o ${base}.gff -a ${base}.faa -d ${base}.fna -f gff -p meta -q
 	# mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/${base} #ERR.contigs_5M_contigs
 	done
 	#finish ORFs prediction
@@ -131,72 +128,25 @@ else
 	echo "[TIMER] Predicting ORFs with prodigal took $(($ENDTIME - $STARTTIME)) sec."
 	touch checkdone/${PREFIX}.ORF_prediction.done
 fi
-
-
-#### Step4 Run prodigal2 ####
-if [ -e checkdone/${PREFIX}.ORF_prediction2.done ]; then
-	echo "fna2faa file existed..."
-else
-	#time start
-	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal..."
-	#predict ORFs with prodigal
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna
-	do
-	base=${i%%.fna*}
-	prodigal -i ${i} -o ${base}.fna2faa.gff -a ${base}.fna2faa.faa -f gff -p meta -q
-	# mkdir -p ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/split/${base} #ERR.contigs_5M_contigs
-	done
-	#finish ORFs prediction
-	echo "[TIMESTAMP] $(date) Predicting ORFs with prodigal... Done"
-	ENDTIME=$(date +%s)
-	echo "[TIMER] Predicting ORFs with prodigal took $(($ENDTIME - $STARTTIME)) sec."
-	touch checkdone/${PREFIX}.ORF_prediction2.done
-fi
 conda deactivate
+
 #### Step4 Modify faa file ####
 # cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 # cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 
 
-# #### Step5 Building index ####
-# if [ -e checkdone/${PREFIX}.index_build.done ]; then
-# 	echo "index file existed..."
-# else
-# 	cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*contigs.faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-# 	ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-# 	sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*contigs.faa
-# 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*contigs.gff
-# 	do
-# 	base=${i%%.gf*}
-# 	sed -i '/^#/d' ${i}
-# 	cut -f 1,9 ${i} |cut -d';' -f1| sed 's/ID=//' > ${base}.index
-# 	done
-# 	touch checkdone/${PREFIX}.index_build.done
-# fi
-
-
-
-#### Step6 Building index ####
-if [ -e checkdone/${PREFIX}.index_build2.done ]; then
-    echo "index file existed..."
+#### Step5 Building index ####
+if [ -e checkdone/${PREFIX}.index_build.done ]; then
+	echo "index file existed..."
 else
-    # 判断目标目录下是否已有 .faa 文件，若不存在才执行 cp
-    if [ ! -e "${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file/$(basename ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fna2faa.faa)" ]; then
-        cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*.fna2faa.faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-		bash ${SCRIPT_DIR}/a_process_orifile.bash -i ${INPUT_DIR} -p ${PREFIX}
-    else
-        echo "FAA files already exist, skipping cp..."
-    fi
+	cp ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
 	ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/ori_file
-    sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna2faa.faa
-
-    for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna2faa.gff
-    do
-        base=${i%%.gf*}
-        sed -i '/^#/d' ${i}
-        cut -f 1,9 ${i} | cut -d';' -f1 | sed 's/ID=//' | awk '{sub(/_[0-9]+$/, "", $1); print $1 "\t" $2}' > ${base}.index
-    done
-    touch checkdone/${PREFIX}.index_build2.done
+	sed -i 's/[^>]*ID=//;s/;.*//;s/*//' ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*faa
+	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*gff
+	do
+	base=${i%%.gf*}
+	sed -i '/^#/d' ${i}
+	cut -f 1,9 ${i} |cut -d';' -f1| sed 's/ID=//' > ${base}.index
+	done
+	touch checkdone/${PREFIX}.index_build.done
 fi
-
