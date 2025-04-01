@@ -13,7 +13,7 @@ conda env create -f envs/seeker.yaml
 conda env create -f envs/dmc.yaml
 conda env create -f envs/rgi.yaml
 conda env create -f envs/hmmer.yaml
-conda env create -f envs/def.yaml
+conda env create -f envs/dvf.yaml
 conda env create -f envs/abundance.yaml
 
 #adjust seeker env
