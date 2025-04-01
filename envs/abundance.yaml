@@ -78,7 +78,7 @@ dependencies:
   - python_abi=2.7=1_cp27mu
   - readline=8.2=h8228510_1
   - samtools=1.18=h50ea8bc_1
-  - setuptools=36.4.0=py27_1
+  - setuptools
   - sqlite=3.44.1=h2c6b66d_0
   - tbb=2020.2=h4bd325d_4
   - tk=8.6.13=noxft_h4845f30_101

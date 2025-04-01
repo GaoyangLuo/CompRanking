@@ -37,7 +37,7 @@ dependencies:
   - pip=20.0.2=py27_1
   - python=2.7.18=ha1903f6_2
   - readline=8.1=h46c0cb4_0
-  - setuptools=36.4.0=py27_1
+  - setuptools
   - sqlite=3.37.1=h4ff8645_0
   - sysroot_linux-64=2.12=he073ed8_15
   - tk=8.6.12=h27826a3_0

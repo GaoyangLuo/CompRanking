@@ -53,7 +53,7 @@ else
 	#Running DVF 
 	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fa
     do
-    DeepMicroClass predict -i ${i} -e onehot -md hybrid --cpu_thread $THREADS -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF 
+    DeepMicroClass predict -i ${i} -e onehot -md hybrid --cpu_thread $THREADS -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/MGE/DEF -d cpu 
     done
 	#finish Running DVF
 	echo "[TIMESTAMP] $(date) Running the DEF prediction... Done"
