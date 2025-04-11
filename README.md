@@ -81,7 +81,7 @@ Parameters:
 - -i, <input_dir> contains all the fastq files and fasta files. Files of the the sample should be named using identical `<prefix>`. For example, `FileNameOne_1.fq`, `FileNameOne_2.fq` and `FileNameOne.fa` represents the pair-end reads fastq files (after quality control) and the assembly file (containing contigs and pleast do not cut into your customed length, default_min_length=500, which cannot be altered).
 - -t, <threads>, the threads you want to use to run the process (Default=16).
 - -r, <if_restart> 0 or 1. 0 means continue to run after the last break up point. 1 means re-start from the begeining.
-- -p, <project_name_prefix> You should
+- -p, <project_name_prefix> You should set a project name here, or use the default name **CompRanking**.
 
 ---
 
