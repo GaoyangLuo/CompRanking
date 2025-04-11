@@ -209,7 +209,7 @@ The output demo is like below:
 | ERMB       | macrolide       | RGI     | phage/plasmid |0.002 |0.003 |0.004 |
 | SUL3       | sulfonamide     | SARG    | plasmid       |0.001 |0.003 |0.005 |
 
-**note**: `phage/plasmid` means ARGs both fpundto be co-located with phage- or plasmid-like contig in one sample (microbial community).
+**note**: `phage/plasmid` means ARGs found to be co-located with phage- or plasmid-like contig in one sample (microbial community).
 `plasmid` means only found to be co-located with plasmid-like contig. `Unknown` means not to be found co-located with any MGEs, but not representing it is not co-located with any MGEs, probably due to the accuracy and recall of identification method.
 
 ---
