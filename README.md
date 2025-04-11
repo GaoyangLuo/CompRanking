@@ -2,6 +2,16 @@
 
 CompRanking is a pipeline for comprehensively assessing the AMR key message of metagenomic samples and rank their risk of resistome. CompRanking calculate each AMR key message, antibiotic resistance genes abundance, mobility and potentials to acquired by pathogens at the contigs level. Generally, CompRanking can give results derived from three features as the co-occurrance of ARGs, MGEs on one contigs and their potentials in pathogens.
 
+# Citation
+📰 News: CompRanking has been published in Environmental Science & Technology!
+
+If you use CompRanking in your research, please cite the following paper:
+
+Luo, G., et al. (2025). Determining Antimicrobial Resistance in the Plastisphere: Lower Risks of Nonbiodegradable vs Higher Risks of Biodegradable Microplastics.
+*Environmental Science & Technology*.
+https://doi.org/10.1021/acs.est.5c00246
+
+
 # Getting Started
 ## Installing
 **Step 1:** Change the current working directory to the location where you want the cloned CompRanking directory to be made. **Step 2:** Clone the repository using git command
