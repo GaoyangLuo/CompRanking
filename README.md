@@ -8,7 +8,7 @@ CompRanking is a pipeline designed for the comprehensive assessment of antimicro
 
 CompRanking integrates these features by identifying the co-occurrence of ARGs and MGEs on the same contigs, and estimating their pathogenic potential.
 
-# Citation
+# 📌 Citation
 📰 News: CompRanking has been published in Environmental Science & Technology!
 
 If you use CompRanking in your research, please cite the following paper:
@@ -71,7 +71,7 @@ We provided a set of data for test.
 python cpr_multiprocess.py -i test_data -t 4 -r 1 -p test_demo
 ``` 
 
-## 🔍 Run gene prediction
+## 🔍 Running AMR risk ranking
 **Step 1:** Gene prediction can generate contextural information of AMR and pathogen information of the whole metagenome. Run the command line below:
 ```sh
 python cpr_multiprocess.py -i <input_dir> -t <threads> -r <if_restart> -p <project_name_prefix>
@@ -83,42 +83,8 @@ Parameters:
 - -r, <if_restart> 0 or 1. 0 means continue to run after the last break up point. 1 means re-start from the begeining.
 - -p, <project_name_prefix> You should set a project name here, or use the default name **CompRanking**.
 
----
 
-**🧬 Step 1.5: Calculating scg and AGS** Before Step2 we, we need to generate AGS and scg files.
-
-To generate AGS files, following the command lines below
-```sh
-cd $PATH_TO_CompRanking
-vi $PATH_TO_CompRanking/scripts/AGS.sh #change your input_dir in the workdir
-bash $PATH_TO_CompRanking/scripts/AGS.sh
-```
----
-
-**📈 Step 2:** After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
-```sh
-python ./compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py 
-        -i <input_dir> 
-        -p <project_prefix> 
-        -n AGS
-        -t 16
-        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_16s.py
-```
-The output demo is like below:
-
-| ARG_name | Class   | Database | MGE_type |Sample_1 |Sample_2 |Sample_3 |
-|----------|---------|----------|----------|---------|---------|---------|       
-| AAC(2')-I  | aminoglycoside  | DeepARG | Unknown       |0.003 |0.004 |0.006 |
-| ERMB       | macrolide       | RGI     | phage/plasmid |0.002 |0.003 |0.004 |
-| SUL3       | sulfonamide     | SARG    | plasmid       |0.001 |0.003 |0.005 |
-
-**note**: `phage/plasmid` means ARGs both fpundto be co-located with phage- or plasmid-like contig in one sample (microbial community).
-`plasmid` means only found to be co-located with plasmid-like contig. `Unknown` means not to be found co-located with any MGEs, but not representing it is not co-located with any MGEs, probably due to the accuracy and recall of identification method.
-
----
-
-
-**🧮 Step 3:** Generate a risk score and corresponding valuse of each sample. In this step, you can acquire various parameters such as how many ARGs-carried contigs or phage- or plasmids-related contigs in your samples. Please run the command line below:
+**🧮 Step 2:** Generate a risk score and corresponding valuse of each sample. In this step, you can acquire various parameters such as how many ARGs-carried contigs or phage- or plasmids-related contigs in your samples. Please run the command line below:
 ```sh
 python ./compranking/baseInfoExtra_nContigs.py -i <input_dir> -p <project_name_prefix>
 ```
@@ -205,6 +171,48 @@ python ./compranking/baseInfoExtra_nContigs.py -i <input_dir> -p <project_name_p
     <!-- Add more rows as needed -->
   </table>
 </div>
+
+---
+
+## Additional functions
+## 🔍 Quantification of genes
+**🧬 Step 1: Calculating scg and AGS** Before Step2 we, we need to generate average geneome equivalents (AGS) and single copy genes (scg) files.
+
+❗Note: We recomend use per genome equivalents (AGS) or per cell copy (scg) as normalization bases to quantification genes and do cross-sample comparison. Details please refer to our article and supporting information:
+
+Luo, G., et al. (2025). Determining Antimicrobial Resistance in the Plastisphere: Lower Risks of Nonbiodegradable vs Higher Risks of Biodegradable Microplastics.
+*Environmental Science & Technology*.
+https://doi.org/10.1021/acs.est.5c00246
+
+To generate AGS files, following the command lines below:
+```sh
+cd $PATH_TO_CompRanking
+vi $PATH_TO_CompRanking/scripts/AGS.sh #change your input_dir in the workdir
+bash $PATH_TO_CompRanking/scripts/AGS.sh
+```
+---
+
+**📈 Step 2:** After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
+```sh
+python ./compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py 
+        -i <input_dir> 
+        -p <project_prefix> 
+        -n AGS
+        -t 16
+        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_16s.py
+```
+The output demo is like below:
+
+| ARG_name | Class   | Database | MGE_type |Sample_1 |Sample_2 |Sample_3 |
+|----------|---------|----------|----------|---------|---------|---------|       
+| AAC(2')-I  | aminoglycoside  | DeepARG | Unknown       |0.003 |0.004 |0.006 |
+| ERMB       | macrolide       | RGI     | phage/plasmid |0.002 |0.003 |0.004 |
+| SUL3       | sulfonamide     | SARG    | plasmid       |0.001 |0.003 |0.005 |
+
+**note**: `phage/plasmid` means ARGs both fpundto be co-located with phage- or plasmid-like contig in one sample (microbial community).
+`plasmid` means only found to be co-located with plasmid-like contig. `Unknown` means not to be found co-located with any MGEs, but not representing it is not co-located with any MGEs, probably due to the accuracy and recall of identification method.
+
+---
 
 ## 📊  How to calculate each ARG class and their carriers counts
 
