@@ -126,7 +126,7 @@ def get_genome_len(input_AGS, prefix_list):
 
 def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
                 input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,genome_length,filebase):
+                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,input_indexFile2,genome_length,filebase):
     if normalization_base =="AGS":
         cell_suffix="Cell"
     elif normalization_base =="16S":
