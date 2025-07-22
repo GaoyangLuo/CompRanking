@@ -201,6 +201,14 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     index_dic={}
     for i in array_indexFile:
         index_dic.setdefault(str(i[1]),str(i[0]))
+    
+    #change orf ID to orf id
+    df_index2=pd.read_csv(input_indexFile2,sep="\t",header=None)
+    array_indexFile2=np.array(df_index2)
+    array_indexFile2=array_indexFile2.tolist()
+    index_dic2={}
+    for i in array_indexFile2:
+        index_dic2.setdefault(str(i[1]),str(i[0]))
         
     
     #load deeparg
@@ -271,9 +279,9 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     num_mapped_reads= mapped_reads
     for orf in Record_db_orf:
         find_db=''
-        contig_orf=index_dic[orf]
+        contig_orf=index_dic2[orf]
         print("The orf {0} corresponding contig number is {1}: ".format(
-            orf, index_dic[orf]))
+            orf, index_dic2[orf]))
         if Record_db_orf[orf]:
             find_db=Record_db_orf[orf]
             ARG_name=Record_ARG_name_orf[orf][0].split("/")[0]
@@ -385,9 +393,9 @@ def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length,
     TAXO_MGE={}
     RPKG_MGE_NAME={}
     for orf_MGE in DB_MobileOG_length_res:
-        contig_orf=index_dic[orf_MGE]
+        contig_orf=index_dic2[orf_MGE]
         print("The orf {0} corresponding contig number is {1}: ".format(
-            orf_MGE, index_dic[orf_MGE]))
+            orf_MGE, index_dic2[orf_MGE]))
         mapped_reads=rpkm_dic[contig_orf]
         if contig_orf in rpkm_dic:
             mapped_reads=rpkm_dic[contig_orf]
@@ -581,6 +589,9 @@ def Calculation(file_name_base):
         input_indexFile=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
                                     i+"_5M_contigs.fna2faa.index")
+        input_indexFile2=os.path.join(input_dir,project_prefix, #K123_1234_1 -> 1_1, orf_id -> orf ID
+                                "CompRanking_intermediate/preprocessing/5M_contigs", 
+                                    i+"_5M_contigs.fna2faa.orf2id.index")
     except:
         raise ValueError("Missing the output...")
     
@@ -622,6 +633,7 @@ def Calculation(file_name_base):
                                                 input_scg,
                                                 input_rpkm,
                                                 input_indexFile,
+                                                input_indexFile2,
                                                 genome_length_dic[i],
                                                 i)
         #output total relative abundance in a list    
@@ -656,7 +668,14 @@ def Calculation(file_name_base):
         for orf, values in RPKG_ARG_NAME.items():
             RPKG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" # 0ARG 1class 2abundance
         # Optionally, write to a file
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result","Abundance_orf_gene",i+"_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
+        output_dir_orf = os.path.join(input_dir, project_prefix, "CompRanking_result", "Abundance_orf_gene")
+        os.makedirs(output_dir_orf, exist_ok=True)
+        output_file_orf = os.path.join(output_dir_orf, i + "_Gene_Abundance_ORF_geneName_class_Cell(GE).txt")
+        # with open(os.path.join(input_dir,project_prefix,"CompRanking_result","Abundance_orf_gene",i+"_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
+        #     f.write(RPKG_ARG_NAME_tsv_data)
+        # with open(os.path.join(output_dir, i + "_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
+        #     f.write(RPKG_ARG_NAME_tsv_data)
+        with open(output_file_orf, "w") as f:
             f.write(RPKG_ARG_NAME_tsv_data)
         
         # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
@@ -665,11 +684,16 @@ def Calculation(file_name_base):
         for arg, values in RPKG_ARG_NAME_abundance.items():
             RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[3]}\t{values[1]}\n" # 0class 1abundance
         # Optionally, write the TSV data to a file
-        with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
+        output_file_gene = os.path.join(input_dir, project_prefix, "CompRanking_result", i + "_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt")
+        # with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
+        #     f.write(RPKG_ARG_NAME_abundance_tsv_data)
+        with open(output_file_gene, "w") as f:
             f.write(RPKG_ARG_NAME_abundance_tsv_data)
         
-    except:
-        raise ValueError("Write to summary abundacne file failed...")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise ValueError("Write to summary abundance file failed...") from e
     
     #check abu tmp files
     check_point_list=[]

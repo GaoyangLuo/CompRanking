@@ -196,6 +196,7 @@ else
         base=${i%%.gf*}
         sed -i '/^#/d' ${i}
         cut -f 1,9 ${i} | cut -d';' -f1 | sed 's/ID=//' | awk '{sub(/_[0-9]+$/, "", $1); print $1 "\t" $2}' > ${base}.index
+		cut -f1,9 ${i} | awk -F'\t' '{match($2, /ID=([^;]+)/, arr); print $1 "\t" arr[1]}' > ${base}.orf2id.index
     done
     touch checkdone/${PREFIX}.index_build2.done
 fi
