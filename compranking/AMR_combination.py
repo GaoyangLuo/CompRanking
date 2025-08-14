@@ -336,7 +336,7 @@ class AMRCombined():
         df_MobileOG_concat=df_MobileOG_concat.drop(["sub_id","mismat","gapOpens","qStart","qEnd","sStart","sEnd","eval","bit"],axis=1, inplace=False)  
         #load mobileOG structure
         # input_mobileOG_structure="/lomi_home/gaoyang/software/CompRanking/databases/MobileOG-db/MobileOG-db_structure.tsv"
-        input_mobileOG_structure=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"databases/MobileOG-db_structure.tsv")
+        input_mobileOG_structure=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"databases/MobileOG-db/MobileOG-db_structure.tsv")
         df_mobileOG_structure=pd.read_csv(input_mobileOG_structure, sep="\t", header=0) 
         #creat dic index of structure
         mobilOG_structure_dic={}
