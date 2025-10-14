@@ -11,14 +11,14 @@ PREFIX="CompRanking"
 THREADS=16
 # CONDA_BIN_PATH=~/miniconda/bin
 
-# 获取当前脚本所在目录的上一级目录
+# get the parent directory of the current script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# 读取 YAML 文件中的 conda bin 路径
+# read  conda bin path from test_yaml.yaml
 YAML_FILE="$PARENT_DIR/test_yaml.yaml"
 
-# 使用 Python 解析 YAML
+#  use Python read YAML
 CONDA_BIN_PATH=$(python3 -c "
 import yaml
 with open('$YAML_FILE', 'r') as f:
