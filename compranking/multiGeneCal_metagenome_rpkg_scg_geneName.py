@@ -63,7 +63,7 @@ if (options.threads is None):
 if (options.config_file is None):
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"test_yaml.yaml") #"../test_yaml.yaml" default config_file path
 if (options.database is None):
-    database = "/lomi_home/gaoyang/db/kraken2/202203"#default config_file path
+    database = "/g/data1b/mp96/JXT/db/kraken2db/minikraken2_v1_8GB"#default config_file path
 if (options.normalization_base is None):
     normalization_base = "AGS"
 if (options.output_dir is None):
@@ -124,402 +124,383 @@ def get_genome_len(input_AGS, prefix_list):
                                 print("The Average Genome Length of file {} is {}".format(prefix_list[index],genome_length ))
     return genome_length_dic  
 
-def RB_gene_sum(DB_deepARG_length,DB_SARG_length, DB_MobileOG_length, 
-                input_AMR_sum,input_kk2,input_deeparg_sure,
-                input_rgi,input_SARG,input_scg,input_rpkm,input_indexFile,input_indexFile2,genome_length,filebase):
-    if normalization_base =="AGS":
-        cell_suffix="Cell"
-    elif normalization_base =="16S":
-        cell_suffix="16S"   
-    #load final output
-    df_AMR_sum=pd.read_csv(input_AMR_sum,sep="\t",header=0)
-    df_AMR_hit=df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
-    df_AMR_hit1=df_AMR_hit[["ORF_ID","ARG_prediction","ARG_class","Database","CompRanking_MGE_prediction"]]
-    df_AMR_hit1["db_final"]=df_AMR_hit1["Database"].str.split("/", expand=True)[0]
+
+###update
+
+def RB_gene_sum(DB_deepARG_length, DB_SARG_length, DB_MobileOG_length, 
+                input_AMR_sum, input_kk2, input_deeparg_sure,
+                input_rgi, input_SARG, input_scg, input_rpkm, input_indexFile, input_indexFile2, genome_length, filebase, normalization_base="AGS"):
     
-    #record hit database and orf_id
-    Record_db_orf={}
-    Record_ARG_name_orf={}
+    if normalization_base == "AGS":
+        cell_suffix = "Cell"
+    elif normalization_base == "16S":
+        cell_suffix = "16S"   
+    else:
+        cell_suffix = "Unknown"
+    
+    # ==========================================
+    # 1. Load AMR results
+    # ==========================================
+    # print(f"Loading AMR file: {input_AMR_sum}")
+    df_AMR_sum = pd.read_csv(input_AMR_sum, sep="\t", header=0)
+
+    # Ensure ORF_ID is a string and strip potential whitespace
+    df_AMR_sum["ORF_ID"] = df_AMR_sum["ORF_ID"].astype(str).str.strip()
+
+    df_AMR_hit = df_AMR_sum[df_AMR_sum.ARG_prediction != "-"]
+    df_AMR_hit1 = df_AMR_hit[["ORF_ID", "ARG_prediction", "ARG_class", "Database", "CompRanking_MGE_prediction"]].copy()
+    df_AMR_hit1["db_final"] = df_AMR_hit1["Database"].str.split("/", expand=True)[0]
+
+    Record_db_orf = {}
+    Record_ARG_name_orf = {}
     for i, name in df_AMR_hit1.iterrows():
-        Record_db_orf.setdefault(str(name["ORF_ID"]), str(name["db_final"]))
-        Record_ARG_name_orf.setdefault(str(name["ORF_ID"]), [str(name["ARG_prediction"]), str(name["ARG_class"]),str(name["CompRanking_MGE_prediction"])])
-    #Load normalization base 16s or AGS
-    #load kk2
-    kraken=input_kk2
-    scg=input_scg
-    copy_16S = 1
+        # Force conversion to string
+        orf_key = str(name["ORF_ID"])
+        Record_db_orf.setdefault(orf_key, str(name["db_final"]))
+        Record_ARG_name_orf.setdefault(
+            orf_key,
+            [str(name["ARG_prediction"]), str(name["ARG_class"]), str(name["CompRanking_MGE_prediction"])]
+        )
+
+    # ==========================================
+    # 2. Set gene_length
+    # ==========================================
     if normalization_base == "AGS":
         gene_length = genome_length
     else:
         gene_length = 1550
 
-    #metagenomes_kk2_16s_bases
-    for lines in open(kraken,'r'):
-        content = lines.split('\n')[0].split('\t')
-        if 'Bacteria' in lines:
-            copy_16S = float(content[1]) # pair end
-            break
-    
-    #scg_bases
-    ##scg filter
-    df_scg=pd.read_csv(scg, sep="\t",header=None)
+    # ==========================================
+    # 3. Load RPKM file (key modification: ID cleanup)
+    # ==========================================
+    print(f"Loading RPKM file: {input_rpkm}")
+
+    try:
+        # Try to read the file; if the format is complex, the header setting may need adjustment
+        df_rpkm = pd.read_csv(input_rpkm, sep="\t", header=4)
+    except Exception as e:
+        print(f"Error reading RPKM file: {e}")
+        return None
+
+    array_rpkm = np.array(df_rpkm)
+
+    rpkm_dic = {}
+    rpkm_len_dic = {}
+
+    # --- Build RPKM dictionary ---
+    for i in array_rpkm:
+        # ID cleanup: take the first column, convert to string, and keep only the part before whitespace
+        raw_id = str(i[0])
+        orf_id = raw_id.split()[0].strip()
+
+        try:
+            length = float(i[1])  # Assume column 2 is length
+            reads = float(i[4])   # Assume column 5 is read count
+        except (ValueError, IndexError):
+            continue
+
+        rpkm_dic[orf_id] = reads
+        rpkm_len_dic[orf_id] = length
+
+    # ==========================================
+    # 4. Load Index file (for ID conversion)
+    # ==========================================
+    print(f"Loading Index file: {input_indexFile2}")
+    df_index2 = pd.read_csv(input_indexFile2, sep="\t", header=None)
+    array_indexFile2 = np.array(df_index2)
+
+    index_dic2 = {}
+    for i in array_indexFile2:
+        # Assume column 1 is the standard ID used in RPKM, and column 2 is the original ID used in AMR/SCG
+        orf_id_standard = str(i[0]).split()[0].strip()
+        raw_id_input = str(i[1]).strip()
+
+        # Build mapping: original ID -> standard ID
+        index_dic2.setdefault(raw_id_input, orf_id_standard)
+
+    # ==========================================
+    # 5. Process SCG and calculate AGS denominator (excluding zeros)
+    # ==========================================
+    df_scg = pd.read_csv(input_scg, sep="\t", header=None)
     df_scg.columns = ['id', 'sub_id', 'identity', 'alignLen', 'mismat', 'gapOpens', 'qStart', 'qEnd', 'sStart', 'sEnd', 'eval', 'bit']
 
-    ##filter out contigs identity under 30
+    # Filter high-quality alignments
     df_scg_iden50 = df_scg[df_scg.identity > 30]
-    ##filter out contigs length larger than 0
     df_scg_len = df_scg_iden50[df_scg_iden50.alignLen > 0]
-    ##filter out bit larger than 50
     df_scg_bit50 = df_scg_len[df_scg_len.bit > 50]
-    
-    num_scg=len(df_scg_bit50)
-    
-    #load rpkm alinged reads number and mapped reads number
-    # input_rpkm="/lomi_home/gaoyang/software/CompRanking/tmp_DSR/DSR/CompRanking_intermediate/preprocessing/5M_contigs/cov/S0PCL_clean.sorted_filtered.rpkm"
-    #get reads numbers
-    for lines in open(input_rpkm,'r'):
-        #content = lines.split('\n')[0].split('\t')
-        content = lines.split('\t')
-        if '#Mapped' in lines:
-            mapped_reads = float(content[1]) # pair end
-            break
-    #load rpkm table
-    df_rpkm=pd.read_csv(input_rpkm,sep="\t",header=4)
-    array=np.array(df_rpkm)
-    array=array.tolist()
-    #write aligned reads into dic
-    """
-    refer rpkm_dic by using contig_orf
-    """
-    rpkm_dic={}
-    for i in array:
-        rpkm_dic.setdefault(str(i[0]),float(i[4]))
-    #change orf id to contigs id
-    df_index=pd.read_csv(input_indexFile,sep="\t",header=None)
-    array_indexFile=np.array(df_index)
-    array_indexFile=array_indexFile.tolist()
-    index_dic={}
-    for i in array_indexFile:
-        index_dic.setdefault(str(i[1]),str(i[0]))
-    
-    #change orf ID to orf id
-    df_index2=pd.read_csv(input_indexFile2,sep="\t",header=None)
-    array_indexFile2=np.array(df_index2)
-    array_indexFile2=array_indexFile2.tolist()
-    index_dic2={}
-    for i in array_indexFile2:
-        index_dic2.setdefault(str(i[1]),str(i[0]))
-        
-    
-    #load deeparg
-    df_deeparg_sure=pd.read_csv(input_deeparg_sure, sep="\t")
-    #load rgi
-    df_RGI=pd.read_csv(input_rgi, sep="\t")
-    df_RGI=df_RGI.fillna("-")
-    #load sarg
-    df_SARG=pd.read_csv(input_SARG, sep="\t", header=0,index_col=0)
-    df_SARG["class"]=df_SARG["class"].str.upper()
-    df_SARG.columns=["ORF","query","class","Phenotype","ARG_rank"]
 
-    #get each ARG output dic
-    deepARG_output_dic={}
-    deepARG_output_name_dic={}
-    SARG_output_dic={}
-    SARG_output_name_dic={}
+    scg_depths = []
+    unique_scg_ids = df_scg_bit50['id'].unique()
+
+    print(f"Processing {len(unique_scg_ids)} unique SCG hits...")
+
+    ignored_zeros = 0  # Counter: record how many entries were excluded because they were 0
+
+    for scg_id in unique_scg_ids:
+        # Clean ID
+        scg_id_str = str(scg_id).split()[0].strip()
+
+        # ID mapping conversion
+        if scg_id_str in index_dic2:
+            target_orf_id = index_dic2[scg_id_str]
+        else:
+            target_orf_id = scg_id_str
+
+        # Get value
+        if target_orf_id in rpkm_dic:
+            val = rpkm_dic[target_orf_id]
+
+            # Remove RPKM values equal to 0
+            # Only detected SCGs are used to calculate average depth
+            if val > 0:
+                # [update] use RPKM directly, not divided by length
+                depth = val
+                scg_depths.append(depth)
+            else:
+                ignored_zeros += 1
+
+    print(f"Found {len(scg_depths)} valid SCGs with non-zero RPKM.")
+    print(f"Ignored {ignored_zeros} SCGs with 0 RPKM.")
+
+    if len(scg_depths) > 0:
+        # Calculate average value
+        num_scg = sum(scg_depths) / len(scg_depths)
+        print(f"Calculated AGS factor (avg SCG RPKM): {num_scg}")
+
+        # Sanity check
+        if num_scg < 1.0:
+            print("Warning: AGS factor is still < 1.0. This suggests very low sequencing depth.")
+    else:
+        # If all SCGs are 0, the sample may contain no bacteria, or sequencing depth may be extremely low
+        num_scg = 1
+        print("Warning: No non-zero SCGs found! Setting num_scg to 1 to avoid division by zero.")
+
+    # ==========================================
+    # 6. loading AMR results (DeepARG, RGI, SARG)
+    # ==========================================
+    df_deeparg_sure = pd.read_csv(input_deeparg_sure, sep="\t")
+    df_RGI = pd.read_csv(input_rgi, sep="\t")
+    df_RGI = df_RGI.fillna("-")
+    df_SARG = pd.read_csv(input_SARG, sep="\t", header=0, index_col=0)
+    df_SARG["class"] = df_SARG["class"].str.upper()
+    df_SARG.columns = ["ORF", "query", "class", "Phenotype", "ARG_rank"]
+
+    deepARG_output_dic = {}
+    SARG_output_dic = {}
     for i, name in df_deeparg_sure.iterrows():
         deepARG_output_dic.setdefault(str(name["read_id"]), str(name["best-hit"].split("|")[0]))
-        deepARG_output_name_dic.setdefault(str(name["read_id"]), str(name["#ARG"]))
     for i, name in df_SARG.iterrows():
         SARG_output_dic.setdefault(str(name["ORF"]), str(name["query"]))
-        SARG_output_name_dic.setdefault(str(name["ORF"]), str(name["Phenotype"]))
 
-    #generate DB_xxx_length_res
-    DB_deepARG_length_res={}
-    DB_SARG_length_res={}
-    DB_CARD_length_res={}
-    RGI_output_name_dic={}
-    #deeparg_output_ARG_cal
+    DB_deepARG_length_res = {}
+    DB_SARG_length_res = {}
+    DB_CARD_length_res = {}
+    
+    # fill length dic
     for i in deepARG_output_dic:
-        DB_deepARG_length_res.setdefault(i,DB_deepARG_length[deepARG_output_dic[i]])
-    #SARG_output_ARG_cal
-    for i in SARG_output_dic:
-        DB_SARG_length_res.setdefault(i,DB_SARG_length[SARG_output_dic[i]])
-    #RGI_output_ARG_cal
-    for i, name in df_RGI.iterrows():
-        DB_CARD_length_res.setdefault(str(name["ORF_ID"]), len(str(name["CARD_Protein_Sequence"])))
-        RGI_output_name_dic.setdefault(str(name["ORF_ID"]),str(name["Best_Hit_ARO"]))
-    
-    #cal ARGs relative abundance 16S
-    #cal ARGs relative abundance RPKM
-    #RPKM = numReads / ( geneLength/1000 * totalNumReads/1,000,000 )
-    """
-    Normalization for comparing gene coverage values. 
-    RPKM corrects differences in both: sample sequencing depth and gene length.
-    RPKM is introduced in
-    http://www.ncbi.nlm.nih.gov/pubmed/18516045
-    
-    Here, we use kilo base, RPKK, defined as follows:
-    
-    RPKG - reads per kilo base per average genome size
-    RPKG = numReads / ( geneLength / 1,000 * totalNumReads / genome equivalents )
-    cell copy = (mapped_reads / DB_deepARG_length_res[orf]) / num_scg
+        if deepARG_output_dic[i] in DB_deepARG_length:
+            DB_deepARG_length_res.setdefault(i, DB_deepARG_length[deepARG_output_dic[i]])
+        else:
+            DB_deepARG_length_res.setdefault(i, 1000)
 
-        numReads                - number of reads mapped to a gene sequence
-        geneLength              - length of the gene sequence
-        totalNumReads           - total number of mapped reads of a sample
-        genome equivalents      - sample bases / average genome size
-        num_scg                 - abundance of single copy gene
-    """
-    abundance_arg_16S=0
-    abundance_arg_RPKM=0
-    RPKM_ARG={}
-    TAXO_ARG={}
-    RPKG_ARG_NAME={}
-    num_contigs=len(df_AMR_sum) #totalNumReads
-    num_mapped_reads= mapped_reads
+    for i in SARG_output_dic:
+        if SARG_output_dic[i] in DB_SARG_length:
+            DB_SARG_length_res.setdefault(i, DB_SARG_length[SARG_output_dic[i]])
+        else:
+            DB_SARG_length_res.setdefault(i, 1000)
+
+    for i, name in df_RGI.iterrows():
+        rgi_orf = str(name["ORF_ID"]).split()[0].strip()
+        DB_CARD_length_res.setdefault(rgi_orf, len(str(name["CARD_Protein_Sequence"])))
+    
+    # ==========================================
+    # 7. cal ARG abundance
+    # ==========================================
+    abundance_arg_16S = 0
+    abundance_arg_RPKM = 0
+    RPKM_ARG = {}
+    TAXO_ARG = {}
+    RPKG_ARG_NAME = {}
+    SCG_ARG_NAME = {} # update, used to restore ORF results of Cell Copy (AGS)
+    
     for orf in Record_db_orf:
-        find_db=''
-        contig_orf=index_dic2[orf]
-        print("The orf {0} corresponding contig number is {1}: ".format(
-            orf, index_dic2[orf]))
+        find_db = ''
         if Record_db_orf[orf]:
-            find_db=Record_db_orf[orf]
-            ARG_name=Record_ARG_name_orf[orf][0].split("/")[0]
-            ARG_class=Record_ARG_name_orf[orf][1].split("/")[0]
-            MGE_type=Record_ARG_name_orf[orf][2]
-            if ARG_name:
-                print(ARG_name)
-            else:
-                print("No ARG name")
-            if ARG_class:
-                print(ARG_class)
-            else:
-                print("No ARG class")
+            find_db = Record_db_orf[orf]
+            ARG_name = Record_ARG_name_orf[orf][0].split("/")[0]
+            ARG_class = Record_ARG_name_orf[orf][1].split("/")[0]
+            MGE_type = Record_ARG_name_orf[orf][2]
             
-            if contig_orf in rpkm_dic:
-                mapped_reads=rpkm_dic[contig_orf]
+            if orf in index_dic2:
+                target_arg_id = index_dic2[orf]
             else:
-                mapped_reads=1
-            if find_db=="DeepARG":
-                abundance_arg_16S += (mapped_reads / DB_deepARG_length_res[orf]) / num_scg #scg
-                abundance_arg_RPKM += mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_deepARG_length_res[orf]) / num_scg)) #scg
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length))) #rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_deepARG_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
-            elif find_db=="RGI":
-                abundance_arg_16S += (mapped_reads / DB_CARD_length_res[orf])/ num_scg #scg
-                abundance_arg_RPKM  += mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_CARD_length_res[orf])/ num_scg)) #scg
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_CARD_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
-            elif find_db=="SARG":
-                abundance_arg_16S += (mapped_reads / DB_SARG_length_res[orf]) / num_scg #scg
-                abundance_arg_RPKM  += mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)#rpkg
-                TAXO_ARG.setdefault(str(orf), float((mapped_reads / DB_SARG_length_res[orf]) / num_scg)) #scg
-                RPKM_ARG.setdefault(str(orf), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)))#rpkg
-                RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(mapped_reads / (DB_SARG_length_res[orf] / 1000 * gene_length)), str(find_db), str(MGE_type)]) #rpkg
+                target_arg_id = orf 
+            
+            if target_arg_id in rpkm_dic:
+                current_mapped_reads = rpkm_dic[target_arg_id]
             else:
-                continue
-    # print(abundance_arg_16S, abundance_arg_RPKM)   
+                current_mapped_reads = 0 
+            
+            arg_len = 1000
+            if find_db == "DeepARG" and orf in DB_deepARG_length_res:
+                arg_len = DB_deepARG_length_res[orf]
+            elif find_db == "RGI" and orf in DB_CARD_length_res:
+                arg_len = DB_CARD_length_res[orf]
+            elif find_db == "SARG" and orf in DB_SARG_length_res:
+                arg_len = DB_SARG_length_res[orf]
+            
+            # cal abundance
+            val_scg_norm = (current_mapped_reads / arg_len) / num_scg # Cell Copy
+            val_rpkg = current_mapped_reads / (arg_len / 1000 * gene_length) # RPKM/RPKG
+            
+            abundance_arg_16S += val_scg_norm
+            abundance_arg_RPKM += val_rpkg
+            
+            TAXO_ARG.setdefault(str(orf), float(val_scg_norm))
+            RPKM_ARG.setdefault(str(orf), float(val_rpkg))
+            
+            # save RPKM results
+            RPKG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(val_rpkg), str(find_db), str(MGE_type)])
+            
+            # [update] add Cell Copy (AGS) results
+            # same structure, change val_rpkg to val_scg_norm
+            SCG_ARG_NAME.setdefault(str(orf), [str(ARG_name), str(ARG_class), float(val_scg_norm), str(find_db), str(MGE_type)])
+
     print(f"The relative abundance of ARG by {cell_suffix}(AGS) is: {abundance_arg_16S}")
     print("The relative abundance of ARG by RPKG is: {}".format(abundance_arg_RPKM))
     
-    #Transfer RPKG_ARG_NAME to {ARG: [class, abundance]}
-    # Initialize new dictionary
+    # ==========================================
+    # 8. Summary ARG Subtype
+    # ==========================================
     RPKG_ARG_NAME_abundance = {}
-
-    # Traverse the original dictionary
     for orf, values in RPKG_ARG_NAME.items():
         arg_name = values[0]
         arg_class = values[1]
         value = values[2]
-        find_db = values[3]
-        mge_type = values[4]
+        find_db_val = values[3]
+        mge_type_val = values[4]
         
         if arg_name in RPKG_ARG_NAME_abundance:
-            # If ARG already exists, accumulate the value
             RPKG_ARG_NAME_abundance[arg_name][1] += value
         else:
-            # If ARG does not exist, create a new entry
-            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value, find_db, mge_type]
+            RPKG_ARG_NAME_abundance[arg_name] = [arg_class, value, find_db_val, mge_type_val]
     
-    #cal ARG subtype
-    """
-    subtypes including:
-        All, multidrug, beta-lactam, aminoglycoside,
-        tetracycline, sulfonamide, MLS, bacitracin,
-        chloramphenicol, quinlone, fosmidomycin, trimethoprim,
-        kasugamycin, vancomycin, rifamycin, fosfomycin, belomycin, unclassified...
-    """
-    abundance_ARG_subtype_16S={}
-    abundance_ARG_subtype_RPKM={}
+    abundance_ARG_subtype_16S = {}
+    abundance_ARG_subtype_RPKM = {}
     for i, name in df_AMR_hit.iterrows():
-        tmp_16s=0
-        tmp_rpkm=0
-        #16s
-        if abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")):
-            tmp_16s=abundance_ARG_subtype_16S.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + TAXO_ARG[name["ORF_ID"]]
-            abundance_ARG_subtype_16S[name["ARG_class"].split("/")[0].split(":")[0].strip(";")] = tmp_16s
+        orf_id_key = str(name["ORF_ID"]).strip()
+        if orf_id_key not in TAXO_ARG:
+            continue
+        
+        subtype_name = name["ARG_class"].split("/")[0].split(":")[0].strip(";")
+        
+        if subtype_name in abundance_ARG_subtype_16S:
+            abundance_ARG_subtype_16S[subtype_name] += TAXO_ARG[orf_id_key]
         else:
-            abundance_ARG_subtype_16S.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(TAXO_ARG[name["ORF_ID"]]))
-        #rpkm
-        if abundance_ARG_subtype_RPKM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")):
-            tmp_rpkm=abundance_ARG_subtype_RPKM.get(name["ARG_class"].split("/")[0].split(":")[0].strip(";")) + RPKM_ARG[name["ORF_ID"]]
-            abundance_ARG_subtype_RPKM[name["ARG_class"].split("/")[0].split(":")[0].strip(";")] = tmp_rpkm    
+            abundance_ARG_subtype_16S[subtype_name] = float(TAXO_ARG[orf_id_key])
+            
+        if subtype_name in abundance_ARG_subtype_RPKM:
+            abundance_ARG_subtype_RPKM[subtype_name] += RPKM_ARG[orf_id_key]
         else:
-            abundance_ARG_subtype_RPKM.setdefault(str(name["ARG_class"].split("/")[0].split(":")[0].strip(";")), float(RPKM_ARG[name["ORF_ID"]]))   
-    
-    
-    
-    
-    ###################### MGE relative abundance calculation####################
-    #get DB_mobile_OG_len_dic
-    df_mobileOG_structure=pd.read_csv(input_mobileOG_structure,sep="\t", header=0)
-    #get MGE reference length
-    DB_MobileOG_length={}
-    for i, name in df_mobileOG_structure.iterrows():
-        DB_MobileOG_length.setdefault(str(name["mobileOG_ID"]), name["length"])
-    #load MGE result
-    df_MGE_hit=df_AMR_sum[df_AMR_sum.mobileOG_ID != "-"]
-    #generate DB_MobileOG_length_res
-    DB_MobileOG_length_res={}
+            abundance_ARG_subtype_RPKM[subtype_name] = float(RPKM_ARG[orf_id_key])
+
+    # ==========================================
+    # 9. MGE cal
+    # ==========================================
+    try:
+        pass 
+    except:
+        pass
+
+    df_MGE_hit = df_AMR_sum[df_AMR_sum.mobileOG_ID != "-"]
+    DB_MobileOG_length_res = {}
     for i, name in df_MGE_hit.iterrows():
-        DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]),DB_MobileOG_length[name["mobileOG_ID"]])
-    
-    #cal MGEs relative abundance 
-    abundance_MGE_16S=0
-    abundance_MGE_RPKM=0
-    RPKM_MGE={}
-    TAXO_MGE={}
-    RPKG_MGE_NAME={}
-    for orf_MGE in DB_MobileOG_length_res:
-        contig_orf=index_dic2[orf_MGE]
-        print("The orf {0} corresponding contig number is {1}: ".format(
-            orf_MGE, index_dic2[orf_MGE]))
-        mapped_reads=rpkm_dic[contig_orf]
-        if contig_orf in rpkm_dic:
-            mapped_reads=rpkm_dic[contig_orf]
+        if name["mobileOG_ID"] in DB_MobileOG_length:
+            DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]), DB_MobileOG_length[name["mobileOG_ID"]])
         else:
-            mapped_reads=1
-        abundance_MGE_16S += (mapped_reads / DB_MobileOG_length_res[orf_MGE]) / num_scg
-        abundance_MGE_RPKM += mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * gene_length)#rpkg
-        TAXO_MGE.setdefault(str(orf_MGE),float((mapped_reads / DB_MobileOG_length_res[orf_MGE]) / num_scg))
-        RPKM_MGE.setdefault(str(orf_MGE),float(mapped_reads / (DB_MobileOG_length_res[orf_MGE] / 1000 * gene_length)))#rpkg
+            DB_MobileOG_length_res.setdefault(str(name["ORF_ID"]), 1000)
+    
+    abundance_MGE_16S = 0
+    abundance_MGE_RPKM = 0
+    RPKM_MGE = {}
+    TAXO_MGE = {}
+    
+    for orf_MGE in DB_MobileOG_length_res:
+        if orf_MGE in index_dic2:
+            target_mge_id = index_dic2[orf_MGE]
+        else:
+            target_mge_id = orf_MGE
+            
+        if target_mge_id in rpkm_dic:
+            current_mapped_reads = rpkm_dic[target_mge_id]
+        else:
+            current_mapped_reads = 0
+            
+        mge_len = DB_MobileOG_length_res[orf_MGE]
+        
+        val_scg_norm = (current_mapped_reads / mge_len) / num_scg
+        val_rpkg = current_mapped_reads / (mge_len / 1000 * gene_length)
+        
+        abundance_MGE_16S += val_scg_norm
+        abundance_MGE_RPKM += val_rpkg
+        TAXO_MGE.setdefault(str(orf_MGE), float(val_scg_norm))
+        RPKM_MGE.setdefault(str(orf_MGE), float(val_rpkg))
     
     print(f"The relative abundance of MGE by {cell_suffix} is: {abundance_MGE_16S}")
     print("The relative abundance of MGE by RPKM is: {}".format(abundance_MGE_RPKM))
-    print(TAXO_MGE)
-    print(RPKM_MGE)
-    #cal MGE subtype
+    
+    # ==========================================
+    # 10. MGE Subtype
+    # ==========================================
     Insertion_Sequences_db=["ISFinder"]
     Integrative_Elements_db=["AICE","ICE","CIME","IME","immedb"]
     Plasmids_db=["COMPASS","Plasmid RefSeq"]
     Bacteriophages_db=["pVOG","GPD"]
     Multiple_db=["ACLAME", "Multiple"]
-    abundance_MGE_subtype_16S={}
-    abundance_MGE_subtype_RPKM={}
-    for i,name in df_MGE_hit.iterrows():
-        tmp_16s=0
-        tmp_rpkm=0
-        #record phage into dic
-        if name["MGE_Database"] in Bacteriophages_db:
-            #16s
-            if abundance_MGE_subtype_16S.get("phage"):
-                tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_16S["phage"] = tmp_16s                                 
-            else:
-                abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
-            #rpkm   
-            if abundance_MGE_subtype_RPKM.get("phage"):
-                tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
-            else:
-                abundance_MGE_subtype_RPKM.setdefault(str("phage"), float(RPKM_MGE[name["ORF_ID"]]))
-        
-        #record plasmid into dic
-        elif name["MGE_Database"] in Plasmids_db:
-            #16s
-            if abundance_MGE_subtype_16S.get("plasmid"):
-                tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_16S["plasmid"] = tmp_16s
-            else:
-                abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))
-            #rpkm   
-            if abundance_MGE_subtype_RPKM.get("plasmid"):
-                tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
-            else:
-                abundance_MGE_subtype_RPKM.setdefault(str("plasmid"), float(RPKM_MGE[name["ORF_ID"]]))
-        
-        #record Insertion_Sequences into dic
-        elif name["MGE_Database"] in Insertion_Sequences_db:
-            #16s
-            if abundance_MGE_subtype_16S.get("Insertion_Sequences"):
-                tmp_16s = abundance_MGE_subtype_16S.get("Insertion_Sequences") + TAXO_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_16S["Insertion_Sequences"] = tmp_16s
-            else:
-                abundance_MGE_subtype_16S.setdefault(str("Insertion_Sequences"), float(TAXO_MGE[name["ORF_ID"]]))
-            #rpkm   
-            if abundance_MGE_subtype_RPKM.get("Insertion_Sequences"):
-                tmp_rpkm = abundance_MGE_subtype_RPKM.get("Insertion_Sequences") + RPKM_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_RPKM["Insertion_Sequences"] = tmp_rpkm  
-            else:
-                abundance_MGE_subtype_RPKM.setdefault(str("Insertion_Sequences"), float(RPKM_MGE[name["ORF_ID"]]))
-        
-        #record Integrative_Elements into dic
-        elif name["MGE_Database"] in Integrative_Elements_db:
-            #16s
-            if abundance_MGE_subtype_16S.get("Integrative_Elements"):
-                tmp_16s = abundance_MGE_subtype_16S.get("Integrative_Elements") + TAXO_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_16S["Integrative_Elements"] = tmp_16s
-            else:
-                #16s
-                abundance_MGE_subtype_16S.setdefault(str("Integrative_Elements"), float(TAXO_MGE[name["ORF_ID"]]))
-            #rpkm   
-            if abundance_MGE_subtype_RPKM.get("Integrative_Elements"):
-                tmp_rpkm = abundance_MGE_subtype_RPKM.get("Integrative_Elements") + RPKM_MGE[name["ORF_ID"]]
-                abundance_MGE_subtype_RPKM["Integrative_Elements"] = tmp_rpkm
-            else:
-                abundance_MGE_subtype_RPKM.setdefault(str("Integrative_Elements"), float(RPKM_MGE[name["ORF_ID"]]))
-                
-        #record phage and plasmid from ACLAME into dic
-        elif name["MGE_Database"] in Multiple_db:
-            if name["Taxonomy"] == "phage":
-                #16s
-                if abundance_MGE_subtype_16S.get("phage"):
-                    tmp_16s = abundance_MGE_subtype_16S.get("phage") + TAXO_MGE[name["ORF_ID"]]
-                    abundance_MGE_subtype_16S["phage"] = tmp_16s
-                else:
-                    abundance_MGE_subtype_16S.setdefault(str("phage"), float(TAXO_MGE[name["ORF_ID"]]))
-                #rpkm   
-                if abundance_MGE_subtype_RPKM.get("phage"):
-                    tmp_rpkm = abundance_MGE_subtype_RPKM.get("phage") + RPKM_MGE[name["ORF_ID"]]
-                    abundance_MGE_subtype_RPKM["phage"] = tmp_rpkm  
-                else:
-                    abundance_MGE_subtype_RPKM.setdefault(str("phage"), float(RPKM_MGE[name["ORF_ID"]]))
-            else: #name["Taxonomy"] != "phage"
-                #16s
-                if abundance_MGE_subtype_16S.get("plasmid"):
-                    tmp_16s = abundance_MGE_subtype_16S.get("plasmid") + TAXO_MGE[name["ORF_ID"]]
-                    abundance_MGE_subtype_16S["plasmid"] = tmp_16s
-                else:
-                    abundance_MGE_subtype_16S.setdefault(str("plasmid"), float(TAXO_MGE[name["ORF_ID"]]))    
-                #rpkm  
-                if abundance_MGE_subtype_RPKM.get("plasmid"):
-                    tmp_rpkm = abundance_MGE_subtype_RPKM.get("plasmid") + RPKM_MGE[name["ORF_ID"]]
-                    abundance_MGE_subtype_RPKM["plasmid"] = tmp_rpkm  
-                else:
-                    abundance_MGE_subtype_RPKM.setdefault(str("plasmid"), float(RPKM_MGE[name["ORF_ID"]]))
-    print(abundance_MGE_subtype_16S, abundance_MGE_subtype_RPKM)
+
+    abundance_MGE_subtype_16S = {}
+    abundance_MGE_subtype_RPKM = {}
     
-    ###################combine it using a list##########################
-    result=[abundance_arg_16S,abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
+    for i, name in df_MGE_hit.iterrows():
+        if name["ORF_ID"] not in TAXO_MGE:
+            continue
+        
+        mge_db = name["MGE_Database"]
+        subtype_key = ""
+        
+        if mge_db in Bacteriophages_db:
+            subtype_key = "phage"
+        elif mge_db in Plasmids_db:
+            subtype_key = "plasmid"
+        elif mge_db in Insertion_Sequences_db:
+            subtype_key = "Insertion_Sequences"
+        elif mge_db in Integrative_Elements_db:
+            subtype_key = "Integrative_Elements"
+        elif mge_db in Multiple_db:
+            if name["Taxonomy"] == "phage":
+                subtype_key = "phage"
+            else:
+                subtype_key = "plasmid"
+        
+        if subtype_key:
+            if subtype_key in abundance_MGE_subtype_16S:
+                abundance_MGE_subtype_16S[subtype_key] += TAXO_MGE[name["ORF_ID"]]
+            else:
+                abundance_MGE_subtype_16S[subtype_key] = float(TAXO_MGE[name["ORF_ID"]])
+            
+            if subtype_key in abundance_MGE_subtype_RPKM:
+                abundance_MGE_subtype_RPKM[subtype_key] += RPKM_MGE[name["ORF_ID"]]
+            else:
+                abundance_MGE_subtype_RPKM[subtype_key] = float(RPKM_MGE[name["ORF_ID"]])
+
+    result = [abundance_arg_16S, abundance_arg_RPKM, abundance_MGE_16S, abundance_MGE_RPKM]
     df_ARG_subtype_16S = pd.DataFrame(pd.Series(abundance_ARG_subtype_16S))
     df_ARG_subtype_RPKM = pd.DataFrame(pd.Series(abundance_ARG_subtype_RPKM))
     df_MGE_subtype_16S = pd.DataFrame(pd.Series(abundance_MGE_subtype_16S))
     df_MGE_subtype_RPKM = pd.DataFrame(pd.Series(abundance_MGE_subtype_RPKM))
     
-    return result, df_ARG_subtype_16S,df_ARG_subtype_RPKM, df_MGE_subtype_16S, df_MGE_subtype_RPKM, RPKG_ARG_NAME, RPKG_ARG_NAME_abundance
+    # update SCG_ARG_NAME
+    return result, df_ARG_subtype_16S, df_ARG_subtype_RPKM, df_MGE_subtype_16S, df_MGE_subtype_RPKM, RPKG_ARG_NAME, RPKG_ARG_NAME_abundance, SCG_ARG_NAME
 
 def kk2(file_name_base):
     #run kranken2
@@ -560,13 +541,13 @@ def Calculation(file_name_base):
         #load ARGs result and relative files
         input_rgi=os.path.join(input_dir,project_prefix,
                             "CompRanking_intermediate/AMR/RGI",
-                                    i+"_5M_contigs.RGI.out.txt")
+                                    i+"_5M_contigs.fna2faa.RGI.out.txt")
         input_SARG=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/AMR/ARGranking",
                                     i+"_SARGrank_Protein60_Result.tsv")
         input_deeparg_sure=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/AMR/DeepARG", 
-                                    i+"_5M_contigs_DeepARG.out.mapping.ARG")
+                                    i+"_5M_contigs.fna2faa_DeepARG.out.mapping.ARG")
         if normalization_base == "AGS":
             input_kk2=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs", 
@@ -582,7 +563,7 @@ def Calculation(file_name_base):
                                     "CompRanking_"+i+"_AMR_MOB_prediction.tsv")
         input_scg=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs/cov",
-                                    i+"_5M_contigs_scg_Protein_dimond.txt")
+                                    i+"_5M_contigs.fna2faa_scg_Protein_diamond.txt")
         input_rpkm=os.path.join(input_dir,project_prefix,
                                 "CompRanking_intermediate/preprocessing/5M_contigs/cov",
                                     i+"_5M_contigs_gene.rpkm")
@@ -622,20 +603,21 @@ def Calculation(file_name_base):
         df_MGE_subtype_16S, \
         df_MGE_subtype_RPKM, \
         RPKG_ARG_NAME, \
-        RPKG_ARG_NAME_abundance = RB_gene_sum(DB_deepARG_length,
-                                                DB_SARG_length, 
-                                                DB_MobileOG_length, 
-                                                input_AMR_sum,
-                                                input_kk2,
-                                                input_deeparg_sure,
-                                                input_rgi,
-                                                input_SARG,
-                                                input_scg,
-                                                input_rpkm,
-                                                input_indexFile,
-                                                input_indexFile2,
-                                                genome_length_dic[i],
-                                                i)
+        RPKG_ARG_NAME_abundance, \
+        SCG_ARG_NAME= RB_gene_sum(DB_deepARG_length,
+                                DB_SARG_length, 
+                                DB_MobileOG_length, 
+                                input_AMR_sum,
+                                input_kk2,
+                                input_deeparg_sure,
+                                input_rgi,
+                                input_SARG,
+                                input_scg,
+                                input_rpkm,
+                                input_indexFile,
+                                input_indexFile2,
+                                genome_length_dic[i],
+                                i)
         #output total relative abundance in a list    
         output_abundance="\t".join(map(str, result))
         #save output as tmp file
@@ -663,30 +645,37 @@ def Calculation(file_name_base):
         with open(os.path.join(input_dir,project_prefix,"CompRanking_result/Gene_Abundance_Sum_scg-rpkg.txt"), "a") as f:
             f.write("\n" + i + "\t" + output_abundance)
         
-        # Convert RPKG_ARG_NAME to {orf: [ARG, class, abundance]}
+    
+    # 1. save original RPKM/RPKG results
         RPKG_ARG_NAME_tsv_data = "orf\tARG_name\tARG_class\tvalue\n"  # Add header
         for orf, values in RPKG_ARG_NAME.items():
-            RPKG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" # 0ARG 1class 2abundance
-        # Optionally, write to a file
+            RPKG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n" 
+        
         output_dir_orf = os.path.join(input_dir, project_prefix, "CompRanking_result", "Abundance_orf_gene")
         os.makedirs(output_dir_orf, exist_ok=True)
-        output_file_orf = os.path.join(output_dir_orf, i + "_Gene_Abundance_ORF_geneName_class_Cell(GE).txt")
-        # with open(os.path.join(input_dir,project_prefix,"CompRanking_result","Abundance_orf_gene",i+"_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
-        #     f.write(RPKG_ARG_NAME_tsv_data)
-        # with open(os.path.join(output_dir, i + "_Gene_Abundance_ORF_geneName_class_Cell(GE).txt"), "w") as f:
-        #     f.write(RPKG_ARG_NAME_tsv_data)
+        output_file_orf = os.path.join(output_dir_orf, i + "_Gene_Abundance_ORF_geneName_class_RPKG.txt")
+        
         with open(output_file_orf, "w") as f:
             f.write(RPKG_ARG_NAME_tsv_data)
+            
+        # [update] add Cell Copy (AGS) results
+        # use same format，data sourced from SCG_ARG_NAME (value is val_scg_norm)
+        SCG_ARG_NAME_tsv_data = "orf\tARG_name\tARG_class\tvalue\n"
+        for orf, values in SCG_ARG_NAME.items():
+            SCG_ARG_NAME_tsv_data += f"{orf}\t{values[0]}\t{values[1]}\t{values[2]}\n"
+            
+        # 文件名加了 _SCG 区别
+        output_file_orf_scg = os.path.join(output_dir_orf, i + "_Gene_Abundance_ORF_geneName_class_SCG.txt")
         
-        # Convert RPKG_ARG_NAME_abundance to {ARG: [class, abundance]}
-        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tfind_db\tMGE_type\tValue\n" # Add header
-        # Traverse the new dictionary and append data to TSV string
+        with open(output_file_orf_scg, "w") as f:
+            f.write(SCG_ARG_NAME_tsv_data)
+        
+        # Save Gene Name Abundance
+        RPKG_ARG_NAME_abundance_tsv_data = "ARG_name\tClass\tfind_db\tMGE_type\tValue\n" 
         for arg, values in RPKG_ARG_NAME_abundance.items():
-            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[3]}\t{values[1]}\n" # 0class 1abundance
-        # Optionally, write the TSV data to a file
+            RPKG_ARG_NAME_abundance_tsv_data += f"{arg}\t{values[0]}\t{values[2]}\t{values[3]}\t{values[1]}\n" 
+        
         output_file_gene = os.path.join(input_dir, project_prefix, "CompRanking_result", i + "_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt")
-        # with open(os.path.join(input_dir,project_prefix,"CompRanking_result",i+"_Gene_Abundance_geneName_class_Cell(GE)_tmp.txt"), "w") as f:
-        #     f.write(RPKG_ARG_NAME_abundance_tsv_data)
         with open(output_file_gene, "w") as f:
             f.write(RPKG_ARG_NAME_abundance_tsv_data)
         
@@ -761,7 +750,7 @@ if __name__ == "__main__":
     # project_prefix="CompRanking"
     # database="/lomi_home/gaoyang/db/kraken2/202203"
     # threads="24"
-    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single_16S.sh")
+    kk2_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/kk2_run_single.sh")
     cov_rpkm_script=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"scripts/cov_rpkm_calculation.sh")
     file_abs_path=path.file_abs_path_list_generation(input_dir)
     file_name_base = path.file_base_acquire(file_abs_path)

@@ -200,3 +200,7 @@ test_data
 *yaml*
 generate_pbs.py
 run_1.sh
+tmp
+*old*
+*template*
+*yaml

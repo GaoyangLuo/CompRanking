@@ -4,35 +4,39 @@
 #PBS -l nodes=c001:ppn=32
 set -e
 set -m
-# default parameters
+
+# --- 参数设置 ---
 PREFIX="CompRanking"
 THREADS=16
-# CONDA_BIN_PATH=~/miniconda/bin
-# get the parent directory of the current script
+# local
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# read  conda bin path from test_yaml.yaml
+# --- Conda  ---
 YAML_FILE="$PARENT_DIR/test_yaml.yaml"
 
-#  use Python read YAML
-CONDA_BIN_PATH=$(python3 -c "
-import yaml
-with open('$YAML_FILE', 'r') as f:
-    data = yaml.safe_load(f)
-print(data['CompRanking']['abs_path_to_conda_bin'])
+# 
+if [ -f "$YAML_FILE" ]; then
+    CONDA_BIN_PATH=$(python3 -c "
+import yaml, sys
+try:
+    with open('$YAML_FILE', 'r') as f:
+        data = yaml.safe_load(f)
+    print(data['CompRanking']['abs_path_to_conda_bin'])
+except Exception as e:
+    sys.exit(1)
 ")
+else
+    echo "Error: YAML file not found at $YAML_FILE"
+    exit 1
+fi
 
-# Check if CONDA_BIN_PATH is empty
 if [[ -z "$CONDA_BIN_PATH" ]]; then
     echo "Error: Failed to get Conda bin path from $YAML_FILE"
     exit 1
 fi
 
-SCRIPT=$(readlink -f $0)
-SCRIPT_PATH=$(dirname ${SCRIPT})
-WORK_DIR=$(dirname ${SCRIPT_PATH})
-
+# 处理命令行参数
 while getopts "p:i:m:t:o:r" option; do
 	case "${option}" in
 		p) PREFIX=${OPTARG};;
@@ -44,88 +48,102 @@ while getopts "p:i:m:t:o:r" option; do
 	esac
 done
 
-#run cov
+# 激活环境
 source ${CONDA_BIN_PATH}/activate CompRanking_abundance_env
-#input=/lomi_home/gaoyang/microplastic_test/metacompare_data/2_assembly/5M/faa
+
+# 定义关键目录变量，方便后续调用
+INTERMEDIATE_DIR="${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs"
+COV_DIR="${INTERMEDIATE_DIR}/cov"
+
+# 检查是否已完成
 if [ -e checkdone/${PREFIX}.cov.done ]; then
 	echo "cov file existed..."
 else
-	#time start
 	STARTTIME=$(date +%s)
-	echo "[TIMESTAMP] $(date) Running cov..."	
-	#Running cov prediction
-    # if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa`" = "" ]; then 
-    #     echo "No fasta files"
-    #     ln -s ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    # else 
-    #     echo "clean old fasta record..."
-    #     rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
-    # fi
-
-    if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq`" = "" ]; then 
-        echo "No fastq files"
-        ln -s ${INPUT_DIR}/*fq ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    else 
-        echo "clean old fastq record..."
-        rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq
-        ln -s ${INPUT_DIR}/*fq ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    fi
-
-    if [ "`ls -A ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna`" = "" ]; then 
-        echo "No fna files"
-        ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    else 
-        echo "clean old fna record..."
-        rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
-        ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    fi
+	echo "[TIMESTAMP] $(date) Running cov..."
     
+    # 确保目标目录存在
+    mkdir -p "${COV_DIR}"
 
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
+    # --- 优化部分：灵活处理 fastq/fq/gz 链接 ---
+    echo "Updating symlinks in ${COV_DIR}..."
     
-    #ln fastq fasta
-    # ln -s ${INPUT_DIR}/*fq ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    # ln -s ${INPUT_DIR}/*fa ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
-    # ln -s ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/*fna ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov
+    # 1. 清理旧的 fastq/fna 链接 (防止混淆)
+    # 注意：这里只删除软链接，不影响源文件
+    find "${COV_DIR}" -type l -name "*.fq" -delete
+    find "${COV_DIR}" -type l -name "*.fq.gz" -delete
+    find "${COV_DIR}" -type l -name "*.fna" -delete
 
-    #write a for circle to run all the files in the cov dir
-	for i in ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
-    do
-    base=${i/.fna/}
-
-    #run bowtie2
-    bowtie2-build ${base}_5M_contigs.fna ${base}_5M_contigs.fna_bwt
-    bowtie2 --very-sensitive \
-            --no-unal \
-            -x ${base}_5M_contigs.fna_bwt \
-            -1 ${base}_1.fq -2 ${base}_2.fq \
-            -S ${base}.sam \
-            -p ${THREADS}
-
-    #run samtools
-    samtools view -bS ${base}.sam > ${base}.bam
-    samtools sort ${base}.bam -o ${base}.sorted.bam
-    
-    #run bamm
-    echo "[TIMESTAMP] $(date) Running bamm..."
-    bamm filter -b ${base}.sorted.bam -o ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov --percentage_id 0.95 --percentage_aln 0.95
-
-    #run bbmap
-    echo "[TIMESTAMP] $(date) Running bbmap..."
-    pileup.sh in=${base}.sorted_filtered.bam out=${base}_5M_contigs_gene.cov rpkm=${base}_5M_contigs_gene.rpkm overwrite=true
-
+    # 2. 链接新的 Fastq 文件 (支持 fq, fq.gz)
+    # 遍历源目录下的所有可能的后缀
+    for f in ${INPUT_DIR}/*.fq ${INPUT_DIR}/*.fq.gz; do
+        if [ -e "$f" ]; then
+            ln -s "$f" "${COV_DIR}/"
+        fi
     done
-	#finish Running cov prediction
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fna
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fq
-    # rm ${INPUT_DIR}/${PREFIX}/CompRanking_intermediate/preprocessing/5M_contigs/cov/*fa
+
+    # 3. 链接 fna 文件
+    for f in ${INTERMEDIATE_DIR}/*.fna; do
+        if [ -e "$f" ]; then
+            ln -s "$f" "${COV_DIR}/"
+        fi
+    done
+
+    # --- 循环处理 ---
+	for i in ${COV_DIR}/*fna
+    do
+        # 如果目录为空，glob可能会保留原字符串，做个检查
+        [ -e "$i" ] || continue
+
+        # 获取基础文件名 (包含路径)
+        base=${i/.contigs_5M_contigs.fna/}
+        
+        # --- 优化部分：动态检测双端测序文件的后缀 ---
+        # 优先检测 .fq.gz，然后检测 .fq
+        if [ -e "${base}_clean_1.fq.gz" ] && [ -e "${base}_clean_2.fq.gz" ]; then
+            R1="${base}_clean_1.fq.gz"
+            R2="${base}_clean_2.fq.gz"
+            echo "Detected compressed input: $R1"
+        elif [ -e "${base}_clean_1.fq" ] && [ -e "${base}_clean_2.fq" ]; then
+            R1="${base}_clean_1.fq"
+            R2="${base}_clean_2.fq"
+            echo "Detected plain input: $R1"
+        else
+            echo "Error: Could not find paired reads for ${base} (checked .fq and .fq.gz)"
+            continue # 跳过此样本
+        fi
+
+        # run bowtie2
+        # 注意：Bowtie2 会自动处理 .gz 文件，不需要额外参数
+        bowtie2-build ${i} ${i}_bwt
+        bowtie2 --very-sensitive \
+                --no-unal \
+                -x ${i}_bwt \
+                -1 ${R1} -2 ${R2} \
+                -S ${base}.sam \
+                -p ${THREADS}
+
+        # run samtools
+        samtools view -bS ${base}.sam > ${base}.bam
+        samtools sort ${base}.bam -o ${base}.sorted.bam
+        
+        # run bamm
+        echo "[TIMESTAMP] $(date) Running bamm..."
+        # 注意：bamm 需要 bam 文件，这里路径是对的
+        bamm filter -b ${base}.sorted.bam -o ${COV_DIR} --percentage_id 0.95 --percentage_aln 0.95
+
+        # run bbmap
+        echo "[TIMESTAMP] $(date) Running bbmap..."
+        pileup.sh in=${base}.sorted_filtered.bam out=${base}_5M_contigs_gene.cov rpkm=${base}_5M_contigs_gene.rpkm overwrite=true
+
+        # 清理中间大文件 (可选，建议取消注释以节省空间)
+        # rm ${base}.sam ${base}.bam
+    done
+
 	echo "[TIMESTAMP] $(date) Running cov... Done"
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running cov took $(($ENDTIME - $STARTTIME)) sec."
-	# mv ${INPUT_DIR}/*DeepARG.out* ${DeepARG_DIR}
+	
+    # 标记完成
 	# touch checkdone/${PREFIX}.cov.done
 fi
-
-##################################

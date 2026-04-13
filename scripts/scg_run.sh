@@ -61,7 +61,7 @@ else
 	#scg
     diamond blastp --query ${i} \
 	       		   --db ${WORK_DIR}/submodels/scg_alignment/v1_scg/scg.seq.dmnd \
-           		   --out ${base}_scg_Protein_dimond.txt \
+           		   --out ${base}_scg_Protein_diamond.txt \
                    --evalue 1e-10 \
                    --outfmt 6 \
                    --max-target-seqs 1 \
@@ -73,5 +73,5 @@ else
 	ENDTIME=$(date +%s)
 	echo "[TIMER] Running scg identification took $(($ENDTIME - $STARTTIME)) sec."
 	# touch checkdone/${PREFIX}.ARG_ranking.done
-	mv ${INPUT_DIR}/*_scg_Protein_dimond.txt ${COV_DIR}
+	mv ${INPUT_DIR}/*_scg_Protein_diamond.txt ${COV_DIR}
 fi
