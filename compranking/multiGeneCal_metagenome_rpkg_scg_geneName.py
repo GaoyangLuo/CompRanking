@@ -11,6 +11,7 @@
 #                                                                        -n <normalization_base> #AGS or scg
 #                                                                        -t <threads>
 #                                                                        -d <pth2KK2db>
+#                                                                        -k # Enable Kraken2
 #python compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py -i /lomi_home/gaoyang/software/CompRanking/tmp_DSR -n AGS -p DSR
 # required packages :Bio, pandas, os
 # notification: enjoy yourself
@@ -41,6 +42,8 @@ parser.add_option("-c", "--config_file", action = "store", type = "string", dest
                   help = "file contains basic configeration information, defult: test_yaml.yaml")           
 parser.add_option("-d", "--database", action = "store", type = "string", dest = "database",
 				  help = "The path to Kranken2 database")
+parser.add_option("-k", "--run_kk2", action = "store_true", dest = "run_kk2", default=False,
+                  help = "Enable Kraken2 taxonomy annotation (default: False)")
 # parser.add_option("-r", "--restart", action = "store", type = "string", dest = "restart",
 # 									default='1', help = "restart all the processs")
 
@@ -54,6 +57,7 @@ threads=options.threads
 normalization_base=options.normalization_base
 config_path=options.config_file
 database=options.database
+run_kk2=options.run_kk2
 output=os.path.join(input_dir,project_prefix,"CompRanking_result")
 #default parameters
 if (options.project_prefix is None):
@@ -781,34 +785,30 @@ if __name__ == "__main__":
                                         os.path.abspath(__file__))),
                                 "databases/MobileOG-db/MobileOG-db_structure.tsv")
     
-    #input_result
-    # input_AMR_sum="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_result/CompRanking_ERR1191817.contigs_AMR_prediction.tsv"
-    # input_kk2="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/preprocessing/5M_contigs/ERR1191817.contigs_report_kk2_mpaStyle.txt"
-    # input_deeparg_sure="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/DeepARG/ERR1191817.contigs_5M_contigs_DeepARG.out.mapping.ARG"
-    # input_rgi="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/RGI/ERR1191817.contigs_5M_contigs.RGI.out.txt"
-    # input_SARG="/lomi_home/gaoyang/software/CompRanking/test/CompRanking/CompRanking_intermediate/AMR/ARGranking/ERR1191817.contigs_SARGrank_Protein60_Result.tsv"
-    
-    #run kranken2
-    if normalization_base == "AGS":
-        for i in file_name_base:
-            if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
-                print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
-                continue
-            else:
-                print("KK2 mpaStyle output don't exist... {}".\
-                    format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
-                subprocess.call(["bash", kk2_script, 
-                    "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+    #run kranken2 (Only if -k / --run_kk2 is provided)
+    if run_kk2:
+        if normalization_base == "AGS":
+            for i in file_name_base:
+                if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"):
+                    print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
+                    continue
+                else:
+                    print("KK2 mpaStyle output don't exist... {}".\
+                        format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle.txt"))
+                    subprocess.call(["bash", kk2_script, 
+                        "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+        else:
+            for i in file_name_base:
+                if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"):
+                    print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
+                    continue
+                else:
+                    print("KK2 mpaStyle output don't exist... {}".\
+                        format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
+                    subprocess.call(["bash", kk2_script, 
+                        "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
     else:
-        for i in file_name_base:
-            if os.path.exists(os.path.join(input_dir, project_prefix,"CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"):
-                print("It seems that we have already done the {} KK2 taxonomy annotation...".format(i))
-                continue
-            else:
-                print("KK2 mpaStyle output don't exist... {}".\
-                    format(os.path.join(input_dir, project_prefix, "CompRanking_intermediate/preprocessing/5M_contigs")+"/"+i+"_report_kk2_mpaStyle_16S.txt"))
-                subprocess.call(["bash", kk2_script, 
-                    "-i", input_dir, "-t", threads, "-p", project_prefix, "-m", conda_path_str, "-d", database, "-n", i])
+        print("Skipping Kraken2 annotation as --run_kk2 was not specified.")
         
     #run cov_rpkm
     for i in file_name_base:
@@ -1002,6 +1002,3 @@ if __name__ == "__main__":
 
     
 #python Genecal.py -i /lomi_home/gaoyang/software/CompRanking/tmp_test -p DSR -t 20
-        
-        
-    

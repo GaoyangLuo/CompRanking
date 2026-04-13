@@ -176,32 +176,51 @@ python ./compranking/baseInfoExtra_nContigs.py -i <input_dir> -p <project_name_p
 
 ## Additional functions
 ## 🔍 Quantification of genes
-**🧬 Step 1: Calculating scg and AGS** Before Step2 we, we need to generate average geneome equivalents (AGS) and single copy genes (scg) files.
 
-❗Note: We recomend use per genome equivalents (AGS) or per cell copy (scg) as normalization bases to quantification genes and do cross-sample comparison. Details please refer to our article and supporting information:
+We provide integrated scripts to automatically calculate average genome equivalents (AGS), single-copy genes (SCG), and perform read mapping (Bowtie2 -> BAMM -> Pileup) to generate RPKM files, followed by the final gene abundance quantification.
+
+❗ **Note:** We recommend using per genome equivalents (AGS) or per cell copy (SCG) as normalization bases to quantify genes and perform cross-sample comparisons. For details, please refer to our article and supporting information:
 
 Luo, G., et al. (2025). Determining Antimicrobial Resistance in the Plastisphere: Lower Risks of Nonbiodegradable vs Higher Risks of Biodegradable Microplastics.
 *Environmental Science & Technology*.
 https://doi.org/10.1021/acs.est.5c00246
 
-To generate AGS files, following the command lines below:
-```sh
-cd $PATH_TO_CompRanking
-vi $PATH_TO_CompRanking/scripts/AGS.sh #change your input_dir in the workdir
-bash $PATH_TO_CompRanking/scripts/AGS.sh
-```
 ---
 
-**📈 Step 2:** After finishing all the prediction steps, we should calculate the relative abundance of functional genes, run the command line below:
+**🧬 Step 1: Calculating scg and AGS** 
+
+Before quantifying the genes, we need to generate AGS, SCG, and RPKM files for each sample. We provide a script that generates individual job scripts for all your samples.
+
+First, open the generator script and modify the paths in the **Configuration** section to match your local environment:
 ```sh
-python ./compranking/multiGeneCal_metagenome_rpkg_scg_geneName.py 
-        -i <input_dir> 
-        -p <project_prefix> 
-        -n AGS
-        -t 16
-        -d <pth2KK2db> #this option is for cell copy normalized by sequence abundance, need to run multiGeneCal_16s.py
+vi $PATH_TO_CompRanking/src/cal_gene_abundance/step1_cpr_abundance_cal.sh
 ```
-The output demo is like below:
+
+Then, run the script to generate the job scripts:
+```sh
+bash $PATH_TO_CompRanking/src/cal_gene_abundance/step1_cpr_abundance_cal.sh
+```
+
+This will generate individual bash scripts for each sample in your designated output directory. You can run these generated scripts directly in your terminal or submit them to your HPC cluster (e.g., Slurm/PBS) by uncommenting the scheduler directives at the top of the generated scripts. These scripts will automatically handle `MicrobeCensus`, `Diamond`, `Bowtie2`, `BAMM`, and `Pileup`.
+
+
+
+
+**📈 Step 2: Gene Abundance Quantification** 
+
+After all the sample jobs from Step 1 are finished, you can calculate the relative abundance of functional genes across all samples.
+
+Open the quantification script and configure your paths:
+```sh
+vi $PATH_TO_CompRanking/src/cal_gene_abundance/step2_cpr_gene_abundance_quantification.sh
+```
+
+Then execute the script (or submit it to your job scheduler):
+```sh
+bash $PATH_TO_CompRanking/src/cal_gene_abundance/step2_cpr_gene_abundance_quantification.sh
+```
+
+This script will automatically iterate through your samples and run the Python quantification module. The output demo is like below::
 
 | ARG_name | Class   | Database | MGE_type |Sample_1 |Sample_2 |Sample_3 |
 |----------|---------|----------|----------|---------|---------|---------|       
@@ -210,6 +229,7 @@ The output demo is like below:
 | SUL3       | sulfonamide     | SARG    | plasmid       |0.001 |0.003 |0.005 |
 
 **note**: `phage/plasmid` means ARGs found to be co-located with phage- or plasmid-like contig in one sample (microbial community).
+
 `plasmid` means only found to be co-located with plasmid-like contig. `Unknown` means not to be found co-located with any MGEs, but not representing it is not co-located with any MGEs, probably due to the accuracy and recall of identification method.
 
 ---
